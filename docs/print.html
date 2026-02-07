@@ -3308,51 +3308,52 @@ them early will give you a strong core to start from.
 <p>具体的には、変数、基本的な型、関数、コメント、そして制御フローについて学びます。
 これらの基礎は全てのRustプログラムに存在するものであり、それらを早期に学ぶことにより、強力な基礎を築くことになるでしょう。</p>
 <!--
-> ### Keywords
+> #### Keywords
 >
-> The Rust language has a set of *keywords* that have been reserved for use by
-> the language only, much as in other languages. Keep in mind that you cannot
-> use these words as names of variables or functions. Most of the keywords have
+> The Rust language has a set of *keywords* that are reserved for use by the
+> language only, much as in other languages. Keep in mind that you cannot use
+> these words as names of variables or functions. Most of the keywords have
 > special meanings, and you’ll be using them to do various tasks in your Rust
 > programs; a few have no current functionality associated with them but have
 > been reserved for functionality that might be added to Rust in the future. You
-> can find a list of the keywords in Appendix A.
+> can find a list of the keywords in [Appendix A][appendix_a].
 -->
 <blockquote>
-<h3 id="キーワード"><a class="header" href="#キーワード">キーワード</a></h3>
+<h4 id="キーワード"><a class="header" href="#キーワード">キーワード</a></h4>
 <p>Rust言語にも他の言語同様、キーワードが存在し、これらは言語だけが使用できるようになっています。
 これらの単語は、変数や関数名には使えないことを弁えておいてください。ほとんどのキーワードは、特別な意味を持っており、
 自らのRustプログラムにおいて、様々な作業をこなすために使用することができます;
 いくつかは、紐付けられた機能がないものの、将来Rustに追加されるかもしれない機能用に予約されています。
-キーワードの一覧は、付録Aで確認できます。</p>
+キーワードの一覧は、<a href="appendix-01-keywords.html">付録A</a>で確認できます。</p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Variables and Mutability
 -->
 <h2 id="変数と可変性"><a class="header" href="#変数と可変性">変数と可変性</a></h2>
 <!--
-As mentioned in Chapter 2, by default variables are immutable. This is one of
-many nudges Rust gives you to write your code in a way that takes advantage of
-the safety and easy concurrency that Rust offers. However, you still have the
-option to make your variables mutable. Let’s explore how and why Rust
-encourages you to favor immutability and why sometimes you might want to opt
-out.
+As mentioned in the [“Storing Values with
+Variables”][storing-values-with-variables] section, by default,
+variables are immutable. This is one of many nudges Rust gives you to write
+your code in a way that takes advantage of the safety and easy concurrency that
+Rust offers. However, you still have the option to make your variables mutable.
+Let’s explore how and why Rust encourages you to favor immutability and why
+sometimes you might want to opt out.
 -->
-<p>第2章で触れた通り、変数は標準で不変になります。これは、
+<p><a href="ch02-00-guessing-game-tutorial.html#%E5%80%A4%E3%82%92%E5%A4%89%E6%95%B0%E3%81%AB%E4%BF%9D%E6%8C%81%E3%81%99%E3%82%8B">「値を変数に保持する」</a>の節で触れた通り、変数は標準で不変になります。これは、
 Rustが提供する安全性や簡便な並行性の利点を享受する形でコードを書くための選択の1つです。
 ところが、まだ変数を可変にするという選択肢も残されています。
 どのように、そしてなぜRustは不変性を推奨するのか、さらには、なぜそれとは違う道を選びたくなることがあるのか見ていきましょう。</p>
 <!--
-When a variable is immutable, once a value is bound to a name, you can't change
-that value. To illustrate this, let’s generate a new project called *variables*
-in your *projects* directory by using `cargo new --bin variables`.
+When a variable is immutable, once a value is bound to a name, you can’t change
+that value. To illustrate this, generate a new project called *variables* in
+your *projects* directory by using `cargo new variables`.
 -->
 <p>変数が不変であると、値が一旦名前に束縛されたら、その値を変えることができません。
-これを具体的に説明するために、<em>projects</em>ディレクトリに<code>cargo new --bin variables</code>コマンドを使って、
-<em>variables</em>という名前のプロジェクトを生成しましょう。</p>
+これを具体的に説明するために、<em>projects</em>ディレクトリに<code>cargo new variables</code>コマンドを使って、
+<em>variables</em>という名前のプロジェクトを生成してください。</p>
 <!--
 Then, in your new *variables* directory, open *src/main.rs* and replace its
-code with the following code that won't compile just yet:
+code with the following code, which won’t compile just yet:
 -->
 <p>それから、新規作成した<em>variables</em>ディレクトリで、<em>src/main.rs</em>ファイルを開き、
 その中身を以下のコードに置き換えましょう。このコードはまだコンパイルできません:</p>
@@ -3362,15 +3363,16 @@ code with the following code that won't compile just yet:
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><code class="language-rust ignore does_not_compile">fn main() {
     let x = 5;
-    println!(&quot;The value of x is: {}&quot;, x);     // xの値は{}です
+    println!(&quot;The value of x is: {x}&quot;);     // xの値は{x}です
     x = 6;
-    println!(&quot;The value of x is: {}&quot;, x);
+    println!(&quot;The value of x is: {x}&quot;);
 }</code></pre>
 <!--
-Save and run the program using `cargo run`. You should receive an error
-message, as shown in this output:
+Save and run the program using `cargo run`. You should receive an error message
+regarding an immutability error, as shown in this output:
 -->
-<p>これを保存し、<code>cargo run</code>コマンドでプログラムを走らせてください。次の出力に示されているようなエラーメッセージを受け取るはずです:</p>
+<p>これを保存し、<code>cargo run</code>コマンドでプログラムを走らせてください。
+次の出力に示されているような、不変性に関するエラーメッセージを受け取るはずです:</p>
 <pre><code class="language-console">$ cargo run
    Compiling variables v0.1.0 (file:///projects/variables)
 error[E0384]: cannot assign twice to immutable variable `x`
@@ -3383,75 +3385,75 @@ error[E0384]: cannot assign twice to immutable variable `x`
   |         first assignment to `x`
   |         (`x`への最初の代入)
   |         help: consider making this binding mutable: `mut x`
-3 |     println!(&quot;The value of x is: {}&quot;, x);
+3 |     println!(&quot;The value of x is: {x}&quot;);
 4 |     x = 6;
   |     ^^^^^ cannot assign twice to immutable variable
 
 For more information about this error, try `rustc --explain E0384`.
-error: could not compile `variables` due to previous error
+error: could not compile `variables` (bin &quot;variables&quot;) due to 1 previous error
 </code></pre>
 <!--
 This example shows how the compiler helps you find errors in your programs.
-Even though compiler errors can be frustrating, they only mean your program
+Compiler errors can be frustrating, but really they only mean your program
 isn’t safely doing what you want it to do yet; they do *not* mean that you’re
 not a good programmer! Experienced Rustaceans still get compiler errors.
 -->
 <p>この例では、コンパイラがプログラムに潜むエラーを見つけ出す手助けをしてくれることが示されています。
-コンパイルエラーは、イライラすることもあるものですが、まだプログラムにしてほしいことを安全に行えていないだけということなのです。
+コンパイルエラーは、イライラすることもあるものですが、本当はまだプログラムにしてほしいことを安全に行えていないだけということなのです。
 エラーが出るからといって、あなたがいいプログラマではないという意味ではあり<em>ません</em>！
 経験豊富なRustaceanでも、コンパイルエラーを出すことはあります。</p>
 <!--
-The error message indicates that the cause of the error is that you `cannot
-assign twice to immutable variable x`, because you tried to assign a second
-value to the immutable `x` variable.
+You received the error message `` cannot assign twice to immutable variable `x`
+`` because you tried to assign a second value to the immutable `x` variable.
 -->
-<p>このエラーは、エラーの原因が<code>不変変数xに2回代入できない</code>であると示しています。不変な<code>x</code>という変数に別の値を代入しようとしたからです。</p>
+<p><code>不変変数`x`に2回代入できません</code>というエラーメッセージを受け取りました。
+不変な<code>x</code>という変数に別の値を代入しようとしたからです。</p>
 <!--
 It’s important that we get compile-time errors when we attempt to change a
-value that we previously designated as immutable because this very situation
-can lead to bugs. If one part of our code operates on the assumption that a
-value will never change and another part of our code changes that value, it’s
-possible that the first part of the code won’t do what it was designed to do.
-This cause of bugs can be difficult to track down after the fact,
-especially when the second piece of code changes the value only *sometimes*.
+value that’s designated as immutable because this very situation can lead to
+bugs. If one part of our code operates on the assumption that a value will
+never change and another part of our code changes that value, it’s possible
+that the first part of the code won’t do what it was designed to do. The cause
+of this kind of bug can be difficult to track down after the fact, especially
+when the second piece of code changes the value only *sometimes*. The Rust
+compiler guarantees that when you state that a value won’t change, it really
+won’t change, so you don’t have to keep track of it yourself. Your code is thus
+easier to reason through.
+
 -->
-<p>以前に不変と指定された値を変えようとした時に、コンパイルエラーが出るのは重要なことです。
+<p>不変と指定された値を変えようとした時に、コンパイルエラーが出るのは重要なことです。
 なぜなら、この状況はまさしく、バグに繋がるからです。コードのある部分は、
 値が変わることはないという前提のもとに処理を行い、別の部分がその値を変更していたら、
 最初の部分が目論見通りに動いていない可能性があるのです。このようなバグは、発生してしまってからでは原因が追いかけづらいものです。
-特に第2のコード片が、値を<em>時々</em>しか変えない場合、尚更です。</p>
-<!--
-In Rust the compiler guarantees that when you state that a value won’t change,
-it really won’t change. That means that when you’re reading and writing code,
-you don’t have to keep track of how and where a value might change. Your code
-is thus easier to reason through.
--->
-<p>Rustでは、値が不変であると宣言したら、本当に変わらないことをコンパイラが担保してくれます。
-つまり、コードを読み書きする際に、どこでどうやって値が変化しているかを追いかける必要がなくなります。
+特に第2のコード片が、値を<em>時々</em>しか変えない場合、尚更です。
+Rustコンパイラは、値が不変であると宣言したら、本当に変わらないことを担保してくれるので、変更を自分で追いかける必要がなくなります。
 故にコードを通して正しいことを確認するのが簡単になるのです。</p>
 <!--
-But mutability can be very useful. Variables are immutable only by default; as
-you did in Chapter 2, you can make them mutable by adding `mut` in front of the
-variable name. In addition to allowing this value to change, `mut` conveys
+But mutability can be very useful, and can make code more convenient to write.
+Although variables are immutable by default, you can make them mutable by
+adding `mut` in front of the variable name as you did in [Chapter
+2][storing-values-with-variables]. Adding `mut` also conveys
 intent to future readers of the code by indicating that other parts of the code
-will be changing this variable value.
+will be changing this variable’s value.
 -->
-<p>しかし、可変性は時として非常に有益なこともあります。変数は、標準でのみ、不変です。つまり、
-第2章のように変数名の前に<code>mut</code>キーワードを付けることで、可変にできるわけです。この値が変化できるようにするとともに、
-<code>mut</code>により、未来の読者に対してコードの別の部分がこの変数の値を変える可能性を示すことで、その意図を汲ませることができるのです。</p>
+<p>しかし可変性は非常に有用で、よりコードを書きやすくしてくれることもあります。
+変数は標準では不変ですが、<a href="ch02-00-guessing-game-tutorial.html#%E5%80%A4%E3%82%92%E5%A4%89%E6%95%B0%E3%81%AB%E4%BF%9D%E6%8C%81%E3%81%99%E3%82%8B">第2章</a>でやったように、
+変数名の前に<code>mut</code>キーワードを付けることで、可変にできるわけです。
+また<code>mut</code>を付けることで、コードの別の部分がこの変数の値を変えるだろうと示すことによって、
+未来の読者に対してその意図を汲ませることができるのです。</p>
 <!--
-For example, change *src/main.rs* to the following:
+For example, let’s change *src/main.rs* to the following:
 -->
-<p>例として、<em>src/main.rs</em>ファイルを以下のように書き換えてください:</p>
+<p>例として、<em>src/main.rs</em>ファイルを以下のように書き換えましょう:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let mut x = 5;
-    println!(&quot;The value of x is: {}&quot;, x);
+    println!(&quot;The value of x is: {x}&quot;);
     x = 6;
-    println!(&quot;The value of x is: {}&quot;, x);
+    println!(&quot;The value of x is: {x}&quot;);
 }</code></pre></pre>
 <!--
 When we run the program now, we get this:
@@ -3465,51 +3467,34 @@ The value of x is: 5   (xの値は5です)
 The value of x is: 6
 </code></pre>
 <!--
-We’re allowed to change the value that `x` binds to from `5` to `6` when `mut`
-is used. In some cases, you’ll want to make a variable mutable because it makes
-the code more convenient to write than if it had only immutable variables.
+We’re allowed to change the value bound to `x` from `5` to `6` when `mut` is
+used. Ultimately, deciding whether to use mutability or not is up to you and
+depends on what you think is clearest in that particular situation.
 -->
-<p><code>mut</code>キーワードが使われると、<code>x</code>が束縛している値を<code>5</code>から<code>6</code>に変更できます。
-変数を可変にする方が、不変変数だけがあるよりも書きやすくなるので、変数を可変にしたくなることもあるでしょう。</p>
+<p><code>mut</code>キーワードが使われると、<code>x</code>に束縛されている値を<code>5</code>から<code>6</code>に変更できます。
+可変性を使うかどうかは最終的にはプログラマに任せられており、どちらがより明白と思えるかは個別の状況によるでしょう。</p>
 <!--
-There are multiple trade-offs to consider, in addition to the prevention of
-bugs. For example, in cases where you’re using large data structures, mutating
-an instance in place may be faster than copying and returning newly allocated
-instances. With smaller data structures, creating new instances and writing in
-a more functional programming style may be easier to think through, so lower
-performance might be a worthwhile penalty for gaining that clarity.
+### Constants
 -->
-<p>考えるべきトレードオフはバグの予防以外にも、いくつかあります。例えば、大きなデータ構造を使う場合などです。
-インスタンスを可変にして変更できるようにする方が、いちいちインスタンスをコピーして新しくメモリ割り当てされたインスタンスを返すよりも速くなります。
-小規模なデータ構造なら、新規インスタンスを生成して、もっと関数型っぽいコードを書く方が通して考えやすくなるため、
-低パフォーマンスは、その簡潔性を得るのに足りうるペナルティになるかもしれません。</p>
+<h3 id="定数"><a class="header" href="#定数">定数</a></h3>
 <!--
-### Differences Between Variables and Constants
+Like immutable variables, *constants* are values that are bound to a name and
+are not allowed to change, but there are a few differences between constants
+and variables.
 -->
-<h3 id="変数と定数constantsの違い"><a class="header" href="#変数と定数constantsの違い">変数と定数(constants)の違い</a></h3>
-<!--
-Being unable to change the value of a variable might have reminded you of
-another programming concept that most other languages have: *constants*. Like
-immutable variables, constants are values that are bound to a name and are not
-allowed to change, but there are a few differences between constants and
-variables.
--->
-<p>変数の値を変更できないようにするといえば、他の多くの言語も持っている別のプログラミング概念を思い浮かべるかもしれません:
-<em>定数</em>です。不変変数のように、定数は名前に束縛され、変更することが叶わない値のことですが、
+<p>不変変数のように、<em>定数</em>(constants)は名前に束縛され、変更することが叶わない値のことですが、
 定数と変数の間にはいくつかの違いがあります。</p>
 <!--
-First, we aren’t allowed to use `mut` with constants. Constants aren't just
-immutable by default-they're always immutable.
+First, you aren’t allowed to use `mut` with constants. Constants aren’t just
+immutable by default—they’re always immutable. You declare constants using the
+`const` keyword instead of the `let` keyword, and the type of the value *must*
+be annotated. We’ll cover types and type annotations in the next section,
+[“Data Types”][data-types] so don’t worry about the details
+right now. Just know that you must always annotate the type.
 -->
-<p>まず、定数には<code>mut</code>キーワードは使えません: 定数は標準で不変であるだけでなく、常に不変なのです。</p>
-<!--
-You declare constants using the `const` keyword instead of the `let` keyword,
-and the type of the value *must* be annotated. We're about to cover types and
-type annotations in the next section, “Data Types,” so don't worry about the
-details right now. Just know that we must always annotate the type.
--->
-<p>定数は<code>let</code>キーワードの代わりに、<code>const</code>キーワードで宣言し、値の型は<em>必ず</em>注釈しなければなりません。
-型と型注釈については次のセクション、「データ型」で講義しますので、その詳細について気にする必要はありません。
+<p>まず、定数には<code>mut</code>キーワードは使えません: 定数は標準で不変であるだけでなく、常に不変なのです。
+定数は<code>let</code>キーワードの代わりに、<code>const</code>キーワードで宣言し、値の型は<em>必ず</em>注釈しなければなりません。
+型と型注釈については次のセクション、<a href="ch03-02-data-types.html#%E3%83%87%E3%83%BC%E3%82%BF%E5%9E%8B">「データ型」</a>で講義しますので、その詳細について気にする必要はありません。
 ただ単に型は常に注釈しなければならないのだと思っていてください。</p>
 <!--
 Constants can be declared in any scope, including the global scope, which makes
@@ -3519,30 +3504,43 @@ them useful for values that many parts of code need to know about.
 いろんなところで使用される可能性のある値を定義するのに役に立ちます。</p>
 <!--
 The last difference is that constants may be set only to a constant expression,
-not the result of a function call or any other value that could only be
-computed at runtime.
+not the result of a value that could only be computed at runtime.
 -->
-<p>最後の違いは、定数は定数式にしかセットできないことです。関数呼び出し結果や、実行時に評価される値にはセットできません。</p>
+<p>最後の違いは、定数は定数式にしかセットできないことです。実行時に評価される値にはセットできません。</p>
 <!--
-Here's an example of a constant declaration where the constant's name is
-`MAX_POINTS` and its value is set to 100,000. (Rust naming convention for
-constants is to use all upper case with underscores between words):
+Here’s an example of a constant declaration:
 -->
-<p>定数の名前が<code>MAX_POINTS</code>で、値が100,000にセットされた定数定義の例をご覧ください。(Rustの定数の命名規則は、
-全て大文字でアンダースコアで単語区切りすることです):</p>
+<p>これが定数定義の例です:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>const MAX_POINTS: u32 = 100_000;
+</span>const THREE_HOURS_IN_SECONDS: u32 = 60 * 60 * 3;
 <span class="boring">}</span></code></pre></pre>
 <!--
-Constants are valid for the entire time a program runs, within the scope they
-were declared in, making them a useful choice for values in your application
-domain that multiple parts of the program might need to know about, such as the
-maximum number of points any player of a game is allowed to earn or the speed
-of light.
+The constant’s name is `THREE_HOURS_IN_SECONDS` and its value is set to the
+result of multiplying 60 (the number of seconds in a minute) by 60 (the number
+of minutes in an hour) by 3 (the number of hours we want to count in this
+program). Rust’s naming convention for constants is to use all uppercase with
+underscores between words. The compiler is able to evaluate a limited set of
+operations at compile time, which lets us choose to write out this value in a
+way that’s easier to understand and verify, rather than setting this constant
+to the value 10,800. See the [Rust Reference’s section on constant
+evaluation][const-eval] for more information on what operations can be used
+when declaring constants.
 -->
-<p>定数は、プログラムが走る期間、定義されたスコープ内でずっと有効です。従って、
-プログラムのいろんなところで使用される可能性のあるアプリケーション空間の値を定義するのに有益な選択肢になります。
+<p>定数の名前は<code>THREE_HOURS_IN_SECONDS</code>で、その値は60（1分あたりの秒数）×60（1時間あたりの分数）×3（このプログラムで数えたい時間数）の結果にセットされています。
+Rustの定数の命名規則は、全て大文字でアンダースコアで単語区切りすることです。
+コンパイラはコンパイル時に一部の演算を評価することができるので、この定数に10,800という値を設定する代わりに、理解し検証しやすい方法でこの値を書き出すことを選択できます。
+定数宣言内でどの演算が使用できるかについてのさらなる情報は、<a href="https://doc.rust-lang.org/reference/const_eval.html">Rust Referenceのconstant evaluationの節</a>をお読みください。</p>
+<!--
+
+Constants are valid for the entire time a program runs, within the scope in
+which they were declared. This property makes constants useful for values in
+your application domain that multiple parts of the program might need to know
+about, such as the maximum number of points any player of a game is allowed to
+earn, or the speed of light.
+-->
+<p>定数は、プログラムが走る期間、定義されたスコープ内でずっと有効です。
+この性質のおかげで、定数はプログラムのいろんなところで使用される可能性のあるアプリケーション空間の値を定義するのに有用です。
 例えば、ゲームでプレイヤーが取得可能なポイントの最高値や、光速度などですね。</p>
 <!--
 Naming hardcoded values used throughout your program as constants is useful in
@@ -3558,17 +3556,22 @@ hardcoded value needed to be updated in the future.
 -->
 <h3 id="シャドーイング"><a class="header" href="#シャドーイング">シャドーイング</a></h3>
 <!--
-As you saw in the guessing game tutorial in the “Comparing the Guess to the
-Secret Number” section in Chapter 2, you can declare a new variable with the
-same name as a previous variable, and the new variable shadows the previous
-variable. Rustaceans say that the first variable is *shadowed* by the second,
-which means that the second variable’s value is what appears when the variable
-is used. We can shadow a variable by using the same variable’s name and
-repeating the use of the `let` keyword as follows:
+As you saw in the guessing game tutorial in [Chapter
+2][comparing-the-guess-to-the-secret-number], you can declare a
+new variable with the same name as a previous variable. Rustaceans say that the
+first variable is *shadowed* by the second, which means that the second
+variable is what the compiler will see when you use the name of the variable.
+In effect, the second variable overshadows the first, taking any uses of the
+variable name to itself until either it itself is shadowed or the scope ends.
+We can shadow a variable by using the same variable’s name and repeating the
+use of the `let` keyword as follows:
 -->
-<p>第2章の数当てゲームのチュートリアル、「予想と秘密の数字を比較する」節で見たように、前に定義した変数と同じ名前の変数を新しく宣言でき、
-新しい変数は、前の変数を覆い隠します。Rustaceanはこれを最初の変数は、
-2番目の変数に<em>覆い隠さ</em>れたと言い、この変数を使用した際に、2番目の変数の値が現れるということです。
+<p><a href="ch02-00-guessing-game-tutorial.html#%E4%BA%88%E6%83%B3%E3%81%A8%E7%A7%98%E5%AF%86%E3%81%AE%E6%95%B0%E5%AD%97%E3%82%92%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B">第2章</a>の数当てゲームのチュートリアルで見たように、
+前に定義した変数と同じ名前の変数を新しく宣言できます。
+Rustaceanはこれを、最初の変数は2番目の変数に<em>覆い隠さ</em>れたと言います。
+これはその変数名を使用した際に、コンパイラは2番目の変数を見るという意味です。
+2番目の変数は実質的に、最初の変数にその影を投げかけ、自身が覆い隠されるかスコープが終了するまで、
+変数名の使用を自身へのものとして扱います。
 以下のようにして、同じ変数名を用いて変数を覆い隠し、<code>let</code>キーワードの使用を繰り返します:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
@@ -3581,23 +3584,25 @@ repeating the use of the `let` keyword as follows:
 
     {
         let x = x * 2;
-        println!(&quot;The value of x in the inner scope is: {}&quot;, x);
+        println!(&quot;The value of x in the inner scope is: {x}&quot;);
     }
 
-    println!(&quot;The value of x is: {}&quot;, x);
+    println!(&quot;The value of x is: {x}&quot;);
 }</code></pre></pre>
 <!--
-This program first binds `x` to a value of `5`. Then it shadows `x` by
-repeating `let x =`, taking the original value and adding `1` so the value of
-`x` is then `6`. Then, within an inner scope, the third `let` statement also
-shadows `x`, multiplying the previous value by `2` to give `x` a value of `12`.
+This program first binds `x` to a value of `5`. Then it creates a new variable
+`x` by repeating `let x =`, taking the original value and adding `1` so the
+value of `x` is then `6`. Then, within an inner scope created with the curly
+brackets, the third `let` statement also shadows `x` and creates a new
+variable, multiplying the previous value by `2` to give `x` a value of `12`.
 When that scope is over, the inner shadowing ends and `x` returns to being `6`.
 When we run this program, it will output the following:
 -->
-<p>このプログラムはまず、<code>x</code>を<code>5</code>という値に束縛します。それから<code>let x =</code>を繰り返すことで<code>x</code>を覆い隠し、
+<p>このプログラムはまず、<code>x</code>を<code>5</code>という値に束縛します。それから<code>let x =</code>を繰り返すことで新しい変数<code>x</code>を作り、
 元の値に<code>1</code>を加えることになるので、<code>x</code>の値は<code>6</code>になります。
-3番目の<code>let</code>文も<code>x</code>を覆い隠し、以前の値に<code>2</code>をかけることになるので、<code>x</code>の最終的な値は<code>12</code>になります。
-括弧を抜けるとシャドーイングは終了し、<code>x</code>の値は元の<code>6</code>に戻ります。
+次に波括弧によって作られた内側のスコープの中で、3番目の<code>let</code>文も<code>x</code>を覆い隠して新しい変数を作り、
+以前の値に<code>2</code>をかけることになるので、<code>x</code>の最終的な値は<code>12</code>になります。
+スコープが終わるとシャドーイングは終了し、<code>x</code>の値は元の<code>6</code>に戻ります。
 このプログラムを走らせたら、以下のように出力するでしょう:</p>
 <pre><code class="language-console">$ cargo run
    Compiling variables v0.1.0 (file:///projects/variables)
@@ -3607,7 +3612,7 @@ The value of x in the inner scope is: 12
 The value of x is: 6
 </code></pre>
 <!--
-Shadowing is different than marking a variable as `mut`, because we’ll get a
+Shadowing is different from marking a variable as `mut` because we’ll get a
 compile-time error if we accidentally try to reassign to this variable without
 using the `let` keyword. By using `let`, we can perform a few transformations
 on a value but have the variable be immutable after those transformations have
@@ -3621,26 +3626,24 @@ The other difference between `mut` and shadowing is that because we’re
 effectively creating a new variable when we use the `let` keyword again, we can
 change the type of the value but reuse the same name. For example, say our
 program asks a user to show how many spaces they want between some text by
-inputting space characters, but we really want to store that input as a number:
+inputting space characters, and then we want to store that input as a number:
 -->
 <p><code>mut</code>と上書きのもう一つの違いは、再度<code>let</code>キーワードを使用したら、実効的には新しい変数を生成していることになるので、
 値の型を変えつつ、同じ変数名を使いまわせることです。例えば、
-プログラムがユーザに何らかのテキストに対して空白文字を入力することで何個分のスペースを表示したいかを尋ねますが、
-ただ、実際にはこの入力を数値として保持したいとしましょう:</p>
+プログラムがユーザに何らかのテキストに対して空白文字を入力することで何個分のスペースを表示したいかを尋ねて、
+そうしたらこの入力を数値として保持したいとしましょう:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
 </span>    let spaces = &quot;   &quot;;
     let spaces = spaces.len();
 <span class="boring">}</span></code></pre></pre>
 <!--
-This construct is allowed because the first `spaces` variable is a string type
-and the second `spaces` variable, which is a brand-new variable that happens to
-have the same name as the first one, is a number type. Shadowing thus spares us
-from having to come up with different names, like `spaces_str` and
-`spaces_num`; instead, we can reuse the simpler `spaces` name. However, if we
-try to use `mut` for this, as shown here, we'll get a compile-time error:
+The first `spaces` variable is a string type and the second `spaces` variable
+is a number type. Shadowing thus spares us from having to come up with
+different names, such as `spaces_str` and `spaces_num`; instead, we can reuse
+the simpler `spaces` name. However, if we try to use `mut` for this, as shown
+here, we’ll get a compile-time error:
 -->
-<p>この文法要素は、容認されます。というのも、最初の<code>spaces</code>変数は文字列型であり、2番目の<code>spaces</code>変数は、
-たまたま最初の変数と同じ名前になったまっさらな変数のわけですが、数値型になるからです。故に、シャドーイングのおかげで、
+<p>最初の<code>spaces</code>変数は文字列型であり、2番目の<code>spaces</code>変数は数値型です。故に、シャドーイングのおかげで、
 異なる名前を思いつく必要がなくなるわけです。<code>spaces_str</code>と<code>spaces_num</code>などですね; 代わりに、
 よりシンプルな<code>spaces</code>という名前を再利用できるわけです。一方で、この場合に<code>mut</code>を使おうとすると、
 以下に示した通りですが、コンパイルエラーになるわけです:</p>
@@ -3649,8 +3652,7 @@ try to use `mut` for this, as shown here, we'll get a compile-time error:
     spaces = spaces.len();
 <span class="boring">}</span></code></pre>
 <!--
-The error says we’re not allowed to mutate a variable’s
-type:
+The error says we’re not allowed to mutate a variable’s type:
 -->
 <p>変数の型を可変にすることは許されていないと言われているわけです:</p>
 <pre><code class="language-console">$ cargo run
@@ -3663,22 +3665,35 @@ error[E0308]: mismatched types          (型が合いません)
 3 |     spaces = spaces.len();
   |              ^^^^^^^^^^^^ expected `&amp;str`, found `usize`
   |                           (&amp;str型を予期しましたが、usizeが見つかりました)
+  |
+help: try removing the method call
+  |
+3 -     spaces = spaces.len();
+3 +     spaces = spaces;
+  |
 
 For more information about this error, try `rustc --explain E0308`.
-error: could not compile `variables` due to previous error
+error: could not compile `variables` (bin &quot;variables&quot;) due to 1 previous error
 </code></pre>
 <!--
 Now that we’ve explored how variables work, let’s look at more data types they
 can have.
 -->
 <p>さあ、変数が動作する方法を見てきたので、今度は変数が取りうるデータ型について見ていきましょう。</p>
+<!--
+[comparing-the-guess-to-the-secret-number]:
+ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number
+[data-types]: ch03-02-data-types.html#data-types
+[storing-values-with-variables]: ch02-00-guessing-game-tutorial.html#storing-values-with-variables
+[const-eval]: ../reference/const_eval.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Data Types
 -->
 <h2 id="データ型"><a class="header" href="#データ型">データ型</a></h2>
 <!--
 Every value in Rust is of a certain *data type*, which tells Rust what kind of
-data is being specified so it knows how to work with that data. We'll look at
+data is being specified so it knows how to work with that data. We’ll look at
 two data type subsets: scalar and compound.
 -->
 <p>Rustにおける値は全て、何らかの<em>データ型</em>になり、コンパイラがどんなデータが指定されているか知れるので、
@@ -3688,37 +3703,46 @@ Keep in mind that Rust is a *statically typed* language, which means that it
 must know the types of all variables at compile time. The compiler can usually
 infer what type we want to use based on the value and how we use it. In cases
 when many types are possible, such as when we converted a `String` to a numeric
-type using `parse` in the “Comparing the Guess to the Secret Number” section in
+type using `parse` in the [“Comparing the Guess to the Secret
+Number”][comparing-the-guess-to-the-secret-number] section in
 Chapter 2, we must add a type annotation, like this:
 -->
 <p>Rustは<em>静的型付き</em>言語であることを弁えておいてください。つまり、
 コンパイル時に全ての変数の型が判明している必要があるということです。コンパイラは通常、値と使用方法に基づいて、
 使用したい型を推論してくれます。複数の型が推論される可能性がある場合、例えば、
-第2章の「予想と秘密の数字を比較する」節で<code>parse</code>メソッドを使って<code>String</code>型を数値型に変換した時のように、
+第2章の<a href="ch02-00-guessing-game-tutorial.html#%E4%BA%88%E6%83%B3%E3%81%A8%E7%A7%98%E5%AF%86%E3%81%AE%E6%95%B0%E5%AD%97%E3%82%92%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B">「予想と秘密の数字を比較する」</a>節で<code>parse</code>メソッドを使って<code>String</code>型を数値型に変換した時のように、
 複数の型が可能な場合には、型注釈をつけなければいけません。以下のようにですね:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let guess: u32 = &quot;42&quot;.parse().expect(&quot;Not a number!&quot;);    // 数字ではありません！
 <span class="boring">}</span></code></pre></pre>
 <!--
-If we don’t add the type annotation here, Rust will display the following
-error, which means the compiler needs more information from us to know which
-type we want to use:
+If we don’t add the `: u32` type annotation shown in the preceding code, Rust
+will display the following error, which means the compiler needs more
+information from us to know which type we want to use:
 -->
-<p>ここで型注釈を付けなければ、コンパイラは以下のエラーを表示し、これは可能性のある型のうち、
+<p>上のコード中に示す<code>: u32</code>型注釈を付けなければ、コンパイラは以下のエラーを表示し、これは可能性のある型のうち、
 どの型を使用したいのかを知るのに、コンパイラがプログラマからもっと情報を得る必要があることを意味します:</p>
 <pre><code class="language-console">$ cargo build
    Compiling no_type_annotations v0.1.0 (file:///projects/no_type_annotations)
-error[E0282]: type annotations needed
+error[E0284]: type annotations needed
               (型注釈が必要です)
  --&gt; src/main.rs:2:9
   |
 2 |     let guess = &quot;42&quot;.parse().expect(&quot;Not a number!&quot;);
-  |         ^^^^^ consider giving `guess` a type
-  |               (`guess`に型を与えることを検討してください)
+  |         ^^^^^        ----- type must be known at this point
+  |                            (型はこの時点で既知でなくてはなりません)
+  |
+  = note: cannot satisfy `&lt;_ as FromStr&gt;::Err == _`
+          (`&lt;_ as FromStr&gt;::Err == _`を満たすことができません)
+help: consider giving `guess` an explicit type
+  |   (`guess`に型を与えることを検討してください)
+  |
+2 |     let guess: /* Type */ = &quot;42&quot;.parse().expect(&quot;Not a number!&quot;);
+  |              ++++++++++++
 
-For more information about this error, try `rustc --explain E0282`.
-error: could not compile `no_type_annotations` due to previous error
+For more information about this error, try `rustc --explain E0284`.
+error: could not compile `no_type_annotations` (bin &quot;no_type_annotations&quot;) due to 1 previous error
 </code></pre>
 <!--
 You’ll see different type annotations for other data types.
@@ -3733,7 +3757,7 @@ A *scalar* type represents a single value. Rust has four primary scalar types:
 integers, floating-point numbers, Booleans, and characters. You may recognize
 these from other programming languages. Let’s jump into how they work in Rust.
 -->
-<p>スカラー型は、単独の値を表します。Rustには主に4つのスカラー型があります:
+<p><em>スカラー</em>型は、単独の値を表します。Rustには主に4つのスカラー型があります:
 整数、浮動小数点数、論理値、最後に文字です。他のプログラミング言語でも、これらの型を見かけたことはあるでしょう。
 Rustでの動作方法に飛び込みましょう。</p>
 <!--
@@ -3745,53 +3769,52 @@ An *integer* is a number without a fractional component. We used one integer
 type in Chapter 2, the `u32` type. This type declaration indicates that the
 value it’s associated with should be an unsigned integer (signed integer types
 start with `i` instead of `u`) that takes up 32 bits of space. Table 3-1 shows
-the built-in integer types in Rust. Each variant in the Signed and Unsigned
-columns (for example, `i16`) can be used to declare the type of an integer
-value.
+the built-in integer types in Rust. We can use any of these variants to declare
+the type of an integer value.
 -->
-<p>整数とは、小数部分のない数値のことです。第2章で一つの整数型を使用しましたね。<code>u32</code>型です。
+<p><em>整数</em>とは、小数部分のない数値のことです。第2章で一つの整数型を使用しましたね。<code>u32</code>型です。
 この型定義は、紐付けられる値が、符号なし整数(符号付き整数は<code>u</code>ではなく、<code>i</code>で始まります)になり、
 これは、32ビット分のサイズを取ります。表3-1は、Rustの組み込み整数型を表示しています。
-符号付きと符号なし欄の各バリアント(例: <code>i16</code>)を使用して、整数値の型を宣言することができます。</p>
+これらのバリアントを使用して、整数値の型を宣言することができます。</p>
 <!--
 <span class="caption">Table 3-1: Integer Types in Rust</span>
 -->
 <p><span class="caption">表3-1: Rustの整数型</span></p>
 <!--
-| Length | Signed  | Unsigned |
-|--------|---------|----------|
-| 8-bit  | `i8`    | `u8`     |
-| 16-bit | `i16`   | `u16`    |
-| 32-bit | `i32`   | `u32`    |
-| 64-bit | `i64`   | `u64`    |
-| arch   | `isize` | `usize`  |
+| Length  | Signed  | Unsigned |
+|---------|---------|----------|
+| 8-bit   | `i8`    | `u8`     |
+| 16-bit  | `i16`   | `u16`    |
+| 32-bit  | `i32`   | `u32`    |
+| 64-bit  | `i64`   | `u64`    |
+| 128-bit | `i128`  | `u128`   |
+| arch    | `isize` | `usize`  |
 -->
 <div class="table-wrapper"><table><thead><tr><th>大きさ</th><th>符号付き</th><th>符号なし</th></tr></thead><tbody>
 <tr><td>8-bit</td><td><code>i8</code></td><td><code>u8</code></td></tr>
 <tr><td>16-bit</td><td><code>i16</code></td><td><code>u16</code></td></tr>
 <tr><td>32-bit</td><td><code>i32</code></td><td><code>u32</code></td></tr>
 <tr><td>64-bit</td><td><code>i64</code></td><td><code>u64</code></td></tr>
+<tr><td>128-bit</td><td><code>i128</code></td><td><code>u128</code></td></tr>
 <tr><td>arch</td><td><code>isize</code></td><td><code>usize</code></td></tr>
 </tbody></table>
 </div><!--
 Each variant can be either signed or unsigned and has an explicit size.
-*Signed* and *unsigned* refers to whether it’s possible for the number to be
-negative or positive-in other words, whether the number needs to have a sign
-with it (signed) or whether it will only ever be positive and can therefore be
+*Signed* and *unsigned* refer to whether it’s possible for the number to be
+negative—in other words, whether the number needs to have a sign with it
+(signed) or whether it will only ever be positive and can therefore be
 represented without a sign (unsigned). It’s like writing numbers on paper: when
 the sign matters, a number is shown with a plus sign or a minus sign; however,
 when it’s safe to assume the number is positive, it’s shown with no sign.
-Signed numbers are stored using two’s complement representation (if you’re
-unsure what this is, you can search for it online; an explanation is outside
-the scope of this book).
+Signed numbers are stored using [two’s complement][twos-complement]
+representation.
 -->
 <p>各バリアントは、符号付きか符号なしかを選べ、明示的なサイズを持ちます。<em>符号付き</em>と<em>符号なし</em>は、
-数値が正負を持つかどうかを示します。つまり、数値が符号を持つ必要があるかどうか(符号付き)、または、
+数値が負の数になり得るかどうかを示します。つまり、数値が符号を持つ必要があるかどうか(符号付き)、または、
 絶対に正数にしかならず符号なしで表現できるかどうか(符号なし)です。これは、数値を紙に書き下すのと似ています:
 符号が問題になるなら、数値はプラス記号、またはマイナス記号とともに表示されます; しかしながら、
 その数値が正数であると仮定することが安全なら、符号なしで表示できるわけです。符号付き数値は、
-2の補数表現で保持されます(これが何なのか確信を持てないのであれば、ネットで検索することができます。
-まあ要するに、この解説は、この本の範疇外というわけです)。</p>
+<a href="https://ja.wikipedia.org/wiki/2%E3%81%AE%E8%A3%9C%E6%95%B0">2の補数</a>表現で保持されます。</p>
 <!--
 Each signed variant can store numbers from -(2<sup>n - 1</sup>) to 2<sup>n -
 1</sup> - 1 inclusive, where *n* is the number of bits that variant uses. So an
@@ -3804,20 +3827,24 @@ so a `u8` can store numbers from 0 to 2<sup>8</sup> - 1, which equals 0 to 255.
 つまり、-128から127までを保持できます。符号なしバリアントは、0以上2<sup>n</sup> - 1以下を保持できるので、
 <code>u8</code>型は、0から2<sup>8</sup> - 1までの値、つまり、0から255までを保持できることになります。</p>
 <!--
-Additionally, the `isize` and `usize` types depend on the kind of computer your
-program is running on: 64-bits if you’re on a 64-bit architecture and 32-bits
-if you’re on a 32-bit architecture.
+Additionally, the `isize` and `usize` types depend on the architecture of the
+computer your program is running on, which is denoted in the table as “arch”:
+64 bits if you’re on a 64-bit architecture and 32 bits if you’re on a 32-bit
+architecture.
 -->
-<p>加えて、<code>isize</code>と<code>usize</code>型は、プログラムが動作しているコンピュータの種類に依存します:
+<p>加えて、<code>isize</code>と<code>usize</code>型は、表では「arch」と表記していますが、プログラムが動作しているコンピュータのアーキテクチャに依存します:
 64ビットアーキテクチャなら、64ビットですし、32ビットアーキテクチャなら、32ビットになります。</p>
 <!--
 You can write integer literals in any of the forms shown in Table 3-2. Note
-that all number literals except the byte literal allow a type suffix, such as
-`57u8`, and `_` as a visual separator, such as `1_000`.
+that number literals that can be multiple numeric types allow a type suffix,
+such as `57u8`, to designate the type. Number literals can also use `_` as a
+visual separator to make the number easier to read, such as `1_000`, which will
+have the same value as if you had specified `1000`.
 -->
 <p>整数リテラル(<code>訳注</code>: リテラルとは、見たままの値ということ)は、表3-2に示すどの形式でも記述することができます。
-バイトリテラルを除く数値リテラルは全て、
-型接尾辞(例えば、<code>57u8</code>)と<code>_</code>を見た目の区切り記号(例えば、<code>1_000</code>)に付加することができます。</p>
+複数の数値型になることができる数値リテラルは、型を指示するために型接尾辞をつけて、<code>57u8</code>のように書くことができます。
+数値リテラルはさらに、数値を読みやすくするために見た目の区切り記号として<code>_</code>をつけて、<code>1_000</code>のように書くこともできます。
+これは<code>1000</code>と指定した場合とまったく同じ値となるでしょう。</p>
 <!--
 <span class="caption">Table 3-2: Integer Literals in Rust</span>
 -->
@@ -3840,13 +3867,66 @@ that all number literals except the byte literal allow a type suffix, such as
 </tbody></table>
 </div><!--
 So how do you know which type of integer to use? If you’re unsure, Rust’s
-defaults are generally good choices, and integer types default to `i32`: this
-type is generally the fastest, even on 64-bit systems. The primary situation in
-which you’d use `isize` or `usize` is when indexing some sort of collection.
+defaults are generally good places to start: integer types default to `i32`.
+The primary situation in which you’d use `isize` or `usize` is when indexing
+some sort of collection.
 -->
 <p>では、どの整数型を使うべきかはどう把握すればいいのでしょうか？もし確信が持てないのならば、
-Rustの基準型は一般的にいい選択肢になります。整数型の基準は<code>i32</code>型です: 64ビットシステム上でも、
-この型が普通最速になります。<code>isize</code>と<code>usize</code>を使う主な状況は、何らかのコレクションにアクセスすることです。</p>
+Rustの基準型は一般的にいい開始地点になります: 整数型の基準は<code>i32</code>型です。
+<code>isize</code>と<code>usize</code>を使う主な状況は、何らかのコレクションにアクセスすることです。</p>
+<!--
+> ##### Integer Overflow
+>
+> Let’s say you have a variable of type `u8` that can hold values between 0 and
+> 255. If you try to change the variable to a value outside that range, such as
+> 256, *integer overflow* will occur, which can result in one of two behaviors.
+> When you’re compiling in debug mode, Rust includes checks for integer overflow
+> that cause your program to *panic* at runtime if this behavior occurs. Rust
+> uses the term *panicking* when a program exits with an error; we’ll discuss
+> panics in more depth in the [“Unrecoverable Errors with
+> `panic!`”][unrecoverable-errors-with-panic] section in Chapter
+> 9.
+>
+> When you’re compiling in release mode with the `--release` flag, Rust does
+> *not* include checks for integer overflow that cause panics. Instead, if
+> overflow occurs, Rust performs *two’s complement wrapping*. In short, values
+> greater than the maximum value the type can hold “wrap around” to the minimum
+> of the values the type can hold. In the case of a `u8`, the value 256 becomes
+> 0, the value 257 becomes 1, and so on. The program won’t panic, but the
+> variable will have a value that probably isn’t what you were expecting it to
+> have. Relying on integer overflow’s wrapping behavior is considered an error.
+>
+> To explicitly handle the possibility of overflow, you can use these families
+> of methods provided by the standard library for primitive numeric types:
+>
+> * Wrap in all modes with the `wrapping_*` methods, such as `wrapping_add`.
+> * Return the `None` value if there is overflow with the `checked_*` methods.
+> * Return the value and a boolean indicating whether there was overflow with
+>   the `overflowing_*` methods.
+> * Saturate at the value’s minimum or maximum values with the `saturating_*`
+>   methods.
+-->
+<blockquote>
+<h5 id="整数オーバーフロー"><a class="header" href="#整数オーバーフロー">整数オーバーフロー</a></h5>
+<p><code>u8</code>型の変数があるとしましょう。<code>u8</code>は0から255までの間の値を取ることができます。
+この変数を範囲外の値、例えば256に変更しようとすると、<em>整数オーバーフロー (integer overflow)</em> が発生し、次の2つのうちのどちらかの挙動になります。
+デバッグモードでコンパイルしているときは、もしこの挙動が発生したときは実行時にプログラムを<em>パニック (panic)</em> させるような、整数オーバーフローのチェックをコンパイラが入れ込みます。
+プログラムがエラーとともに終了するとき、Rustは<em>パニック</em>という用語を使用します;
+パニックについては第9章の<a href="ch09-01-unrecoverable-errors-with-panic.html">「<code>panic!</code>で回復不能なエラー」</a>でより深く議論します。</p>
+<p><code>--release</code>フラグを付けてリリースモードでコンパイルしているときは、コンパイラはパニックを引き起こす整数オーバーフローチェックを入れ込み<em>ません</em>。
+代わりに、オーバーフローが起きたときは、プログラムは<em>2の補数ラップアラウンド (two's complement wrapping)</em> を行います。
+一言で言うと、その型が取ることができる最大値よりも大きい値は、その型が取ることができる最小値に「回り込む」 (“wrap around”) のです。
+<code>u8</code>の場合は、値256は0になり、値257は1になり、という感じです。
+プログラムはパニックはしなくなるでしょうが、変数が持っている値はおそらくプログラマが期待していたものではないでしょう。
+整数オーバーフローのラップアラウンドの挙動に依存するのは、エラーと考えられます。</p>
+<p>オーバーフローが発生する可能性を明示的に取り扱うためには、プリミティブ数値型に関して標準ライブラリが提供する、以下のメソッド群を使うことができます:</p>
+<ul>
+<li><code>wrapping_*</code>メソッド（<code>wrapping_add</code>等）で、モードを問わずラップアラウンドさせる。</li>
+<li><code>checked_*</code>メソッドで、オーバーフローが発生する場合には<code>None</code>値を返す。</li>
+<li><code>overflowing_*</code>メソッドで、値と、オーバーフローが発生したかどうかを示す論理値を返す。</li>
+<li><code>saturating_*</code>メソッドで、値の最小値または最大値で飽和させる。（訳注: 結果が最大値を上回る場合は最大値に、最小値を下回る場合は最小値にするという意味です）</li>
+</ul>
+</blockquote>
 <!--
 #### Floating-Point Types
 -->
@@ -3855,12 +3935,13 @@ Rustの基準型は一般的にいい選択肢になります。整数型の基�
 Rust also has two primitive types for *floating-point numbers*, which are
 numbers with decimal points. Rust’s floating-point types are `f32` and `f64`,
 which are 32 bits and 64 bits in size, respectively. The default type is `f64`
-because on modern CPUs it’s roughly the same speed as `f32` but is capable of
-more precision.
+because on modern CPUs, it’s roughly the same speed as `f32` but is capable of
+more precision. All floating-point types are signed.
 -->
 <p>Rustにはさらに、<em>浮動小数点数</em>に対しても、2種類の基本型があり、浮動小数点数とは数値に小数点がついたもののことです。
 Rustの浮動小数点型は、<code>f32</code>と<code>f64</code>で、それぞれ32ビットと64ビットサイズです。基準型は<code>f64</code>です。
-なぜなら、現代のCPUでは、<code>f32</code>とほぼ同スピードにもかかわらず、より精度が高くなるからです。</p>
+なぜなら、現代のCPUでは、<code>f32</code>とほぼ同スピードにもかかわらず、より精度が高くなるからです。
+すべての浮動小数点型は符号付きです。</p>
 <!--
 Here’s an example that shows floating-point numbers in action:
 -->
@@ -3885,12 +3966,14 @@ Floating-point numbers are represented according to the IEEE-754 standard. The
 -->
 <h4 id="数値演算"><a class="header" href="#数値演算">数値演算</a></h4>
 <!--
-Rust supports the usual basic mathematical operations you’d expect for all of the
-number types: addition, subtraction, multiplication, division, and remainder.
-The following code shows how you’d use each one in a `let` statement:
+Rust supports the basic mathematical operations you’d expect for all the number
+types: addition, subtraction, multiplication, division, and remainder. Integer
+division truncates toward zero to the nearest integer. The following code shows
+how you’d use each numeric operation in a `let` statement:
 -->
 <p>Rustにも全数値型に期待されうる標準的な数学演算が用意されています: 足し算、引き算、掛け算、割り算、余りです。
-以下の例では、<code>let</code>文での各演算の使用方法をご覧になれます:</p>
+整数の割り算では、0に近い方の最も近い整数に切り捨てられます。
+以下の例では、<code>let</code>文での各数学演算の使用方法をご覧になれます:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -3911,8 +3994,8 @@ The following code shows how you’d use each one in a `let` statement:
     // division
     // 割り算
     let quotient = 56.7 / 32.2;
-    let floored = 2 / 3; // Results in 0
-                         // 結果は0
+    let truncated = -5 / 3; // Results in -1
+                            // 結果は-1
 
     // remainder
     // 余り
@@ -3920,21 +4003,23 @@ The following code shows how you’d use each one in a `let` statement:
 }</code></pre></pre>
 <!--
 Each expression in these statements uses a mathematical operator and evaluates
-to a single value, which is then bound to a variable. Appendix B contains a
-list of all operators that Rust provides.
+to a single value, which is then bound to a variable. [Appendix
+B][appendix_b] contains a list of all operators that Rust
+provides.
 -->
 <p>これらの文の各式は、数学演算子を使用しており、一つの値に評価され、そして、変数に束縛されます。
-付録BにRustで使える演算子の一覧が載っています。</p>
+<a href="appendix-02-operators.html">付録B</a>にRustで使える演算子の一覧が載っています。</p>
 <!--
 #### The Boolean Type
 -->
 <h4 id="論理値型"><a class="header" href="#論理値型">論理値型</a></h4>
 <!--
-As in most other programming languages, a boolean type in Rust has two possible
-values: `true` and `false`. The boolean type in Rust is specified using `bool`.
-For example:
+As in most other programming languages, a Boolean type in Rust has two possible
+values: `true` and `false`. Booleans are one byte in size. The Boolean type in
+Rust is specified using `bool`. For example:
 -->
 <p>他の多くの言語同様、Rustの論理値型も取りうる値は二つしかありません: <code>true</code>と<code>false</code>です。
+論理値のサイズは1バイトです。
 Rustの論理値型は、<code>bool</code>と指定されます。
 例です:</p>
 <!--
@@ -3949,48 +4034,49 @@ Rustの論理値型は、<code>bool</code>と指定されます。
 }</code></pre></pre>
 <!--
 The main way to use Boolean values is through conditionals, such as an `if`
-expression. We’ll cover how `if` expressions work in Rust in the “Control Flow”
-section.
+expression. We’ll cover how `if` expressions work in Rust in the [“Control
+Flow”][control-flow] section.
 -->
 <p>論理値を使う主な手段は、条件式です。例えば、<code>if</code>式などですね。<code>if</code>式のRustでの動作方法については、
-「制御フロー」節で講義します。</p>
+<a href="ch03-05-control-flow.html#%E5%88%B6%E5%BE%A1%E3%83%95%E3%83%AD%E3%83%BC">「制御フロー」</a>節で講義します。</p>
 <!--
 #### The Character Type
 -->
 <h4 id="文字型"><a class="header" href="#文字型">文字型</a></h4>
 <!--
-So far we’ve worked only with numbers, but Rust supports letters too. Rust’s
-`char` type is the language’s most primitive alphabetic type, and the following
-code shows one way to use it. (Note that the `char` type is specified with
-single quotes, as opposed to strings, which use double quotes.)
+Rust’s `char` type is the language’s most primitive alphabetic type. Here are
+some examples of declaring `char` values:
 -->
-<p>ここまで、数値型のみ扱ってきましたが、Rustには文字も用意されています。Rustの<code>char</code>型は、
-言語の最も基本的なアルファベット型であり、以下のコードでその使用方法の一例を見ることができます。
-(<code>char</code>は、ダブルクォーテーションマークを使用する文字列に対して、シングルクォートで指定されることに注意してください。)</p>
+<p>Rustの<code>char</code>型は、言語の最も基本的なアルファベット型です。以下は<code>char</code>値を宣言するいくつかの例です:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let c = 'z';
-    let z = 'ℤ';
+    let z: char = 'ℤ'; // with explicit type annotation
+                       // 明示的型注釈付きで
     let heart_eyed_cat = '😻';    //ハート目の猫
 }</code></pre></pre>
 <!--
-Rust’s `char` type represents a Unicode Scalar Value, which means it can
-represent a lot more than just ASCII. Accented letters; Chinese, Japanese and
-Korean characters; emoji; and zero-width spaces are all valid `char` types in
-Rust. Unicode Scalar Values range from `U+0000` to `U+D7FF` and `U+E000` to
-`U+10FFFF` inclusive. However, a “character” isn’t really a concept in Unicode,
-so your human intuition for what a “character” is may not match up with what a
-`char` is in Rust. We’ll discuss this topic in detail in the “Strings” in Chapter 8.
+Note that we specify `char` literals with single quotes, as opposed to string
+literals, which use double quotes. Rust’s `char` type is four bytes in size and
+represents a Unicode Scalar Value, which means it can represent a lot more than
+just ASCII. Accented letters; Chinese, Japanese, and Korean characters; emoji;
+and zero-width spaces are all valid `char` values in Rust. Unicode Scalar
+Values range from `U+0000` to `U+D7FF` and `U+E000` to `U+10FFFF` inclusive.
+However, a “character” isn’t really a concept in Unicode, so your human
+intuition for what a “character” is may not match up with what a `char` is in
+Rust. We’ll discuss this topic in detail in [“Storing UTF-8 Encoded Text with
+Strings”][strings] in Chapter 8.
 -->
-<p>Rustの<code>char</code>型は、ユニコードのスカラー値を表します。これはつまり、アスキーよりもずっとたくさんのものを表せるということです。
-アクセント文字; 中国語、日本語、韓国語文字;
-絵文字; ゼロ幅スペースは、全てRustでは、有効な<code>char</code>型になります。ユニコードスカラー値は、
+<p><code>char</code>リテラルは、ダブルクォーテーションマークを使用する文字列リテラルに対して、シングルクォートで指定することに注意してください。
+Rustの<code>char</code>型は4バイトのサイズを持ち、ユニコードのスカラー値を表します。これはつまり、アスキーよりもずっとたくさんのものを表せるということです。
+アクセント記号付き文字; 中国語、日本語、韓国語の文字;
+絵文字; ゼロ幅スペースはすべて、Rustでは有効な<code>char</code>値です。ユニコードスカラー値は、
 <code>U+0000</code>から<code>U+D7FF</code>までと<code>U+E000</code>から<code>U+10FFFF</code>までの範囲になります。
 ところが、「文字」は実はユニコードの概念ではないので、文字とは何かという人間としての直観は、
-Rustにおける<code>char</code>値が何かとは合致しない可能性があります。この話題については、第8章の「文字列」で詳しく議論しましょう。</p>
+Rustにおける<code>char</code>値が何かとは合致しない可能性があります。この話題については、第8章の<a href="ch08-02-strings.html#%E6%96%87%E5%AD%97%E5%88%97%E3%81%A7utf-8%E3%81%A7%E3%82%A8%E3%83%B3%E3%82%B3%E3%83%BC%E3%83%89%E3%81%95%E3%82%8C%E3%81%9F%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%82%92%E4%BF%9D%E6%8C%81%E3%81%99%E3%82%8B">「文字列でUTF-8でエンコードされたテキストを保持する」</a>で詳しく議論しましょう。</p>
 <!--
 ### Compound Types
 -->
@@ -4002,14 +4088,16 @@ primitive compound types: tuples and arrays.
 <p><em>複合型</em>により、複数の値を一つの型にまとめることができます。Rustには、
 2種類の基本的な複合型があります: タプルと配列です。</p>
 <!--
-#### The Tuple type
+#### The Tuple Type
 -->
 <h4 id="タプル型"><a class="header" href="#タプル型">タプル型</a></h4>
 <!--
-A tuple is a general way of grouping together some number of other values with
-a variety of types into one compound type.
+A *tuple* is a general way of grouping together a number of values with a
+variety of types into one compound type. Tuples have a fixed length: once
+declared, they cannot grow or shrink in size.
 -->
-<p>タプルは、複数の型の何らかの値を一つの複合型にまとめ上げる一般的な手段です。</p>
+<p><em>タプル</em>は、様々な型の複数の値を一つの複合型にまとめ上げる汎用的な手段です。
+タプルの長さは固定です: 一度宣言されたらサイズは伸縮できません。</p>
 <!--
 We create a tuple by writing a comma-separated list of values inside
 parentheses. Each position in the tuple has a type, and the types of the
@@ -4026,7 +4114,7 @@ type annotations in this example:
     let tup: (i32, f64, u8) = (500, 6.4, 1);
 }</code></pre></pre>
 <!--
-The variable `tup` binds to the entire tuple, because a tuple is considered a
+The variable `tup` binds to the entire tuple because a tuple is considered a
 single compound element. To get the individual values out of a tuple, we can
 use pattern matching to destructure a tuple value, like this:
 -->
@@ -4041,12 +4129,12 @@ use pattern matching to destructure a tuple value, like this:
 
     let (x, y, z) = tup;
 
-    println!(&quot;The value of y is: {}&quot;, y);
+    println!(&quot;The value of y is: {y}&quot;);
 }</code></pre></pre>
 <!--
 This program first creates a tuple and binds it to the variable `tup`. It then
 uses a pattern with `let` to take `tup` and turn it into three separate
-variables, `x`, `y`, and `z`. This is called *destructuring*, because it breaks
+variables, `x`, `y`, and `z`. This is called *destructuring* because it breaks
 the single tuple into three parts. Finally, the program prints the value of
 `y`, which is `6.4`.
 -->
@@ -4055,12 +4143,10 @@ the single tuple into three parts. Finally, the program prints the value of
 この過程は、<em>分配</em>と呼ばれます。単独のタプルを破壊して三分割しているからです。最後に、
 プログラムは<code>y</code>変数の値を出力し、<code>6.4</code>と表示されます。</p>
 <!--
-In addition to destructuring through pattern matching, we can also access a tuple
-element directly by using a period (`.`) followed by the index of the value we
-want to access. For example:
+We can also access a tuple element directly by using a period (`.`) followed by
+the index of the value we want to access. For example:
 -->
-<p>パターンマッチングを通しての分配の他にも、アクセスしたい値の番号をピリオド(<code>.</code>)に続けて書くことで、
-タプルの要素に直接アクセスすることもできます。例です:</p>
+<p>アクセスしたい値の番号をピリオド(<code>.</code>)に続けて書くことで、タプルの要素に直接アクセスすることもできます。例です:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -4075,30 +4161,37 @@ want to access. For example:
     let one = x.2;
 }</code></pre></pre>
 <!--
-This program creates a tuple, `x`, and then makes new variables for each
-element by using their index. As with most programming languages, the first
+This program creates the tuple `x` and then accesses each element of the tuple
+using their respective indices. As with most programming languages, the first
 index in a tuple is 0.
 -->
-<p>このプログラムは、新しいタプル<code>x</code>を作成し、添え字アクセスで各要素に対して新しい変数も作成しています。
+<p>このプログラムは、新しいタプル<code>x</code>を作成し、タプルの各要素にそれぞれの添え字を使ってアクセスしています。
 多くのプログラミング言語同様、タプルの最初の添え字は0です。</p>
+<!--
+The tuple without any values has a special name, *unit*. This value and its
+corresponding type are both written `()` and represent an empty value or an
+empty return type. Expressions implicitly return the unit value if they don’t
+return any other value.
+-->
+<p>値をひとつも持たないタプルは<em>ユニット</em>という特別な名前を持っています。
+この値と、それに対応する型はともに<code>()</code>と書き表され、空の値や空の戻り値型を表現します。
+式は、特に値を返さなければ、暗黙的にユニット値を返します。</p>
 <!--
 #### The Array Type
 -->
 <h4 id="配列型"><a class="header" href="#配列型">配列型</a></h4>
 <!--
 Another way to have a collection of multiple values is with an *array*. Unlike
-a tuple, every element of an array must have the same type. Arrays in Rust are
-different than arrays in some other languages because arrays in Rust have a
-fixed length: once declared, they cannot grow or shrink in size.
+a tuple, every element of an array must have the same type. Unlike arrays in
+some other languages, arrays in Rust have a fixed length.
 -->
 <p><em>配列</em>によっても、複数の値のコレクションを得ることができます。タプルと異なり、配列の全要素は、
-同じ型でなければなりません。Rustの配列は、他の言語と異なっています。Rustの配列は、
-固定長なのです: 一度宣言されたら、サイズを伸ばすことも縮めることもできません。</p>
+同じ型でなければなりません。一部の他の言語の配列と異なり、Rustの配列は固定長です。</p>
 <!--
-In Rust, the values going into an array are written as a comma-separated list
-inside square brackets:
+We write the values in an array as a comma-separated list inside square
+brackets:
 -->
-<p>Rustでは、配列に入れる要素は、角かっこ内にカンマ区切りリストとして記述します:</p>
+<p>配列内の要素は、角かっこ内にカンマ区切りリストとして記述します:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -4108,26 +4201,28 @@ inside square brackets:
 }</code></pre></pre>
 <!--
 Arrays are useful when you want your data allocated on the stack rather than
-the heap (we will discuss the stack and the heap more in Chapter 4) or when
-you want to ensure you always have a fixed number of elements. An array isn't
-as flexible as the vector type, though. A vector is a similar collection type
-provided by the standard library that *is* allowed to grow or shrink in size.
-If you’re unsure whether to use an array or a vector, you should probably use a
-vector. Chapter 8 discusses vectors in more detail.
+the heap (we will discuss the stack and the heap more in [Chapter
+4][stack-and-heap]) or when you want to ensure you always have a
+fixed number of elements. An array isn’t as flexible as the vector type,
+though. A *vector* is a similar collection type provided by the standard
+library that *is* allowed to grow or shrink in size. If you’re unsure whether
+to use an array or a vector, chances are you should use a vector. [Chapter
+8][vectors] discusses vectors in more detail.
 -->
-<p>配列は、ヒープよりもスタック(スタックとヒープについては第4章で<ruby>詳<rp>(</rp><rt>つまび</rt><rp>)</rp></ruby>らかに議論します)にデータのメモリを確保したい時、
+<p>配列は、ヒープよりもスタック(スタックとヒープについては<a href="ch04-01-what-is-ownership.html#%E3%82%B9%E3%82%BF%E3%83%83%E3%82%AF%E3%81%A8%E3%83%92%E3%83%BC%E3%83%97">第4章</a>で<ruby>詳<rp>(</rp><rt>つまび</rt><rp>)</rp></ruby>らかに議論します)にデータのメモリを確保したい時、
 または、常に固定長の要素があることを確認したい時に有効です。
-ただ、配列は、ベクタ型ほど柔軟ではありません。ベクタは、標準ライブラリによって提供されている配列と似たようなコレクション型で、
+ただ、配列は、ベクタ型ほど柔軟ではありません。<em>ベクタ</em>は、標準ライブラリによって提供されている配列と似たようなコレクション型で、
 こちらは、サイズを伸縮させることが<em>できます</em>。配列とベクタ型、どちらを使うべきか確信が持てない時は、
-おそらくベクタ型を使うべきです。第8章でベクタについて詳細に議論します。</p>
+おそらくベクタ型を使うべきです。<a href="ch08-01-vectors.html">第8章</a>でベクタについて詳細に議論します。</p>
 <!--
-An example of when you might want to use an array rather than a vector is in a
-program that needs to know the names of the months of the year. It’s very
-unlikely that such a program will need to add or remove months, so you can use
-an array because you know it will always contain 12 items:
+However, arrays are more useful when you know the number of elements will not
+need to change. For example, if you were using the names of the month in a
+program, you would probably use an array rather than a vector because you know
+it will always contain 12 elements:
 -->
-<p>ベクタ型よりも配列を使いたくなるかもしれない例は、1年の月の名前を扱うプログラムです。そのようなプログラムで、
-月を追加したり削除したりすることまずないので、配列を使用できます。常に12個要素があることもわかってますからね:</p>
+<p>しかしながら、要素数を変えられる必要はないだろうと分かっている場合は、配列のほうが便利です。
+例えば、プログラム中で月の名前を使おうとしているなら、おそらくベクタよりも配列を使うのが良いでしょう。
+常に12個要素があることもわかってますからね:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let months = [&quot;January&quot;, &quot;February&quot;, &quot;March&quot;, &quot;April&quot;, &quot;May&quot;, &quot;June&quot;, &quot;July&quot;,
@@ -4168,11 +4263,12 @@ more concise way.
 -->
 <h5 id="配列の要素にアクセスする"><a class="header" href="#配列の要素にアクセスする">配列の要素にアクセスする</a></h5>
 <!--
-An array is a single chunk of memory allocated on the stack. You can access
-elements of an array using indexing, like this:
+An array is a single chunk of memory of a known, fixed size that can be 
+allocated on the stack. You can access elements of an array using indexing,
+like this:
 -->
-<p>配列は、スタック上に確保される一塊のメモリです。添え字によって、
-配列の要素にこのようにアクセスすることができます:</p>
+<p>配列は、あらかじめ知られた固定サイズを持ち、スタック上に確保することができる一塊のメモリです。
+添え字によって、配列の要素にこのようにアクセスすることができます:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -4184,9 +4280,9 @@ elements of an array using indexing, like this:
     let second = a[1];
 }</code></pre></pre>
 <!--
-In this example, the variable named `first` will get the value `1`, because
-that is the value at index `[0]` in the array. The variable named `second` will
-get the value `2` from index `[1]` in the array.
+In this example, the variable named `first` will get the value `1` because that
+is the value at index `[0]` in the array. The variable named `second` will get
+the value `2` from index `[1]` in the array.
 -->
 <p>この例では、<code>first</code>という名前の変数には<code>1</code>という値が格納されます。配列の<code>[0]</code>番目にある値が、
 それだからですね。<code>second</code>という名前の変数には、配列の<code>[1]</code>番目の値<code>2</code>が格納されます。</p>
@@ -4195,12 +4291,12 @@ get the value `2` from index `[1]` in the array.
 -->
 <h5 id="配列要素への無効なアクセス"><a class="header" href="#配列要素への無効なアクセス">配列要素への無効なアクセス</a></h5>
 <!--
-What happens if you try to access an element of an array that is past the end
-of the array? Say you change the example to the following code, which will
-compile but exit with an error when it runs:
+Let’s see what happens if you try to access an element of an array that is past
+the end of the array. Say you run this code, similar to the guessing game in
+Chapter 2, to get an array index from the user:
 -->
-<p>配列の終端を越えて要素にアクセスしようとしたら、どうなるでしょうか？
-先ほどの例を以下のように変えたとすると、コンパイルは通りますが、実行するとエラーで終了します:</p>
+<p>配列の終端を越えて要素にアクセスしようとしたらどうなるか、見てみましょう。
+第2章の数当てゲームと同じようにユーザから配列の添え字を受け取る、次のコードを実行する場合を考えてみてください:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -4228,57 +4324,74 @@ fn main() {
 
     let element = a[index];
 
-    println!(
-        &quot;The value of the element at index {} is: {}&quot;,
-        // {}番目の要素の値は{}です
-        index, element
-    );
+    println!(&quot;The value of the element at index {index} is: {element}&quot;);
+           // {index}番目の要素の値は{element}です
 }</code></pre>
 <!--
 This code compiles successfully. If you run this code using `cargo run` and
-enter 0, 1, 2, 3, or 4, the program will print out the corresponding value at
-that index in the array. If you instead enter a number past the end of the
-array, such as 10, you’ll see output like this:
+enter `0`, `1`, `2`, `3`, or `4`, the program will print out the corresponding
+value at that index in the array. If you instead enter a number past the end of
+the array, such as `10`, you’ll see output like this:
 -->
-<p>このコードはコンパイルされます。<code>cargo run</code>で走らせ、0, 1, 2, 3, または4をこのプログラムに入力すると配列の対応する値を出力します。もし配列の末尾を超えるような、例えば10などの数字を与えると、次のような出力が表示されます。</p>
+<p>このコードはコンパイルされます。<code>cargo run</code>で走らせ、<code>0</code>, <code>1</code>, <code>2</code>, <code>3</code>, または<code>4</code>をこのプログラムに入力すると配列の対応する値を出力します。
+もし配列の末尾を超えるような、例えば<code>10</code>などの数字を与えると、次のような出力が表示されます。</p>
 <!-- manual-regeneration
 cd listings/ch03-common-programming-concepts/no-listing-15-invalid-array-access
 cargo run
 10
 -->
-<pre><code class="language-console">thread 'main' panicked at 'index out of bounds: the len is 5 but the index is 10', src/main.rs:19:19
-スレッド'main'は'範囲外アクセス: 長さは5ですが、添え字は10でした', src/main.rs:19:19
-でパニックしました
+<pre><code class="language-console">thread 'main' panicked at src/main.rs:19:19:
+index out of bounds: the len is 5 but the index is 10
+(スレッド'main'はsrc/main.rs:19:19でパニックしました:
+範囲外アクセス: 長さは5ですが、添え字は10でした)
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 </code></pre>
 <!--
-The compilation didn’t produce any errors, but the program results in a
-*runtime* error and didn’t exit successfully. When you attempt to access an
+The program resulted in a *runtime* error at the point of using an invalid
+value in the indexing operation. The program exited with an error message and
+didn’t execute the final `println!` statement. When you attempt to access an
 element using indexing, Rust will check that the index you’ve specified is less
-than the array length. If the index is greater than the length, Rust will
-*panic*, which is the term Rust uses when a program exits with an error.
+than the array length. If the index is greater than or equal to the length,
+Rust will panic. This check has to happen at runtime, especially in this case,
+because the compiler can’t possibly know what value a user will enter when they
+run the code later.
 -->
-<p>コンパイルでは何もエラーが出なかったものの、プログラムは<em>実行時</em>エラーに陥り、
-正常終了しませんでした。要素に添え字アクセスを試みると、言語は、
-指定されたその添え字が配列長よりも小さいかを確認してくれます。添え字が配列長よりも大きければ、言語は<em>パニック</em>します。
-パニックとは、プログラムがエラーで終了したことを表すRust用語です。</p>
+<p>プログラムは、添え字アクセスで無効な値を使用した時点で<em>実行時</em>エラーに陥りました。
+プログラムはエラーメッセージとともに終了し、最後の<code>println!</code>文を実行しませんでした。
+要素に添え字アクセスを試みると、言語は、指定されたその添え字が配列長よりも小さいかを確認してくれます。
+添え字が配列長と等しいかより大きければ、言語は<em>パニック</em>します。
+この例の場合は特にそうですが、このチェックは実行時に行われなくてはなりません。
+なぜならコンパイラは、ユーザが後でコードを実行したときに、ユーザがどんな値を入力するか知りようがないからです。</p>
 <!--
-This is the first example of Rust’s safety principles in action. In many
+This is an example of Rust’s memory safety principles in action. In many
 low-level languages, this kind of check is not done, and when you provide an
 incorrect index, invalid memory can be accessed. Rust protects you against this
 kind of error by immediately exiting instead of allowing the memory access and
-continuing. Chapter 9 discusses more of Rust’s error handling.
+continuing. Chapter 9 discusses more of Rust’s error handling and how you can
+write readable, safe code that neither panics nor allows invalid memory access.
 -->
-<p>これは、実際に稼働しているRustの安全機構の最初の例になります。低レベル言語の多くでは、
+<p>これは、実際に稼働しているRustのメモリ安全機構の例のひとつになります。低レベル言語の多くでは、
 この種のチェックは行われないため、間違った添え字を与えると、無効なメモリにアクセスできてしまいます。
 Rustでは、メモリアクセスを許可し、処理を継続する代わりに即座にプログラムを終了することで、
-この種のエラーからプログラマを保護しています。Rustのエラー処理については、第9章でもっと議論します。</p>
+この種のエラーからプログラマを保護しています。第9章ではRustのエラー処理について、そして、
+可読性が高く安全で、パニックもしなければ不正なメモリアクセスも許さないコードをどうすれば書けるのか、もっと議論します。</p>
+<!--
+[comparing-the-guess-to-the-secret-number]:
+ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number
+[twos-complement]: https://en.wikipedia.org/wiki/Two%27s_complement
+[control-flow]: ch03-05-control-flow.html#control-flow
+[strings]: ch08-02-strings.html#storing-utf-8-encoded-text-with-strings
+[stack-and-heap]: ch04-01-what-is-ownership.html#the-stack-and-the-heap
+[vectors]: ch08-01-vectors.html
+[unrecoverable-errors-with-panic]: ch09-01-unrecoverable-errors-with-panic.html
+[appendix_b]: appendix-02-operators.md
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Functions
 -->
 <h2 id="関数"><a class="header" href="#関数">関数</a></h2>
 <!--
-Functions are pervasive in Rust code. You’ve already seen one of the most
+Functions are prevalent in Rust code. You’ve already seen one of the most
 important functions in the language: the `main` function, which is the entry
 point of many programs. You’ve also seen the `fn` keyword, which allows you to
 declare new functions.
@@ -4288,7 +4401,7 @@ declare new functions.
 <code>fn</code>キーワードもすでに見かけましたね。これによって新しい関数を宣言することができます。</p>
 <!--
 Rust code uses *snake case* as the conventional style for function and variable
-names. In snake case, all letters are lowercase and underscores separate words.
+names, in which all letters are lowercase and underscores separate words.
 Here’s a program that contains an example function definition:
 -->
 <p>Rustの関数と変数の命名規則は、<em>スネークケース</em>(<code>訳注</code>: some_variableのような命名規則)を使うのが慣例です。
@@ -4308,11 +4421,11 @@ fn another_function() {
     println!(&quot;Another function.&quot;);  // 別の関数
 }</code></pre></pre>
 <!--
-Function definitions in Rust start with `fn` and have a set of parentheses
-after the function name. The curly brackets tell the compiler where the function
+We define a function in Rust by entering `fn` followed by a function name and a
+set of parentheses. The curly brackets tell the compiler where the function
 body begins and ends.
 -->
-<p>Rustにおいて関数定義は、<code>fn</code>キーワードで始まり、関数名の後に丸かっこの組が続きます。
+<p>Rustでは、<code>fn</code>に続けて関数名と丸かっこの組を入力して関数を定義します。
 波かっこが、コンパイラに関数本体の開始と終了の位置を伝えます。</p>
 <!--
 We can call any function we’ve defined by entering its name followed by a set
@@ -4320,13 +4433,13 @@ of parentheses. Because `another_function` is defined in the program, it can be
 called from inside the `main` function. Note that we defined `another_function`
 *after* the `main` function in the source code; we could have defined it before
 as well. Rust doesn’t care where you define your functions, only that they’re
-defined somewhere.
+defined somewhere in a scope that can be seen by the caller.
 -->
 <p>定義した関数は、名前に丸かっこの組を続けることで呼び出すことができます。
 <code>another_function</code>関数がプログラム内で定義されているので、<code>main</code>関数内から呼び出すことができるわけです。
 ソースコード中で<code>another_function</code>を<code>main</code>関数の<em>後</em>に定義していることに注目してください;
 勿論、main関数の前に定義することもできます。コンパイラは、関数がどこで定義されているかは気にしません。
-どこかで定義されていることのみ気にします。</p>
+呼び出し元から見えるスコープ内のどこかで定義されていることのみ気にします。</p>
 <!--
 Let’s start a new binary project named *functions* to explore functions
 further. Place the `another_function` example in *src/main.rs* and run it. You
@@ -4344,33 +4457,32 @@ Another function.
 </code></pre>
 <!--
 The lines execute in the order in which they appear in the `main` function.
-First, the “Hello, world!” message prints, and then `another_function` is
-called and its message is printed.
+First the “Hello, world!” message prints, and then `another_function` is called
+and its message is printed.
 -->
 <p>行出力は、<code>main</code>関数内に書かれた順序で実行されています。最初に&quot;Hello, world&quot;メッセージが出て、
 それから<code>another_function</code>が呼ばれて、こちらのメッセージが出力されています。</p>
 <!--
-### Function Parameters
+### Parameters
 -->
-<h3 id="関数の引数"><a class="header" href="#関数の引数">関数の引数</a></h3>
+<h3 id="引数"><a class="header" href="#引数">引数</a></h3>
 <!--
-Functions can also be defined to have *parameters*, which are special variables
-that are part of a function's signature. When a function has parameters, you
-can provide it with concrete values for those parameters. Technically, the
-concrete values are called *arguments*, but in casual conversation people tend
-to use the words “parameter” and “argument” interchangeably for either the
-variables in a function's definition or the concrete values passed in when you
-call a function.
+We can define functions to have *parameters*, which are special variables that
+are part of a function’s signature. When a function has parameters, you can
+provide it with concrete values for those parameters. Technically, the concrete
+values are called *arguments*, but in casual conversation, people tend to use
+the words *parameter* and *argument* interchangeably for either the variables
+in a function’s definition or the concrete values passed in when you call a
+function.
 -->
-<p>関数は、引数を持つようにも定義できます。引数とは、関数シグニチャの一部になる特別な変数のことです。
-関数に引数があると、引数の位置に実際の値を与えることができます。技術的にはこの実際の値は
-<em>実引数</em>と呼ばれますが、普段の会話では、仮引数(&quot;parameter&quot;)と実引数(&quot;argument&quot;)を関数定義の変数と関数呼び出し時に渡す実際の値、
-両方の意味に区別なく使います(<code>訳注</code>: 日本語では、特別区別する意図がない限り、どちらも単に引数と呼ぶことが多いでしょう)。</p>
+<p>関数は、<em>仮引数 (parameter)</em> を持つよう定義することもできます。仮引数とは、関数シグニチャの一部になる特別な変数のことです。
+関数に仮引数があると、仮引数に対して具体的な値を与えることができます。
+厳密にはこの具体的な値は<em>実引数 (argument)</em> と呼ばれますが、普段の会話では、関数定義内の変数と関数呼び出し時に渡す実際の値の両方の意味で、
+<em>parameter</em>と<em>argument</em>を区別なく使う傾向にあります (<code>訳注</code>: 日本語では、特別区別する意図がない限り、どちらも単に<em>引数</em>と呼ぶことが多いでしょう)。</p>
 <!--
-The following rewritten version of `another_function` shows what parameters
-look like in Rust:
+In this version of `another_function` we add a parameter:
 -->
-<p>以下の書き直した<code>another_function</code>では、Rustの仮引数がどのようなものかを示しています:</p>
+<p>次の版の<code>another_function</code>では、仮引数を追加しています:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -4380,7 +4492,7 @@ look like in Rust:
 }
 
 fn another_function(x: i32) {
-    println!(&quot;The value of x is: {}&quot;, x);   // xの値は{}です
+    println!(&quot;The value of x is: {x}&quot;);   // xの値は{x}です
 }</code></pre></pre>
 <!--
 Try running this program; you should get the following output:
@@ -4394,27 +4506,29 @@ The value of x is: 5
 </code></pre>
 <!--
 The declaration of `another_function` has one parameter named `x`. The type of
-`x` is specified as `i32`. When `5` is passed to `another_function`, the
-`println!` macro puts `5` where the pair of curly brackets were in the format
-string.
+`x` is specified as `i32`. When we pass `5` in to `another_function`, the
+`println!` macro puts `5` where the pair of curly brackets containing `x` was
+in the format string.
 -->
 <p><code>another_function</code>の宣言には、<code>x</code>という名前の仮引数があります。<code>x</code>の型は、
-<code>i32</code>と指定されています。値<code>5</code>が<code>another_function</code>に渡されると、<code>println!</code>マクロにより、
-フォーマット文字列中の1組の波かっこがあった位置に値<code>5</code>が出力されます。</p>
+<code>i32</code>と指定されています。値<code>5</code>を<code>another_function</code>に渡すと、<code>println!</code>マクロにより、
+フォーマット文字列中の<code>x</code>を含む1組の波かっこがあった位置に値<code>5</code>が出力されます。</p>
 <!--
 In function signatures, you *must* declare the type of each parameter. This is
 a deliberate decision in Rust’s design: requiring type annotations in function
 definitions means the compiler almost never needs you to use them elsewhere in
-the code to figure out what you mean.
+the code to figure out what type you mean. The compiler is also able to give
+more helpful error messages if it knows what types the function expects.
 -->
 <p>関数シグニチャにおいて、各仮引数の型を宣言しなければ<em>なりません</em>。これは、Rustの設計において、
-意図的な判断です: 関数定義で型注釈が必要不可欠ということは、コンパイラがその意図するところを推し量るのに、
-プログラマがコードの他の箇所で使用する必要がないということを意味します。</p>
+意図的な判断です: 関数定義で型注釈が必要不可欠ということは、コンパイラがその意図する型を推し量るのに、
+プログラマがコードの他の箇所で使用する必要がないということを意味します。
+コンパイラも、関数が期待する型を知っていれば、より役に立つエラーメッセージを与えることができます。</p>
 <!--
-When you want a function to have multiple parameters, separate the parameter
-declarations with commas, like this:
+When defining multiple parameters, separate the parameter declarations with
+commas, like this:
 -->
-<p>関数に複数の仮引数を持たせたいときは、仮引数定義をカンマで区切ってください。
+<p>関数に複数の仮引数を定義したいときは、仮引数定義をカンマで区切ってください。
 こんな感じです:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
@@ -4425,17 +4539,17 @@ declarations with commas, like this:
 }
 
 fn print_labeled_measurement(value: i32, unit_label: char) {
-    println!(&quot;The measurement is: {}{}&quot;, value, unit_label);
+    println!(&quot;The measurement is: {value}{unit_label}&quot;);
 }</code></pre></pre>
 <!--
-This example creates a function with two parameters, both of which are `i32`
-types. The function then prints the values in both of its parameters. Note that
-function parameters don't all need to be the same type, they just happen to be
-in this example.
+This example creates a function named `print_labeled_measurement` with two
+parameters. The first parameter is named `value` and is an `i32`. The second is
+named `unit_label` and is type `char`. The function then prints text containing
+both the `value` and the `unit_label`.
 -->
-<p>この例では、2引数の関数を生成しています。そして、引数はどちらも<code>i32</code>型です。それからこの関数は、
-仮引数の値を両方出力します。関数引数は、全てが同じ型である必要はありません。今回は、
-偶然同じになっただけです。</p>
+<p>この例では、<code>print_labeled_measurement</code>という名前の2引数の関数を生成しています。
+第1引数は<code>value</code>という名前で<code>i32</code>です。第2引数は<code>unit_label</code>という名前で<code>char</code>型です。
+この関数は<code>value</code>と<code>unit_label</code>の両方を含むテキストを出力します。</p>
 <!--
 Let’s try running this code. Replace the program currently in your *functions*
 project’s *src/main.rs* file with the preceding example and run it using `cargo
@@ -4450,43 +4564,44 @@ run`:
 The measurement is: 5h
 </code></pre>
 <!--
-Because we called the function with `5` as the value for `x` and `6` is passed
-as the value for `y`, the two strings are printed with these values.
+Because we called the function with `5` as the value for `value` and `'h'` as
+the value for `unit_label`, the program output contains those values.
 -->
-<p><code>x</code>に対して値<code>5</code>、<code>y</code>に対して値<code>6</code>を渡して関数を呼び出したので、この二つの文字列は、
-この値で出力されました。</p>
+<p><code>value</code>に対して値<code>5</code>、<code>unit_label</code>に対して値<code>'h'</code>を渡して関数を呼び出したので、
+プログラムの出力にはこれらの値が含まれます。</p>
 <!--
-NOTE: doc.rust-lang.orgのものではヘッダが変わっている
+### Statements and Expressions
 -->
-<!--
-### Function Bodies Contain Statements and Expressions
--->
-<h3 id="関数本体は文と式を含む"><a class="header" href="#関数本体は文と式を含む">関数本体は、文と式を含む</a></h3>
+<h3 id="文と式"><a class="header" href="#文と式">文と式</a></h3>
 <!--
 Function bodies are made up of a series of statements optionally ending in an
-expression. So far, we’ve only covered functions without an ending expression,
-but we have seen an expression as part of a statement. Because Rust is an
-expression-based language, this is an important distinction to understand.
-Other languages don’t have the same distinctions, so let’s look at what
-statements and expressions are and how their differences affect the bodies of
-functions.
+expression. So far, the functions we’ve covered haven’t included an ending
+expression, but you have seen an expression as part of a statement. Because
+Rust is an expression-based language, this is an important distinction to
+understand. Other languages don’t have the same distinctions, so let’s look at
+what statements and expressions are and how their differences affect the bodies
+of functions.
 -->
-<p>関数本体は、文が並び、最後に式を置くか文を置くという形で形成されます。現在までには、
-式で終わらない関数だけを見てきたわけですが、式が文の一部になっているものなら見かけましたね。Rustは、式指向言語なので、
+<p>関数本体は、文が並び、最後に式を置くか文を置くという形で形成されます。今のところ、
+私たちが見てきた関数は式で終わることはありませんでしたが、式が文の一部になっているものなら見かけましたね。Rustは、式指向言語なので、
 これは理解しておくべき重要な差異になります。他の言語にこの差異はありませんので、文と式がなんなのかと、
 その違いが関数本体にどんな影響を与えるかを見ていきましょう。</p>
 <!--
-We’ve actually already used statements and expressions. *Statements* are
-instructions that perform some action and do not return a value. *Expressions*
-evaluate to a resulting value. Let’s look at some examples.
+* **Statements** are instructions that perform some action and do not return
+  a value.
+* **Expressions** evaluate to a resultant value. Let’s look at some examples.
 -->
-<p>実のところ、もう文と式は使っています。<em>文</em>とは、なんらかの動作をして値を返さない命令です。
-<em>式</em>は結果値に評価されます。ちょっと例を眺めてみましょう。</p>
+<ul>
+<li><em>文 (statement)</em> はなんらかの動作をして値を返さない命令です。</li>
+<li><em>式 (expression)</em> は結果値に評価されます。ちょっと例を眺めてみましょう。</li>
+</ul>
 <!--
-Creating a variable and assigning a value to it with the `let` keyword is a
-statement. In Listing 3-1, `let y = 6;` is a statement.
+We’ve actually already used statements and expressions. Creating a variable and
+assigning a value to it with the `let` keyword is a statement. In Listing 3-1,
+`let y = 6;` is a statement.
 -->
-<p><code>let</code>キーワードを使用して変数を生成し、値を代入することは文になります。
+<p>実のところ、もう文と式は使っています。
+<code>let</code>キーワードを使用して変数を生成し、値を代入することは文になります。
 リスト3-1で<code>let y = 6;</code>は文です。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
@@ -4509,7 +4624,7 @@ asは前の文にかかるべきだが、大して意味が変わらないので
 -->
 <!--
 Statements do not return values. Therefore, you can’t assign a `let` statement
-to another variable, as the following code tries to do; you'll get an error:
+to another variable, as the following code tries to do; you’ll get an error:
 -->
 <p>文は値を返しません。故に、<code>let</code>文を他の変数に代入することはできません。
 以下のコードではそれを試みていますが、エラーになります:</p>
@@ -4526,24 +4641,15 @@ When you run this program, the error you’ll get looks like this:
 <p>このプログラムを実行すると、以下のようなエラーが出るでしょう:</p>
 <pre><code class="language-console">$ cargo run
    Compiling functions v0.1.0 (file:///projects/functions)
-error: expected expression, found statement (`let`)
-(エラー: 式を予期しましたが、文が見つかりました (`let`))
+error: expected expression, found `let` statement
+(エラー: 式を予期しましたが、`let`文が見つかりました)
  --&gt; src/main.rs:2:14
   |
 2 |     let x = (let y = 6);
-  |              ^^^^^^^^^
+  |              ^^^
   |
-  = note: variable declaration using `let` is a statement
-    (注釈: `let`を使う変数宣言は、文です)
-
-error[E0658]: `let` expressions in this position are experimental
- --&gt; src/main.rs:2:14
-  |
-2 |     let x = (let y = 6);
-  |              ^^^^^^^^^
-  |
-  = note: see issue #53667 &lt;https://github.com/rust-lang/rust/issues/53667&gt; for more information
-  = help: you can write `matches!(&lt;expr&gt;, &lt;pattern&gt;)` instead of `let &lt;pattern&gt; = &lt;expr&gt;`
+  = note: only supported directly in conditions of `if` and `while` expressions
+    (注釈: `if` および `while` 式の条件部直下でのみ対応しています
 
 warning: unnecessary parentheses around assigned value
  --&gt; src/main.rs:2:13
@@ -4556,11 +4662,10 @@ help: remove these parentheses
   |
 2 -     let x = (let y = 6);
 2 +     let x = let y = 6;
-  | 
+  |
 
-For more information about this error, try `rustc --explain E0658`.
 warning: `functions` (bin &quot;functions&quot;) generated 1 warning
-error: could not compile `functions` due to 2 previous errors; 1 warning emitted
+error: could not compile `functions` (bin &quot;functions&quot;) due to 1 previous error; 1 warning emitted
 </code></pre>
 <!--
 The `let y = 6` statement does not return a value, so there isn’t anything for
@@ -4574,18 +4679,18 @@ CやRubyなどの言語とは異なる動作です。CやRubyでは、代入は�
 <code>x = y = 6</code>と書いて、<code>x</code>も<code>y</code>も値6になるようにできるのですが、Rustにおいては、
 そうは問屋が卸さないわけです。</p>
 <!--
-Expressions evaluate to something and make up most of the rest of the code that
-you’ll write in Rust. Consider a simple math operation, such as `5 + 6`, which
-is an expression that evaluates to the value `11`. Expressions can be part of
+Expressions evaluate to a value and make up most of the rest of the code that
+you’ll write in Rust. Consider a math operation, such as `5 + 6`, which is an
+expression that evaluates to the value `11`. Expressions can be part of
 statements: in Listing 3-1, the `6` in the statement `let y = 6;` is an
 expression that evaluates to the value `6`. Calling a function is an
-expression. Calling a macro is an expression. The block that we use to create
-new scopes, `{}`, is an expression, for example:
+expression. Calling a macro is an expression. A new scope block created with
+curly brackets is an expression, for example:
 -->
-<p>式は何かに評価され、これからあなたが書くRustコードの多くを構成します。
-簡単な数学演算(<code>5 + 6</code>など)を思い浮かべましょう。この例は、値<code>11</code>に評価される式です。式は文の一部になりえます:
+<p>式は値に評価され、これからあなたが書くRustコードの多くを構成します。
+数学演算(<code>5 + 6</code>など)を思い浮かべましょう。この例は、値<code>11</code>に評価される式です。式は文の一部になりえます:
 リスト3-1において、<code>let y = 6</code>という文の<code>6</code>は値<code>6</code>に評価される式です。関数呼び出しも式です。マクロ呼び出しも式です。
-新しいスコープを作る際に使用するブロック(<code>{}</code>)も式です:</p>
+波括弧で作られる新しいスコープも式です:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -4596,7 +4701,7 @@ new scopes, `{}`, is an expression, for example:
         x + 1
     };
 
-    println!(&quot;The value of y is: {}&quot;, y);
+    println!(&quot;The value of y is: {y}&quot;);
 }</code></pre></pre>
 <!--
 This expression:
@@ -4608,14 +4713,15 @@ This expression:
 }</code></pre>
 <!--
 is a block that, in this case, evaluates to `4`. That value gets bound to `y`
-as part of the `let` statement. Note the `x + 1` line without a semicolon at
-the end, which is unlike most of the lines you’ve seen so far. Expressions do
-not include ending semicolons. If you add a semicolon to the end of an
-expression, you turn it into a statement, which will then not return a value.
-Keep this in mind as you explore function return values and expressions next.
+as part of the `let` statement. Note that the `x + 1` line doesn’t have a
+semicolon at the end, which is unlike most of the lines you’ve seen so far.
+Expressions do not include ending semicolons. If you add a semicolon to the end
+of an expression, you turn it into a statement, and it will then not return a
+value. Keep this in mind as you explore function return values and expressions
+next.
 -->
 <p>は今回の場合、<code>4</code>に評価されるブロックです。その値が、<code>let</code>文の一部として<code>y</code>に束縛されます。
-今まで見かけてきた行と異なり、文末にセミコロンがついていない<code>x + 1</code>の行に気をつけてください。
+今まで見かけてきた行と異なり、<code>x + 1</code>の行には文末にセミコロンがついていないことに気をつけてください。
 式は終端にセミコロンを含みません。式の終端にセミコロンを付けたら、文に変えてしまいます。そして、文は値を返しません。
 次に関数の戻り値や式を見ていく際にこのことを肝に銘じておいてください。</p>
 <!--
@@ -4624,15 +4730,15 @@ Keep this in mind as you explore function return values and expressions next.
 <h3 id="戻り値のある関数"><a class="header" href="#戻り値のある関数">戻り値のある関数</a></h3>
 <!--
 Functions can return values to the code that calls them. We don’t name return
-values, but we do declare their type after an arrow (`->`). In Rust, the return
-value of the function is synonymous with the value of the final expression in
-the block of the body of a function. You can return early from a function by
-using the `return` keyword and specifying a value, but most functions return
-the last expression implicitly. Here’s an example of a function that
-returns a value:
+values, but we must declare their type after an arrow (`->`). In Rust, the
+return value of the function is synonymous with the value of the final
+expression in the block of the body of a function. You can return early from a
+function by using the `return` keyword and specifying a value, but most
+functions return the last expression implicitly. Here’s an example of a
+function that returns a value:
 -->
 <p>関数は、それを呼び出したコードに値を返すことができます。戻り値に名前を付けはしませんが、
-矢印(<code>-&gt;</code>)の後に型を書いて確かに宣言します。Rustでは、関数の戻り値は、関数本体ブロックの最後の式の値と同義です。
+矢印(<code>-&gt;</code>)の後に型を書いて宣言する必要があります。Rustでは、関数の戻り値は、関数本体ブロックの最後の式の値と同義です。
 <code>return</code>キーワードで関数から早期リターンし、値を指定することもできますが、多くの関数は最後の式を暗黙的に返します。
 こちらが、値を返す関数の例です:</p>
 <!--
@@ -4646,12 +4752,12 @@ returns a value:
 fn main() {
     let x = five();
 
-    println!(&quot;The value of x is: {}&quot;, x);
+    println!(&quot;The value of x is: {x}&quot;);
 }</code></pre></pre>
 <!--
 There are no function calls, macros, or even `let` statements in the `five`
 function—just the number `5` by itself. That’s a perfectly valid function in
-Rust. Note that the function’s return type is specified, too, as `-> i32`. Try
+Rust. Note that the function’s return type is specified too, as `-> i32`. Try
 running this code; the output should look like this:
 -->
 <p><code>five</code>関数内には、関数呼び出しもマクロ呼び出しも、<code>let</code>文でさえ存在しません。数字の5が単独であるだけです。
@@ -4685,7 +4791,7 @@ because it’s an expression whose value we want to return.
 <p>2番目に、<code>five</code>関数は仮引数をもたず、戻り値型を定義していますが、関数本体はセミコロンなしの<code>5</code>単独です。
 なぜなら、これが返したい値になる式だからです。</p>
 <!--
-Let's look at another example:
+Let’s look at another example:
 -->
 <p>もう一つ別の例を見ましょう:</p>
 <!--
@@ -4695,7 +4801,7 @@ Let's look at another example:
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let x = plus_one(5);
 
-    println!(&quot;The value of x is: {}&quot;, x);
+    println!(&quot;The value of x is: {x}&quot;);
 }
 
 fn plus_one(x: i32) -&gt; i32 {
@@ -4704,7 +4810,7 @@ fn plus_one(x: i32) -&gt; i32 {
 <!--
 Running this code will print `The value of x is: 6`. But if we place a
 semicolon at the end of the line containing `x + 1`, changing it from an
-expression to a statement, we'll get an error:
+expression to a statement, we’ll get an error:
 -->
 <p>このコードを走らせると、<code>The value of x is: 6</code>と出力されるでしょう。しかし、
 <code>x + 1</code>を含む行の終端にセミコロンを付けて、式から文に変えたら、エラーになるでしょう:</p>
@@ -4715,16 +4821,16 @@ expression to a statement, we'll get an error:
 <pre><code class="language-rust ignore does_not_compile">fn main() {
     let x = plus_one(5);
 
-    println!(&quot;The value of x is: {}&quot;, x);
+    println!(&quot;The value of x is: {x}&quot;);
 }
 
 fn plus_one(x: i32) -&gt; i32 {
     x + 1;
 }</code></pre>
 <!--
-Running this code produces an error, as follows:
+Compiling this code produces an error, as follows:
 -->
-<p>このコードを実行すると、以下のようにエラーが出ます:</p>
+<p>このコードをコンパイルすると、以下のようにエラーが出ます:</p>
 <pre><code class="language-console">$ cargo run
    Compiling functions v0.1.0 (file:///projects/functions)
 error[E0308]: mismatched types
@@ -4736,23 +4842,23 @@ error[E0308]: mismatched types
   |    |
   |    implicitly returns `()` as its body has no tail or `return` expression
 8 |     x + 1;
-  |          - help: consider removing this semicolon
+  |          - help: remove this semicolon to return this value
 
 For more information about this error, try `rustc --explain E0308`.
-error: could not compile `functions` due to previous error
+error: could not compile `functions` (bin &quot;functions&quot;) due to 1 previous error
 </code></pre>
 <!--
-The main error message, “mismatched types,” reveals the core issue with this
+The main error message, `mismatched types`, reveals the core issue with this
 code. The definition of the function `plus_one` says that it will return an
 `i32`, but statements don’t evaluate to a value, which is expressed by `()`,
-the empty tuple. Therefore, nothing is returned, which contradicts the function
+the unit type. Therefore, nothing is returned, which contradicts the function
 definition and results in an error. In this output, Rust provides a message to
 possibly help rectify this issue: it suggests removing the semicolon, which
 would fix the error.
 -->
-<p>メインのエラーメッセージである「型が合いません」でこのコードの根本的な問題が明らかになるでしょう。
+<p>メインのエラーメッセージである<code>mismatched types (型が合いません)</code>でこのコードの根本的な問題が明らかになるでしょう。
 関数<code>plus_one</code>の定義では、<code>i32</code>型を返すと言っているのに、文は値に評価されないからです。このことは、
-<code>()</code>、つまり空のタプルとして表現されています。それゆえに、何も戻り値がなく、これが関数定義と矛盾するので、
+<code>()</code>、つまりユニット型として表現されています。それゆえに、何も戻り値がなく、これが関数定義と矛盾するので、
 結果としてエラーになるわけです。この出力内で、コンパイラは問題を修正する手助けになりそうなメッセージも出していますね: 
 セミコロンを削除するよう提言しています。そして、そうすれば、エラーは直るわけです。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
@@ -4761,12 +4867,12 @@ would fix the error.
 <h2 id="コメント"><a class="header" href="#コメント">コメント</a></h2>
 <!--
 All programmers strive to make their code easy to understand, but sometimes
-extra explanation is warranted. In these cases, programmers leave notes, or
-*comments*, in their source code that the compiler will ignore but people
-reading the source code may find useful.
+extra explanation is warranted. In these cases, programmers leave *comments* in
+their source code that the compiler will ignore but people reading the source
+code may find useful.
 -->
 <p>全プログラマは、自分のコードがわかりやすくなるよう努めますが、時として追加の説明が許されることもあります。
-このような場合、プログラマは注釈または<em>コメント</em>をソースコードに残し、コメントをコンパイラは無視しますが、
+このような場合、プログラマは<em>コメント</em>をソースコードに残し、コメントをコンパイラは無視しますが、
 ソースコードを読む人間には有益なものと思えるでしょう。</p>
 <!--
 Here’s a simple comment:
@@ -4777,11 +4883,11 @@ Here’s a simple comment:
 </span>// hello, world
 <span class="boring">}</span></code></pre></pre>
 <!--
-In Rust, comments must start with two slashes and continue until the end of the
-line. For comments that extend beyond a single line, you’ll need to include
-`//` on each line, like this:
+In Rust, the idiomatic comment style starts a comment with two slashes, and the
+comment continues until the end of the line. For comments that extend beyond a
+single line, you’ll need to include `//` on each line, like this:
 -->
-<p>Rustでは、コメントは2連スラッシュで始め、行の終わりまで続きます。コメントが複数行にまたがる場合、
+<p>Rustの慣用的なコメントスタイルでは、コメントは2連スラッシュで始め、行の終わりまで続きます。コメントが複数行にまたがる場合、
 各行に<code>//</code>を含める必要があります。こんな感じに:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -4795,15 +4901,21 @@ line. For comments that extend beyond a single line, you’ll need to include
 Comments can also be placed at the end of lines containing code:
 -->
 <p>コメントは、コードが書かれた行の末尾にも配置することができます:</p>
-<p><span class="filename">Filename: src/main.rs</span></p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let lucky_number = 7; // I’m feeling lucky today(今日はラッキーな気がするよ)
 }</code></pre></pre>
 <!--
 But you’ll more often see them used in this format, with the comment on a
-separate line above the code it's annotating:
+separate line above the code it’s annotating:
 -->
 <p>しかし、こちらの形式のコメントの方が見かける機会は多いでしょう。注釈しようとしているコードの1行上に書く形式です:</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
     // I’m feeling lucky today
@@ -4812,29 +4924,29 @@ separate line above the code it's annotating:
 }</code></pre></pre>
 <!--
 Rust also has another kind of comment, documentation comments, which we’ll
-discuss in Chapter 14.
+discuss in the [“Publishing a Crate to Crates.io”][publishing]
+section of Chapter 14.
 -->
-<p>Rustには他の種類のコメント、ドキュメントコメントもあり、それについては第14章で議論します。</p>
+<p>Rustには他の種類のコメント、ドキュメントコメントもあり、それについては第14章の<a href="ch14-02-publishing-to-crates-io.html">「Crates.ioにクレートを公開する」</a>節で議論します。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Control Flow
 -->
 <h2 id="制御フロー"><a class="header" href="#制御フロー">制御フロー</a></h2>
 <!--
-Deciding whether or not to run some code depending on if a condition is true
-and deciding to run some code repeatedly while a condition is true are basic
-building blocks in most programming languages. The most common constructs that
-let you control the flow of execution of Rust code are `if` expressions and
-loops.
+The ability to run some code depending on whether a condition is `true` and to
+run some code repeatedly while a condition is `true` are basic building blocks
+in most programming languages. The most common constructs that let you control
+the flow of execution of Rust code are `if` expressions and loops.
 -->
-<p>条件が真かどうかによってコードを走らせるかどうかを決定したり、
-条件が真の間繰り返しコードを走らせるか決定したりすることは、多くのプログラミング言語において、基本的な構成ブロックです。
+<p>条件が<code>true</code>かどうかによってコードを走らせたり、
+条件が<code>true</code>の間繰り返しコードを走らせたりできることは、多くのプログラミング言語において、基本的な構成ブロックです。
 Rustコードの実行フローを制御する最も一般的な文法要素は、<code>if</code>式とループです。</p>
 <!--
 ### `if` Expressions
 -->
 <h3 id="if式"><a class="header" href="#if式"><code>if</code>式</a></h3>
 <!--
-An `if` expression allows us to branch your code depending on conditions. We
+An `if` expression allows you to branch your code depending on conditions. You
 provide a condition and then state, “If this condition is met, run this block
 of code. If the condition is not met, do not run this block of code.”
 -->
@@ -4860,28 +4972,25 @@ the `if` expression. In the *src/main.rs* file, input the following:
     }
 }</code></pre></pre>
 <!--
-NEXT PARAGRAPH WRAPPED WEIRD INTENTIONALLY SEE #199
--->
-<!--
-All `if` expressions start with the keyword `if`, which is followed by a
-condition. In this case, the condition checks whether or not the variable
-`number` has a value less than 5. The block of code we want to execute if the
-condition is true is placed immediately after the condition inside curly
-brackets. Blocks of code associated with the conditions in `if` expressions are
-sometimes called *arms*, just like the arms in `match` expressions that we
-discussed in the “Comparing the Guess to the Secret Number” section of
-Chapter 2.
+All `if` expressions start with the keyword `if`, followed by a condition. In
+this case, the condition checks whether or not the variable `number` has a
+value less than 5. We place the block of code to execute if the condition is
+`true` immediately after the condition inside curly brackets. Blocks of code
+associated with the conditions in `if` expressions are sometimes called *arms*,
+just like the arms in `match` expressions that we discussed in the [“Comparing
+the Guess to the Secret Number”][comparing-the-guess-to-the-secret-number]
+section of Chapter 2.
 -->
 <p><code>if</code>式は全て、キーワードの<code>if</code>から始め、条件式を続けます。今回の場合、
 条件式は変数<code>number</code>が5未満の値になっているかどうかをチェックします。
-条件が真の時に実行したい一連のコードを条件式の直後に波かっこで包んで配置します。<code>if</code>式の条件式と紐付けられる一連のコードは、
+条件が<code>true</code>の時に実行する一連のコードを条件式の直後に波かっこで包んで配置します。<code>if</code>式の条件式と紐付けられる一連のコードは、
 時として<em>アーム</em>と呼ばれることがあります。
-第2章の「予想と秘密の数字を比較する」の節で議論した<code>match</code>式のアームと同じです。</p>
+第2章の<a href="ch02-00-guessing-game-tutorial.html#%E4%BA%88%E6%83%B3%E3%81%A8%E7%A7%98%E5%AF%86%E3%81%AE%E6%95%B0%E5%AD%97%E3%82%92%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B">「予想と秘密の数字を比較する」</a>の節で議論した<code>match</code>式のアームと同じです。</p>
 <!--
-Optionally, we can also include an `else` expression, which we chose
-to do here, to give the program an alternative block of code to execute should
-the condition evaluate to false. If you don’t provide an `else` expression and
-the condition is false, the program will just skip the `if` block and move on
+Optionally, we can also include an `else` expression, which we chose to do
+here, to give the program an alternative block of code to execute should the
+condition evaluate to `false`. If you don’t provide an `else` expression and
+the condition is `false`, the program will just skip the `if` block and move on
 to the next bit of code.
 -->
 <p>オプションとして、<code>else</code>式を含むこともでき(ここではそうしています)、これによりプログラムは、
@@ -4955,7 +5064,7 @@ error[E0308]: mismatched types
   |               (bool型を予期したのに、整数変数が見つかりました)
 
 For more information about this error, try `rustc --explain E0308`.
-error: could not compile `branches` due to previous error
+error: could not compile `branches` (bin &quot;branches&quot;) due to 1 previous error
 </code></pre>
 <!--
 The error indicates that Rust expected a `bool` but got an integer. Unlike
@@ -4989,10 +5098,10 @@ Running this code will print `number was something other than zero`.
 -->
 <h4 id="else-ifで複数の条件を扱う"><a class="header" href="#else-ifで複数の条件を扱う"><code>else if</code>で複数の条件を扱う</a></h4>
 <!--
-You can have multiple conditions by combining `if` and `else` in an `else if`
+You can use multiple conditions by combining `if` and `else` in an `else if`
 expression. For example:
 -->
-<p><code>if</code>と<code>else</code>を組み合わせて<code>else if</code>式にすることで複数の条件を持たせることもできます。例です:</p>
+<p><code>if</code>と<code>else</code>を組み合わせて<code>else if</code>式にすることで複数の条件を使うこともできます。例です:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -5027,16 +5136,16 @@ number is divisible by 3
 </code></pre>
 <!--
 When this program executes, it checks each `if` expression in turn and executes
-the first body for which the condition holds true. Note that even though 6 is
-divisible by 2, we don’t see the output `number is divisible by 2`, nor do we
-see the `number is not divisible by 4, 3, or 2` text from the `else` block.
-That's because Rust will only execute the block for the first true condition, and
-once it finds one, it won’t even check the rest.
+the first body for which the condition evaluates to `true`. Note that even
+though 6 is divisible by 2, we don’t see the output `number is divisible by 2`,
+nor do we see the `number is not divisible by 4, 3, or 2` text from the `else`
+block. That’s because Rust only executes the block for the first `true`
+condition, and once it finds one, it doesn’t even check the rest.
 -->
-<p>このプログラムを実行すると、<code>if</code>式が順番に吟味され、最初に条件が真になった本体が実行されます。
-6は2で割り切れるものの、<code>number is devisible by 2</code>や、
+<p>このプログラムを実行すると、<code>if</code>式が順番に吟味され、最初に条件が<code>true</code>に評価された本体が実行されます。
+6は2で割り切れるものの、<code>number is divisible by 2</code>や、
 <code>else</code>ブロックの<code>number is not divisible by 4, 3, or 2</code>という出力はされないことに注目してください。
-それは、Rustが最初の真条件のブロックのみを実行し、
+それは、Rustが最初の<code>true</code>な条件のブロックのみを実行し、
 条件に合ったものが見つかったら、残りはチェックすらしないからです。</p>
 <!--
 Using too many `else if` expressions can clutter your code, so if you have more
@@ -5052,9 +5161,9 @@ Rust branching construct called `match` for these cases.
 <h4 id="let文内でif式を使う"><a class="header" href="#let文内でif式を使う"><code>let</code>文内で<code>if</code>式を使う</a></h4>
 <!--
 Because `if` is an expression, we can use it on the right side of a `let`
-statement, as in Listing 3-2.
+statement to assign the outcome to a variable, as in Listing 3-2.
 -->
-<p><code>if</code>は式なので、<code>let</code>文の右辺に持ってくることができます。リスト3-2のようにですね。</p>
+<p><code>if</code>は式なので、<code>let</code>文の右辺に持ってきて結果を変数に代入することができます。リスト3-2のようにですね。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -5063,11 +5172,13 @@ statement, as in Listing 3-2.
     let condition = true;
     let number = if condition { 5 } else { 6 };
 
-    // numberの値は、{}です
-    println!(&quot;The value of number is: {}&quot;, number);
+    // numberの値は、{number}です
+    println!(&quot;The value of number is: {number}&quot;);
 }</code></pre></pre>
-<!-- <span class="caption">Listing 3-2: Assigning the result of an `if` expression
-to a variable</span> -->
+<!--
+<span class="caption">Listing 3-2: Assigning the result of an `if` expression
+to a variable</span>
+-->
 <p><span class="caption">リスト3-2: <code>if</code>式の結果を変数に代入する</span></p>
 <!--
 The `number` variable will be bound to a value based on the outcome of the `if`
@@ -5087,7 +5198,7 @@ whole `if` expression depends on which block of code executes. This means the
 values that have the potential to be results from each arm of the `if` must be
 the same type; in Listing 3-2, the results of both the `if` arm and the `else`
 arm were `i32` integers. If the types are mismatched, as in the following
-example, we'll get an error:
+example, we’ll get an error:
 -->
 <p>一連のコードは、そのうちの最後の式に評価され、数値はそれ単独でも式になることを思い出してください。
 今回の場合、この<code>if</code>式全体の値は、どのブロックのコードが実行されるかに基づきます。これはつまり、
@@ -5103,7 +5214,7 @@ example, we'll get an error:
 
     let number = if condition { 5 } else { &quot;six&quot; };
 
-    println!(&quot;The value of number is: {}&quot;, number);
+    println!(&quot;The value of number is: {number}&quot;);
 }</code></pre>
 <!--
 When we try to compile this code, we’ll get an error. The `if` and `else` arms
@@ -5125,21 +5236,21 @@ error[E0308]: `if` and `else` have incompatible types
   |                                 expected because of this
 
 For more information about this error, try `rustc --explain E0308`.
-error: could not compile `branches` due to previous error
+error: could not compile `branches` (bin &quot;branches&quot;) due to 1 previous error
 </code></pre>
 <!--
 The expression in the `if` block evaluates to an integer, and the expression in
 the `else` block evaluates to a string. This won’t work because variables must
-have a single type. Rust needs to know at compile time what type the `number`
-variable is, definitively, so it can verify at compile time that its type is
-valid everywhere we use `number`. Rust wouldn’t be able to do that if the type
-of `number` was only determined at runtime; the compiler would be more complex
-and would make fewer guarantees about the code if it had to keep track of
-multiple hypothetical types for any variable.
+have a single type, and Rust needs to know at compile time what type the
+`number` variable is, definitively. Knowing the type of `number` lets the
+compiler verify the type is valid everywhere we use `number`. Rust wouldn’t be
+able to do that if the type of `number` was only determined at runtime; the
+compiler would be more complex and would make fewer guarantees about the code
+if it had to keep track of multiple hypothetical types for any variable.
 -->
 <p><code>if</code>ブロックの式は整数に評価され、<code>else</code>ブロックの式は文字列に評価されます。これでは動作しません。
-変数は単独の型でなければならないからです。コンパイラは、コンパイル時に<code>number</code>変数の型を確実に把握する必要があるため、
-コンパイル時に<code>number</code>が使われている箇所全部で型が有効かどうか検査することができるのです。
+変数は単独の型でなければならず、コンパイラは、コンパイル時に<code>number</code>変数の型を確実に把握する必要があるからです。
+<code>number</code>の型を把握していることで、コンパイラは、コンパイル時に<code>number</code>が使われている箇所全部で型が有効であるか検証できるのです。
 <code>number</code>の型が実行時にしか決まらないのであれば、コンパイラはそれを実行することができなくなってしまいます;
 どの変数に対しても、架空の複数の型があることを追いかけなければならないのであれば、コンパイラはより複雑になり、
 コードに対して行える保証が少なくなってしまうでしょう。</p>
@@ -5149,9 +5260,9 @@ multiple hypothetical types for any variable.
 <h3 id="ループでの繰り返し"><a class="header" href="#ループでの繰り返し">ループでの繰り返し</a></h3>
 <!--
 It’s often useful to execute a block of code more than once. For this task,
-Rust provides several *loops*. A loop runs through the code inside the loop
-body to the end and then starts immediately back at the beginning. To
-experiment with loops, let’s make a new project called *loops*.
+Rust provides several *loops*, which will run through the code inside the loop
+body to the end and then start immediately back at the beginning. To experiment
+with loops, let’s make a new project called *loops*.
 -->
 <p>一連のコードを1回以上実行できると、しばしば役に立ちます。この作業用に、
 Rustにはいくつかの<em>ループ</em>が用意されています。ループは、本体内のコードを最後まで実行し、
@@ -5186,16 +5297,21 @@ like this:
 }</code></pre>
 <!--
 When we run this program, we’ll see `again!` printed over and over continuously
-until we stop the program manually. Most terminals support a keyboard shortcut,
-<span class="keystroke">ctrl-c</span>, to halt a program that is stuck in a
-continual loop. Give it a try:
+until we stop the program manually. Most terminals support the keyboard
+shortcut <span class="keystroke">ctrl-c</span> to interrupt a program that is
+stuck in a continual loop. Give it a try:
 -->
 <p>このプログラムを実行すると、プログラムを手動で止めるまで、何度も何度も続けて<code>again!</code>と出力するでしょう。
 ほとんどの端末で<span class="keystroke">ctrl-c</span>というショートカットが使え、
-永久ループに囚われてしまったプログラムを終了させられます。試しにやってみましょう:</p>
+永久ループに囚われてしまったプログラムに割り込むことができます。試しにやってみましょう:</p>
+<!-- manual-regeneration
+cd listings/ch03-common-programming-concepts/no-listing-32-loop
+cargo run
+CTRL-C
+-->
 <pre><code class="language-console">$ cargo run
    Compiling loops v0.1.0 (file:///projects/loops)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.29 secs
+    Finished dev [unoptimized + debuginfo] target(s) in 0.29s
      Running `target/debug/loops`
 again!
 again!
@@ -5204,22 +5320,24 @@ again!
 ^Cagain!
 </code></pre>
 <!--
-The symbol `^C` represents where you pressed <span class="keystroke">ctrl-c
-</span>. You may or may not see the word `again!` printed after the `^C`,
-depending on where the code was in the loop when it received the halt signal.
+The symbol `^C` represents where you pressed <span
+class="keystroke">ctrl-c</span>. You may or may not see the word `again!`
+printed after the `^C`, depending on where the code was in the loop when it
+received the interrupt signal.
 -->
 <p><code>^C</code>という記号が出た場所が、<span class="keystroke">ctrl-c</span>を押した場所です。<code>^C</code>の後には<code>again!</code>と表示されたり、
-されなかったりします。ストップシグナルをコードが受け取った時にループのどこにいたかによります。</p>
+されなかったりします。割り込みシグナルをコードが受け取った時にループのどこにいたかによります。</p>
 <!--
-Fortunately, Rust provides another, more reliable way to break out of a loop.
-You can place the `break` keyword within the loop to tell the program when to
-stop executing the loop. Recall that we did this in the guessing game in the
-“Quitting After a Correct Guess” section of Chapter 2 to exit the program when
-the user won the game by guessing the correct number.
+Fortunately, Rust also provides a way to break out of a loop using code. You
+can place the `break` keyword within the loop to tell the program when to stop
+executing the loop. Recall that we did this in the guessing game in the
+[“Quitting After a Correct Guess”][quitting-after-a-correct-guess]
+section of Chapter 2 to exit the program when the user won the game by
+guessing the correct number.
 -->
-<p>幸いなことに、Rustにはループを抜け出す別のより信頼できる手段があります。
+<p>幸いなことに、Rustにはコードによってループを抜け出す手段もあります。
 ループ内に<code>break</code>キーワードを配置することで、プログラムに実行を終了すべきタイミングを教えることができます。
-第2章の「正しい予想をした後に終了する」節の数当てゲーム内でこれをして、ユーザが予想を的中させ、
+第2章の<a href="ch02-00-guessing-game-tutorial.html#%E6%AD%A3%E3%81%97%E3%81%84%E4%BA%88%E6%83%B3%E3%82%92%E3%81%97%E3%81%9F%E5%BE%8C%E3%81%AB%E7%B5%82%E4%BA%86%E3%81%99%E3%82%8B">「正しい予想をした後に終了する」</a>節の数当てゲーム内でこれをして、ユーザが予想を的中させ、
 ゲームに勝った時にプログラムを終了させたことを思い出してください。</p>
 <!--
 We also used `continue` in the guessing game, which in a loop tells the program
@@ -5228,23 +5346,73 @@ next iteration.
 -->
 <p>数当てゲームで<code>continue</code>を使用しました。<code>continue</code>はループの中で残っているコードをスキップして次のループに移るためのものです。</p>
 <!--
+#### Returning Values from Loops
+-->
+<h4 id="ループから値を返す"><a class="header" href="#ループから値を返す">ループから値を返す</a></h4>
+<!--
+One of the uses of a `loop` is to retry an operation you know might fail, such
+as checking whether a thread has completed its job. You might also need to pass
+the result of that operation out of the loop to the rest of your code. To do
+this, you can add the value you want returned after the `break` expression you
+use to stop the loop; that value will be returned out of the loop so you can
+use it, as shown here:
+-->
+<p><code>loop</code>の使用法のひとつとして、失敗するかもしれないと分かっている操作、
+例えばスレッドがそのジョブを完了したかを確認する操作などを、リトライするというのがあります。
+さらに、コードの他の部分で使うために、ループの外に操作の結果を渡す必要があるかもしれません。
+これを行うには、ループを止めるために使っている<code>break</code>式の後ろに、返したい値を付け加えてください;
+その値はループを抜けて返され、使うことができます。このように:</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    let mut counter = 0;
+
+    let result = loop {
+        counter += 1;
+
+        if counter == 10 {
+            break counter * 2;
+        }
+    };
+
+    println!(&quot;The result is {result}&quot;);
+}</code></pre></pre>
+<!--
+Before the loop, we declare a variable named `counter` and initialize it to
+`0`. Then we declare a variable named `result` to hold the value returned from
+the loop. On every iteration of the loop, we add `1` to the `counter` variable,
+and then check whether the `counter` is equal to `10`. When it is, we use the
+`break` keyword with the value `counter * 2`. After the loop, we use a
+semicolon to end the statement that assigns the value to `result`. Finally, we
+print the value in `result`, which in this case is `20`.
+-->
+<p>ループの前で<code>counter</code>という変数を宣言し、<code>0</code>に初期化しています。
+次に、ループから返された値を保持するために、<code>result</code>という変数を宣言しています。
+ループの繰り返しごとに、<code>counter</code>変数に<code>1</code>を追加し、<code>counter</code>が<code>10</code>に等しいかチェックします。
+等しい場合は、値<code>counter * 2</code>とともに<code>break</code>キーワードを使用しています。
+ループの後には、値を<code>result</code>に代入する文を終了するためのセミコロンが使われています。
+最後に、<code>result</code>の値を出力していて、この場合は<code>20</code>です。</p>
+<!--
+#### Loop Labels to Disambiguate Between Multiple Loops
+-->
+<h4 id="複数のループを区別するループラベル"><a class="header" href="#複数のループを区別するループラベル">複数のループを区別するループラベル</a></h4>
+<!--
 If you have loops within loops, `break` and `continue` apply to the innermost
-loop at that point. You can optionally specify a *loop label* on a loop that we
-can then use with `break` or `continue` to specify that those keywords apply to
-the labeled loop instead of the innermost loop. Here’s an example with two
-nested loops:
+loop at that point. You can optionally specify a *loop label* on a loop that
+you can then use with `break` or `continue` to specify that those keywords
+apply to the labeled loop instead of the innermost loop. Loop labels must begin
+with a single quote. Here’s an example with two nested loops:
 -->
 <p>ループ内にループがある場合、<code>break</code>と<code>continue</code>は最も内側のループに適用されます。
 <em>ループラベル</em>を使用することで、<code>break</code>や<code>continue</code>が適用されるループを指定することができます。
+ループラベルはシングルクオートで始める必要があります。
 以下に例を示します。</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let mut count = 0;
     'counting_up: loop {
-        println!(&quot;count = {}&quot;, count);
+        println!(&quot;count = {count}&quot;);
         let mut remaining = 10;
 
         loop {
-            println!(&quot;remaining = {}&quot;, remaining);
+            println!(&quot;remaining = {remaining}&quot;);
             if remaining == 9 {
                 break;
             }
@@ -5256,7 +5424,7 @@ nested loops:
 
         count += 1;
     }
-    println!(&quot;End count = {}&quot;, count);
+    println!(&quot;End count = {count}&quot;);
 }</code></pre></pre>
 <!--
 The outer loop has the label `'counting_up`, and it will count up from 0 to 2.
@@ -5287,25 +5455,22 @@ End count = 2
 -->
 <h4 id="whileで条件付きループ"><a class="header" href="#whileで条件付きループ"><code>while</code>で条件付きループ</a></h4>
 <!--
-It’s often useful for a program to evaluate a condition within a loop. While
-the condition is true, the loop runs. When the condition ceases to be true, the
-program calls `break`, stopping the loop. This loop type could be implemented
-using a combination of `loop`, `if`, `else`, and `break`; you could try that
-now in a program, if you’d like.
+A program will often need to evaluate a condition within a loop. While the
+condition is `true`, the loop runs. When the condition ceases to be `true`, the
+program calls `break`, stopping the loop. It’s possible to implement behavior
+like this using a combination of `loop`, `if`, `else`, and `break`; you could
+try that now in a program, if you’d like. However, this pattern is so common
+that Rust has a built-in language construct for it, called a `while` loop. In
+Listing 3-3, we use `while` to loop the program three times, counting down each
+time, and then, after the loop, print a message and exit.
 -->
-<p>プログラムにとってループ内で条件式を評価できると、有益なことがしばしばあります。条件が真の間、
-ループが走るわけです。条件が真でなくなった時にプログラムは<code>break</code>を呼び出し、ループを終了します。
-このタイプのループは、<code>loop</code>、<code>if</code>、<code>else</code>、<code>break</code>を組み合わせることでも実装できます;
-お望みなら、プログラムで今、試してみるのもいいでしょう。</p>
-<!--
-However, this pattern is so common that Rust has a built-in language construct
-for it, called a `while` loop. Listing 3-3 uses `while`: the program loops
-three times, counting down each time, and then, after the loop, it prints
-another message and exits:
--->
-<p>しかし、このパターンは頻出するので、Rustにはそれ用の文法要素が用意されていて、<code>while</code>ループと呼ばれます。
-リスト3-3は、<code>while</code>を使用しています: プログラムは3回ループし、それぞれカウントダウンします。
-それから、ループ後に別のメッセージを表示して終了します:</p>
+<p>プログラムは、ループ内で条件式を評価することがよく必要になるでしょう。条件が<code>true</code>の間、
+ループが走るわけです。条件が<code>true</code>でなくなった時にプログラムは<code>break</code>を呼び出し、ループを終了します。
+このような挙動は、<code>loop</code>、<code>if</code>、<code>else</code>、<code>break</code>を組み合わせることでも実装できます;
+お望みなら、プログラムで今、試してみるのもいいでしょう。
+しかし、このパターンは頻出するので、Rustにはそれ用の文法要素が用意されていて、<code>while</code>ループと呼ばれます。
+リスト3-3では、プログラムを3回ループさせるために<code>while</code>を使用しています。
+繰り返しごとにカウントダウンして、ループ後にメッセージを表示して終了します。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -5314,7 +5479,7 @@ another message and exits:
     let mut number = 3;
 
     while number != 0 {
-        println!(&quot;{}!&quot;, number);
+        println!(&quot;{number}!&quot;);
 
         number -= 1;
     }
@@ -5329,20 +5494,22 @@ condition holds true</span>
 <p><span class="caption">リスト3-3: 条件が真の間、コードを走らせる<code>while</code>ループを使用する</span></p>
 <!--
 This construct eliminates a lot of nesting that would be necessary if you used
-`loop`, `if`, `else`, and `break`, and it’s clearer. While a condition holds
-true, the code runs; otherwise, it exits the loop.
+`loop`, `if`, `else`, and `break`, and it’s clearer. While a condition
+evaluates to `true`, the code runs; otherwise, it exits the loop.
 -->
 <p>この文法要素により、<code>loop</code>、<code>if</code>、<code>else</code>、<code>break</code>を使った時に必要になるネストがなくなり、
-より明確になります。条件が真の間、コードは実行されます; そうでなければ、ループを抜けます.</p>
+より明確になります。条件が<code>true</code>に評価される間、コードは実行されます; そうでなければ、ループを抜けます.</p>
 <!--
 #### Looping Through a Collection with `for`
 -->
 <h4 id="forでコレクションを覗き見る"><a class="header" href="#forでコレクションを覗き見る"><code>for</code>でコレクションを覗き見る</a></h4>
 <!--
-You could use the `while` construct to loop over the elements of a collection,
-such as an array. For example, let's look at Listing 3-4.
+You can choose to use the `while` construct to loop over the elements of a
+collection, such as an array. For example, the loop in Listing 3-4 prints each
+element in the array `a`.
 -->
-<p><code>while</code>要素を使って配列などのコレクションの要素を覗き見ることができます。例えば、リスト3-4を見ましょう。</p>
+<p>配列などのコレクションの要素を覗き見るために、<code>while</code>要素を使うこともできます。
+例えば、リスト3-4のループは配列<code>a</code>の各要素を出力します。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -5366,11 +5533,11 @@ using a `while` loop</span>
 <!--
 Here, the code counts up through the elements in the array. It starts at index
 `0`, and then loops until it reaches the final index in the array (that is,
-when `index < 5` is no longer true). Running this code will print every element
-in the array:
+when `index < 5` is no longer `true`). Running this code will print every
+element in the array:
 -->
 <p>ここで、コードは配列の要素を順番にカウントアップして覗いています。番号0から始まり、
-配列の最終番号に到達するまでループします(つまり、<code>index &lt; 5</code>が真でなくなる時です)。
+配列の最終番号に到達するまでループします(つまり、<code>index &lt; 5</code>が<code>true</code>でなくなる時です)。
 このコードを走らせると、配列内の全要素が出力されます:</p>
 <pre><code class="language-console">$ cargo run
    Compiling loops v0.1.0 (file:///projects/loops)
@@ -5390,20 +5557,23 @@ to fetch a sixth value from the array.
 <p>予想通り、配列の5つの要素が全てターミナルに出力されています。<code>index</code>変数の値はどこかで<code>5</code>という値になるものの、
 配列から6番目の値を拾おうとする前にループは実行を終了します。</p>
 <!--
-But this approach is error prone; we could cause the program to panic if the
-index length is incorrect. It’s also slow, because the compiler adds runtime
-code to perform the conditional check on every element on every iteration
-through the loop.
+However, this approach is error prone; we could cause the program to panic if
+the index value or test condition is incorrect. For example, if you changed the
+definition of the `a` array to have four elements but forgot to update the
+condition to `while index < 4`, the code would panic. It’s also slow, because
+the compiler adds runtime code to perform the conditional check of whether the
+index is within the bounds of the array on every iteration through the loop.
 -->
-<p>しかし、このアプローチは間違いが発生しやすいです; 添え字の長さが間違っていれば、
-プログラムはパニックしてしまいます。また遅いです。
-コンパイラが実行時にループの各回ごとに境界値チェックを行うようなコードを追加するからです。</p>
+<p>しかし、このアプローチは間違いが発生しやすいです; 添え字の値や判定条件が間違っていれば、
+プログラムはパニックしてしまいます。例えば、<code>a</code>配列の定義を4要素を持つように変更したのに、
+条件を<code>while index &lt; 4</code>に更新し忘れた場合、コードはパニックするでしょう。また遅いです。
+実行時にループの各回ごとに添字が配列の境界内にあるかチェックするコードを、コンパイラが追加するからです。</p>
 <!--
-As a more efficient alternative, you can use a `for` loop and execute some code
-for each item in a collection. A `for` loop looks like this code in Listing 3-5.
+As a more concise alternative, you can use a `for` loop and execute some code
+for each item in a collection. A `for` loop looks like the code in Listing 3-5.
 -->
-<p>より効率的な対立案として、<code>for</code>ループを使ってコレクションの各アイテムに対してコードを実行することができます。
-<code>for</code>ループはリスト3-5のこんな見た目です。</p>
+<p>より簡潔な対立案として、<code>for</code>ループを使ってコレクションの各アイテムに対してコードを実行することができます。
+<code>for</code>ループはリスト3-5のコードのようになります。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -5412,7 +5582,7 @@ for each item in a collection. A `for` loop looks like this code in Listing 3-5.
     let a = [10, 20, 30, 40, 50];
 
     for element in a {
-        println!(&quot;the value is: {}&quot;, element);
+        println!(&quot;the value is: {element}&quot;);
     }
 }</code></pre></pre>
 <!--
@@ -5430,27 +5600,25 @@ going far enough and missing some items.
 コードの安全性を向上させ、配列の終端を超えてアクセスしたり、
 終端に届く前にループを終えてアイテムを見逃してしまったりするバグの可能性を完全に排除したことです。</p>
 <!--
-For example, in the code in Listing 3-4, if you removed an item from the `a`
-array but forgot to update the condition to `while index < 4`, the code would
-panic. Using the `for` loop, you don’t need to remember to change any other
-code if you changed the number of values in the array.
+Using the `for` loop, you wouldn’t need to remember to change any other code if
+you changed the number of values in the array, as you would with the method
+used in Listing 3-4.
 -->
-<p>例えば、リスト3-4のコードで、<code>a</code>配列からアイテムを1つ削除したのに、条件式を<code>while index &lt; 4</code>にするのを忘れていたら、
-コードはパニックします。<code>for</code>ループを使っていれば、配列の要素数を変えても、
-他のコードをいじることを覚えておく必要はなくなるわけです。</p>
+<p><code>for</code>ループを使っていれば、配列の要素数を変えても、
+リスト3-4で使った方法のように他のコードをいじることを覚えておく必要はなくなるわけです。</p>
 <!--
 The safety and conciseness of `for` loops make them the most commonly used loop
 construct in Rust. Even in situations in which you want to run some code a
 certain number of times, as in the countdown example that used a `while` loop
 in Listing 3-3, most Rustaceans would use a `for` loop. The way to do that
-would be to use a `Range`, which is a type provided by the standard library
-that generates all numbers in sequence starting from one number and ending
-before another number.
+would be to use a `Range`, provided by the standard library, which generates
+all numbers in sequence starting from one number and ending before another
+number.
 -->
 <p><code>for</code>ループのこの安全性と簡潔性により、Rustで使用頻度の最も高いループになっています。
 リスト3-3で<code>while</code>ループを使ったカウントダウンサンプルのように、一定の回数、同じコードを実行したいような状況であっても、
 多くのRustaceanは、<code>for</code>ループを使うでしょう。どうやってやるかといえば、
-<code>Range</code>型を使うのです。Range型は、標準ライブラリで提供される片方の数字から始まって、
+標準ライブラリで提供される<code>Range</code>型を使うのです。<code>Range</code>型は、片方の数字から始まって、
 もう片方の数字未満の数値を順番に生成する型です。</p>
 <!--
 Here’s what the countdown would look like using a `for` loop and another method
@@ -5463,7 +5631,7 @@ we’ve not yet talked about, `rev`, to reverse the range:
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
     for number in (1..4).rev() {
-        println!(&quot;{}!&quot;, number);
+        println!(&quot;{number}!&quot;);
     }
     println!(&quot;LIFTOFF!!!&quot;);
 }</code></pre></pre>
@@ -5476,22 +5644,22 @@ This code is a bit nicer, isn’t it?
 -->
 <h2 id="まとめ-2"><a class="header" href="#まとめ-2">まとめ</a></h2>
 <!--
-You made it! That was a sizable chapter: you learned about variables, scalar
-and compound data types, functions, comments, `if` expressions, and loops! If
-you want to practice with the concepts discussed in this chapter, try building
-programs to do the following:
+You made it! This was a sizable chapter: you learned about variables, scalar
+and compound data types, functions, comments, `if` expressions, and loops! To
+practice with the concepts discussed in this chapter, try building programs to
+do the following:
 -->
 <p>やりましたね！結構長い章でした: 変数、スカラー値と複合データ型、関数、コメント、<code>if</code>式、そして、ループについて学びました！
-この章で議論した概念について経験を積みたいのであれば、以下のことをするプログラムを組んでみてください:</p>
+この章で議論した概念について経験を積むために、以下のことをするプログラムを組んでみてください:</p>
 <!--
 * Convert temperatures between Fahrenheit and Celsius.
-* Generate the nth Fibonacci number.
+* Generate the *n*th Fibonacci number.
 * Print the lyrics to the Christmas carol “The Twelve Days of Christmas,”
-taking advantage of the repetition in the song.
+  taking advantage of the repetition in the song.
 -->
 <ul>
 <li>温度を華氏と摂氏で変換する。</li>
-<li>フィボナッチ数列のn番目を生成する。</li>
+<li>フィボナッチ数列の<em>n</em>番目を生成する。</li>
 <li>クリスマスキャロルの定番、&quot;The Twelve Days of Christmas&quot;の歌詞を、
 曲の反復性を利用して出力する。</li>
 </ul>
@@ -5500,6 +5668,12 @@ When you’re ready to move on, we’ll talk about a concept in Rust that *doesn
 commonly exist in other programming languages: ownership.
 -->
 <p>次に進む準備ができたら、他の言語にはあまり存在<em>しない</em>Rustの概念について話しましょう: 所有権です。</p>
+<!--
+[comparing-the-guess-to-the-secret-number]:
+ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number
+[quitting-after-a-correct-guess]:
+ch02-00-guessing-game-tutorial.html#quitting-after-a-correct-guess
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Understanding Ownership
 -->
@@ -33950,7 +34124,7 @@ the number of elements in the tuple.
 <!--
 ### Function Parameters
 -->
-<h3 id="関数の引数-1"><a class="header" href="#関数の引数-1">関数の引数</a></h3>
+<h3 id="関数の引数"><a class="header" href="#関数の引数">関数の引数</a></h3>
 <!--
 Function parameters can also be patterns. The code in Listing 18-6, which
 declares a function named `foo` that takes one parameter named `x` of type
