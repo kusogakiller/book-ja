@@ -5679,47 +5679,48 @@ ch02-00-guessing-game-tutorial.html#quitting-after-a-correct-guess
 -->
 <h1 id="所有権を理解する"><a class="header" href="#所有権を理解する">所有権を理解する</a></h1>
 <!--
-Ownership is Rust’s most unique feature, and it enables Rust to make memory
-safety guarantees without needing a garbage collector. Therefore, it’s
-important to understand how ownership works in Rust. In this chapter we’ll
-talk about ownership as well as several related features: borrowing, slices,
-and how Rust lays data out in memory.
+Ownership is Rust’s most unique feature and has deep implications for the rest
+of the language. It enables Rust to make memory safety guarantees without
+needing a garbage collector, so it’s important to understand how ownership
+works. In this chapter, we’ll talk about ownership as well as several related
+features: borrowing, slices, and how Rust lays data out in memory.
 -->
-<p>所有権はRustの最もユニークな機能であり、これのおかげでガベージコレクタなしで安全性担保を行うことができるのです。
-故に、Rustにおいて、所有権がどう動作するのかを理解するのは重要です。この章では、所有権以外にも、関連する機能を
+<p>所有権はRustの最もユニークな機能であり、それ以外の言語機能と深く関連しています。
+所有権のおかげで、Rustはガベージコレクタの必要なしにメモリ安全性を担保することができていて、
+そのため所有権の仕組みを理解しておくことが重要です。この章では、所有権以外にも、関連する機能を
 いくつか話していきます: 借用、スライス、そして、コンパイラがデータをメモリにどう配置するかです。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## What Is Ownership?
 -->
 <h2 id="所有権とは"><a class="header" href="#所有権とは">所有権とは？</a></h2>
 <!--
-Rust’s central feature is *ownership*. Although the feature is straightforward
-to explain, it has deep implications for the rest of the language.
+*Ownership* is a set of rules that govern how a Rust program manages memory.
 -->
-<p>Rustの中心的な機能は、<em>所有権</em>です。この機能は、説明するのは簡単なのですが、言語の残りの機能全てにかかるほど
-深い裏の意味を含んでいるのです。</p>
+<p><em>所有権</em>とは、Rustプログラムがメモリをどのように管理するかを支配している、規則の集合です。</p>
 <!--
 All programs have to manage the way they use a computer’s memory while running.
-Some languages have garbage collection that constantly looks for no longer used
+Some languages have garbage collection that regularly looks for no-longer-used
 memory as the program runs; in other languages, the programmer must explicitly
 allocate and free the memory. Rust uses a third approach: memory is managed
-through a system of ownership with a set of rules that the compiler checks at
-compile time. None of the ownership features slow down your proram while it's
-running.
+through a system of ownership with a set of rules that the compiler checks. If
+any of the rules are violated, the program won’t compile. None of the features
+of ownership will slow down your program while it’s running.
 -->
 <p>全てのプログラムは、実行中にコンピュータのメモリの使用方法を管理する必要があります。プログラムが動作するにつれて、
 定期的に使用されていないメモリを検索するガベージコレクションを持つ言語もありますが、他の言語では、
 プログラマが明示的にメモリを確保したり、解放したりしなければなりません。Rustでは第3の選択肢を取っています: 
-メモリは、コンパイラがコンパイル時にチェックする一定の規則とともに所有権システムを通じて管理されています。
-どの所有権機能も、実行中にプログラムの動作を遅くすることはありません。</p>
+メモリは、コンパイラがチェックする一定の規則とともに所有権システムを通じて管理されています。
+規則のうちどれかひとつにでも違反すれば、プログラムはコンパイルできないでしょう。
+どの所有権機能も、実行中にプログラムの動作を遅くすることはないでしょう。</p>
 <!--
 Because ownership is a new concept for many programmers, it does take some time
 to get used to. The good news is that the more experienced you become with Rust
-and the rules of the ownership system, the more you’ll be able to naturally
+and the rules of the ownership system, the easier you’ll find it to naturally
 develop code that is safe and efficient. Keep at it!
 -->
 <p>所有権は多くのプログラマにとって新しい概念なので、慣れるまでに時間がかかります。
-嬉しいことに、Rustと、所有権システムの規則の経験を積むと、より自然に安全かつ効率的なコードを構築できるようになります。
+嬉しいことに、Rustと、所有権システムの規則の経験を積んでいくにつれて、
+自然に安全かつ効率的なコードを構築するのはだんだん簡単だと思えるようになるでしょう。
 その調子でいきましょう！</p>
 <!--
 When you understand ownership, you’ll have a solid foundation for understanding
@@ -5730,54 +5731,48 @@ strings.
 <p>所有権を理解した時、Rustを際立たせる機能の理解に対する強固な礎を得ることになるでしょう。この章では、
 非常に一般的なデータ構造に着目した例を取り扱うことで所有権を学んでいきます: 文字列です。</p>
 <!--
-PROD: START BOX
--->
-<!--
 引用符付きの行は、日本語と英語を交互に書くとmdbookに正しく解析してもらえないので、英語、日本語の順にまとめて配置します
-### The Stack and the Heap
--->
-<!--
-> In many programming languages, you don’t have to think about the stack and
-> the heap very often. But in a systems programming language like Rust, whether
-> a value is on the stack or the heap has more of an effect on how the language
-> behaves and why you have to make certain decisions. Parts of ownership will
-> be described in relation to the stack and the heap later in this chapter, so
-> here is a brief explanation in preparation.
--->
-<!--
-> Both the stack and the heap are parts of memory that is available to your code
-> to use at runtime, but they are structured in different ways. The stack stores
-> values in the order it gets them and removes the values in the opposite order.
-> This is referred to as *last in, first out*. Think of a stack of plates: when
-> you add more plates, you put them on top of the pile, and when you need a
-> plate, you take one off the top. Adding or removing plates from the middle or
-> bottom wouldn’t work as well! Adding data is called *pushing onto the stack*,
-> and removing data is called *popping off the stack*.
--->
-<!--
-> The stack is fast because of the way it accesses the data: it never has to
-> search for a place to put new data or a place to get data from because that
-> place is always the top. Another property that makes the stack fast is that all
-> data on the stack must take up a known, fixed size.
--->
-<!--
-> Data with a size unknown at compile time or a size that might change can be
-> stored on the heap instead. The heap is less organized: when you put data on
-> the heap, you ask for some amount of space. The operating system finds an
-> empty spot somewhere in the heap that is big enough, marks it as being in
-> use, and returns a *pointer*, which is the address of that location. This
-> process is called *allocating on the heap*, sometimes abbreviated as just
-> “allocating.” Pushing values onto the stack is not considered allocating.
-> Because the pointer is a known, fixed size, you can store the pointer on the
-> stack, but when you want the actual data, you have to follow the pointer.
--->
-<!--
-> Think of being seated at a restaurant. When you enter, you state the number of
-> people in your group, and the staff finds an empty table that fits everyone and
-> leads you there. If someone in your group comes late, they can ask where
-> you've been seated to find you.
--->
-<!--
+> ### The Stack and the Heap
+>
+> Many programming languages don’t require you to think about the stack and the
+> heap very often. But in a systems programming language like Rust, whether a
+> value is on the stack or the heap affects how the language behaves and why
+> you have to make certain decisions. Parts of ownership will be described in
+> relation to the stack and the heap later in this chapter, so here is a brief
+> explanation in preparation.
+>
+> Both the stack and the heap are parts of memory available to your code to use
+> at runtime, but they are structured in different ways. The stack stores
+> values in the order it gets them and removes the values in the opposite
+> order. This is referred to as *last in, first out*. Think of a stack of
+> plates: when you add more plates, you put them on top of the pile, and when
+> you need a plate, you take one off the top. Adding or removing plates from
+> the middle or bottom wouldn’t work as well! Adding data is called *pushing
+> onto the stack*, and removing data is called *popping off the stack*. All
+> data stored on the stack must have a known, fixed size. Data with an unknown
+> size at compile time or a size that might change must be stored on the heap
+> instead.
+>
+> The heap is less organized: when you put data on the heap, you request a
+> certain amount of space. The memory allocator finds an empty spot in the heap
+> that is big enough, marks it as being in use, and returns a *pointer*, which
+> is the address of that location. This process is called *allocating on the
+> heap* and is sometimes abbreviated as just *allocating* (pushing values onto
+> the stack is not considered allocating). Because the pointer to the heap is a
+> known, fixed size, you can store the pointer on the stack, but when you want
+> the actual data, you must follow the pointer. Think of being seated at a
+> restaurant. When you enter, you state the number of people in your group, and
+> the host finds an empty table that fits everyone and leads you there. If
+> someone in your group comes late, they can ask where you’ve been seated to
+> find you.
+>
+> Pushing to the stack is faster than allocating on the heap because the
+> allocator never has to search for a place to store new data; that location is
+> always at the top of the stack. Comparatively, allocating space on the heap
+> requires more work because the allocator must first find a big enough space
+> to hold the data and then perform bookkeeping to prepare for the next
+> allocation.
+>
 > Accessing data in the heap is slower than accessing data on the stack because
 > you have to follow a pointer to get there. Contemporary processors are faster
 > if they jump around less in memory. Continuing the analogy, consider a server
@@ -5787,27 +5782,25 @@ PROD: START BOX
 > then one from B again would be a much slower process. By the same token, a
 > processor can do its job better if it works on data that’s close to other
 > data (as it is on the stack) rather than farther away (as it can be on the
-> heap). Allocating a large amount of space on the heap can also take time.
--->
-<!--
+> heap).
+>
 > When your code calls a function, the values passed into the function
 > (including, potentially, pointers to data on the heap) and the function’s
 > local variables get pushed onto the stack. When the function is over, those
 > values get popped off the stack.
--->
-<!--
+>
 > Keeping track of what parts of code are using what data on the heap,
 > minimizing the amount of duplicate data on the heap, and cleaning up unused
-> data on the heap so we don’t run out of space are all problems that ownership
+> data on the heap so you don’t run out of space are all problems that ownership
 > addresses. Once you understand ownership, you won’t need to think about the
-> stack and the heap very often, but knowing that managing heap data is why
-> ownership exists can help explain why it works the way it does.
+> stack and the heap very often, but knowing that the main purpose of ownership
+> is to manage heap data can help explain why it works the way it does.
 -->
 <blockquote>
 <h3 id="スタックとヒープ"><a class="header" href="#スタックとヒープ">スタックとヒープ</a></h3>
 <p>多くのプログラミング言語において、スタックとヒープについて考える機会はそう多くないでしょう。
 しかし、Rustのようなシステムプログラミング言語においては、値がスタックに積まれるかヒープに置かれるかは、
-言語の振る舞い方や、特定の決断を下す理由などに影響以上のものを与えるのです。
+言語の振る舞いや、特定の決断を下す理由などに影響を与えるのです。
 この章の後半でスタックとヒープを交えて所有権の一部が解説されるので、ここでちょっと予行演習をしておきましょう。</p>
 <p>スタックもヒープも、実行時にコードが使用できるメモリの一部になりますが、異なる手段で構成されています。
 スタックは、得た順番に値を並べ、逆の順で値を取り除いていきます。これは、
@@ -5815,20 +5808,22 @@ PROD: START BOX
 お皿の山を思い浮かべてください: お皿を追加する時には、山の一番上に置き、お皿が必要になったら、一番上から1枚を取り去りますよね。
 途中や一番下に追加したり、取り除いたりすることもできません。データを追加することは、
 <em>スタックにpushする</em>といい、データを取り除くことは、<em>スタックからpopする</em>と表現します(<code>訳注</code>:
-日本語では単純に英語をそのまま活用してプッシュ、ポップと表現するでしょう)。</p>
-<p>データへのアクセス方法のおかげで、スタックは高速です: 新しいデータを置いたり、
-データを取得する場所を探す必要が絶対にないわけです。というのも、その場所は常に一番上だからですね。
-スタックを高速にする特性は他にもあり、それはスタック上のデータは全て既知の固定サイズでなければならないということです。</p>
-<p>コンパイル時にサイズがわからなかったり、サイズが可変のデータについては、代わりにヒープに格納することができます。
-ヒープは、もっとごちゃごちゃしています: ヒープにデータを置く時、あるサイズのスペースを求めます。
-OSはヒープ上に十分な大きさの空の領域を見つけ、使用中にし、<em>ポインタ</em>を返します。ポインタとは、その場所へのアドレスです。
-この過程は、<em>ヒープに領域を確保する(allocating on the heap)<em>と呼ばれ、時としてそのフレーズを単に</em>allocateする</em>などと省略したりします。
+日本語では単純に英語をそのまま活用してプッシュ、ポップと表現するでしょう)。
+スタック上のデータは全て既知の固定サイズでなければなりません。
+コンパイル時にサイズがわからなかったり、サイズが可変のデータについては、代わりにヒープに格納しなければなりません。</p>
+<p>ヒープは、もっとごちゃごちゃしています: ヒープにデータを置く時、あるサイズのスペースを求めます。
+メモリアロケータはヒープ上に十分な大きさの空の領域を見つけ、使用中にし、<em>ポインタ</em>を返します。ポインタとは、その場所へのアドレスです。
+この過程は、<em>ヒープに領域を確保する (allocating on the heap)</em> と呼ばれ、時としてそのフレーズを単に<em>allocateする</em>などと省略したりします
 (<code>訳注</code>: こちらもこなれた日本語訳はないでしょう。allocateは「メモリを確保する」と訳したいところですが)
-スタックに値を積むことは、メモリ確保とは考えられません。ポインタは、既知の固定サイズなので、
-スタックに保管することができますが、実データが必要になったら、ポインタを追いかける必要があります。</p>
-<p>レストランで席を確保することを考えましょう。入店したら、グループの人数を告げ、
+(スタックに値を積むことは、メモリ確保とは考えられません)。ヒープへのポインタは、既知の固定サイズなので、
+スタックに保管することができますが、実データが必要になったら、ポインタを追いかける必要があります。
+レストランで席を確保することを考えましょう。入店したら、グループの人数を告げ、
 店員が全員座れる空いている席を探し、そこまで誘導します。もしグループの誰かが遅れて来るのなら、
 着いた席の場所を尋ねてあなたを発見することができます。</p>
+<p>スタックにデータを積むほうが、ヒープ上にメモリを確保するより高速です。
+アロケータが新しいデータを置くための場所を探さなくていいからです。というのも、その場所は常にスタックの一番上だからですね。
+それと比べて、ヒープ上にメモリを確保するのはより手間の多い仕事です。
+アロケータはまずデータを入れるのに充分な大きさの場所を探して、そして次のメモリ確保に備えて予約をしないといけないからです。</p>
 <p>ヒープへのデータアクセスは、スタックのデータへのアクセスよりも低速です。
 ポインタを追って目的の場所に到達しなければならないからです。現代のプロセッサは、メモリをあちこち行き来しなければ、
 より速くなります。似た例えを続けましょう。レストランで多くのテーブルから注文を受ける給仕人を考えましょう。最も効率的なのは、
@@ -5836,18 +5831,14 @@ OSはヒープ上に十分な大きさの空の領域を見つけ、使用中に
 それからテーブルBの注文、さらにまたA、それからまたBと渡り歩くのは、かなり低速な過程になってしまうでしょう。
 同じ意味で、プロセッサは、
 データが隔離されている(ヒープではそうなっている可能性がある)よりも近くにある(スタックではこうなる)ほうが、
-仕事をうまくこなせるのです。ヒープに大きな領域を確保する行為も時間がかかることがあります。</p>
+仕事をうまくこなせるのです。</p>
 <p>コードが関数を呼び出すと、関数に渡された値(ヒープのデータへのポインタも含まれる可能性あり)と、
 関数のローカル変数がスタックに載ります。関数の実行が終了すると、それらの値はスタックから取り除かれます。</p>
 <p>どの部分のコードがどのヒープ上のデータを使用しているか把握すること、ヒープ上の重複するデータを最小化すること、
 メモリ不足にならないようにヒープ上の未使用のデータを掃除することは全て、所有権が解決する問題です。
 一度所有権を理解したら、あまり頻繁にスタックとヒープに関して考える必要はなくなるでしょうが、
-ヒープデータを管理することが所有権の存在する理由だと知っていると、所有権がありのままで動作する理由を
-説明するのに役立つこともあります。</p>
+所有権の主な目的はヒープデータを管理することだと知っていると、所有権がどうしてこうなっているのか説明するのに役立つこともあります。</p>
 </blockquote>
-<!--
-PROD: END BOX
--->
 <!--
 ### Ownership Rules
 -->
@@ -5856,15 +5847,15 @@ PROD: END BOX
 First, let’s take a look at the ownership rules. Keep these rules in mind as we
 work through the examples that illustrate them:
 -->
-<p>まず、所有権のルールについて見ていきましょう。
-この規則を具体化する例を扱っていく間もこれらのルールを肝に銘じておいてください:</p>
+<p>まず、所有権の規則について見ていきましょう。
+この規則を具体化する例を扱っていく間もこれらの規則を肝に銘じておいてください:</p>
 <!--
-* Each value in Rust has a variable that’s called its *owner*.
+* Each value in Rust has an *owner*.
 * There can only be one owner at a time.
 * When the owner goes out of scope, the value will be dropped.
 -->
 <ul>
-<li>Rustの各値は、<em>所有者</em>と呼ばれる変数と対応している。</li>
+<li>Rustの各値には、<em>所有者</em>が存在する。</li>
 <li>いかなる時も所有者は一つである。</li>
 <li>所有者がスコープから外れたら、値は破棄される。</li>
 </ul>
@@ -5873,24 +5864,22 @@ work through the examples that illustrate them:
 -->
 <h3 id="変数スコープ"><a class="header" href="#変数スコープ">変数スコープ</a></h3>
 <!--
-We’ve walked through an example of a Rust program already in Chapter 2. Now
-that we’re past basic syntax, we won’t include all the `fn main() {` code in
-examples, so if you’re following along, you’ll have to put the following
+Now that we’re past basic Rust syntax, we won’t include all the `fn main() {`
+code in examples, so if you’re following along, make sure to put the following
 examples inside a `main` function manually. As a result, our examples will be a
 bit more concise, letting us focus on the actual details rather than
 boilerplate code.
 -->
-<p>第2章で、Rustプログラムの例はすでに見ています。もう基本的な記法は通り過ぎたので、
-<code>fn main() {</code>というコードはもう例に含みません。従って、例をなぞっているなら、
-これからの例は<code>main</code>関数に手動で入れ込まなければいけなくなるでしょう。結果的に、例は少々簡潔になり、
-定型コードよりも具体的な詳細に集中しやすくなります。</p>
+<p>もう基本的なRustの文法は通り過ぎたので、<code>fn main() {</code>というコードはもう例に含みません。
+従って、例をなぞっているなら、これからの例は<code>main</code>関数に手動で入れ込むようにしてください。
+結果的に、例は少々簡潔になり、定型コードよりも具体的な詳細に集中しやすくなります。</p>
 <!--
 As a first example of ownership, we’ll look at the *scope* of some variables. A
-scope is the range within a program for which an item is valid. Let’s say we
-have a variable that looks like this:
+scope is the range within a program for which an item is valid. Take the
+following variable:
 -->
 <p>所有権の最初の例として、何らかの変数の<em>スコープ</em>について見ていきましょう。スコープとは、
-要素が有効になるプログラム内の範囲のことです。以下のような変数があるとしましょう:</p>
+要素が有効になるプログラム内の範囲のことです。以下の変数を例に取ります:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let s = &quot;hello&quot;;
@@ -5898,51 +5887,42 @@ have a variable that looks like this:
 <!--
 The variable `s` refers to a string literal, where the value of the string is
 hardcoded into the text of our program. The variable is valid from the point at
-which it’s declared until the end of the current *scope*. Listing 4-1 has
-comments annotating where the variable `s` is valid.
+which it’s declared until the end of the current *scope*. Listing 4-1 shows a
+program with comments annotating where the variable `s` would be valid.
 -->
 <p>変数<code>s</code>は、文字列リテラルを参照し、ここでは、文字列の値はプログラムのテキストとしてハードコードされています。
 この変数は、宣言された地点から、現在の<em>スコープ</em>の終わりまで有効になります。リスト4-1には、
-変数<code>s</code>が有効な場所に関する注釈がコメントで付記されています。</p>
-<!--
-```rust
-{                      // s is not valid here, it’s not yet declared
-let s = "hello";   // s is valid from this point forward
--->
-<!--
-// do stuff with s
-}                      // this scope is now over, and s is no longer valid
-```
--->
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{                      // sは、ここでは有効ではない。まだ宣言されていない
-    let s = &quot;hello&quot;;   // sは、ここから有効になる
+変数<code>s</code>が有効な場所に関する注釈がコメントで付記されたプログラムを示します。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    {                      // sは、ここでは有効ではない。まだ宣言されていない
+        let s = &quot;hello&quot;;   // sは、ここから有効になる
 
-    // sで作業をする
-}                      // このスコープは終わり。もうsは有効ではない
+        // sで作業をする
+    }                      // このスコープは終わり。もうsは有効ではない
 <span class="boring">}</span></code></pre></pre>
-<!-- <span class="caption">Listing 4-1: A variable and the scope in which it is
-valid</span> -->
+<!--
+<span class="caption">Listing 4-1: A variable and the scope in which it is
+valid</span>
+-->
 <p><span class="caption">リスト4-1: 変数と有効なスコープ</span></p>
 <!--
 In other words, there are two important points in time here:
 -->
 <p>言い換えると、ここまでに重要な点は二つあります:</p>
 <!--
-* When `s` comes *into scope*, it is valid.
-* It remains valid until it goes *out of scope*.
+* When `s` comes *into* scope, it is valid.
+* It remains valid until it goes *out of* scope.
 -->
 <ul>
-<li><code>s</code>が<em>スコープに入る</em>と、有効になる</li>
-<li><em>スコープを抜ける</em>まで、有効なまま</li>
+<li><code>s</code>がスコープに<em>入る</em>と、有効になる。</li>
+<li>スコープを<em>抜ける</em>まで、有効なまま。</li>
 </ul>
 <!--
 At this point, the relationship between scopes and when variables are valid is
-similar to other programming languages. Now we’ll build on top of this
+similar to that in other programming languages. Now we’ll build on top of this
 understanding by introducing the `String` type.
 -->
-<p>ここで、スコープと変数が有効になる期間の関係は、他の言語に類似しています。さて、この理解のもとに、
+<p>今のところ、スコープと、変数が有効である期間の関係は、他の言語のそれに類似しています。さて、この理解のもとに、
 <code>String</code>型を導入して構築していきましょう。</p>
 <!--
 ### The `String` Type
@@ -5950,34 +5930,40 @@ understanding by introducing the `String` type.
 <h3 id="string型"><a class="header" href="#string型"><code>String</code>型</a></h3>
 <!--
 To illustrate the rules of ownership, we need a data type that is more complex
-than the ones we covered in the "Data Types" section of Chapter 3. The types
-covered previously are all stored on the stack and popped off the stack when
-their scope is over, but we want to look at data that is stored on the heap and
-explore how Rust knows when to clean up that data.
+than those we covered in the [“Data Types”][data-types] section
+of Chapter 3. The types covered previously are of a known size, can be stored
+on the stack and popped off the stack when their scope is over, and can be
+quickly and trivially copied to make a new, independent instance if another
+part of code needs to use the same value in a different scope. But we want to
+look at data that is stored on the heap and explore how Rust knows when to
+clean up that data, and the `String` type is a great example.
 -->
-<p>所有権の規則を具体化するには、第3章の「データ型」節で講義したものよりも、より複雑なデータ型が必要になります。
-以前講義した型は全てスタックに保管され、スコープが終わるとスタックから取り除かれますが、
-ヒープに確保されるデータ型を観察して、
-コンパイラがどうそのデータを掃除すべきタイミングを把握しているかを掘り下げていきたいと思います。</p>
+<p>所有権の規則を具体化するには、第3章の<a href="ch03-02-data-types.html#%E3%83%87%E3%83%BC%E3%82%BF%E5%9E%8B">「データ型」</a>節で講義したものよりも、より複雑なデータ型が必要になります。
+以前講義した型は、既知のサイズを持ち、スタックに置いておいてスコープが終わるとスタックから取り除かれるという扱いが可能でした。
+さらに、コードの別の場所で同じ値を異なるスコープを持たせて使う必要があるなら、
+新しい、独立したインスタンスに、高速に、そして自明にコピーすることができました。
+が、ヒープに確保されるデータ型を観察して、
+コンパイラがどうそのデータを掃除すべきタイミングを把握しているかを掘り下げていきたいと思います。
+<code>String</code>型はその好例です。</p>
 <!--
-We’ll use `String` as the example here and concentrate on the parts of `String`
-that relate to ownership. These aspects also apply to other complex data types
-provided by the standard library and that you create. We’ll discuss `String` in
-more depth in Chapter 8.
+We’ll concentrate on the parts of `String` that relate to ownership. These
+aspects also apply to other complex data types, whether they are provided by
+the standard library or created by you. We’ll discuss `String` in more depth in
+Chapter 8.
 -->
-<p>ここでは、例として<code>String</code>型を使用し、<code>String</code>型の所有権にまつわる部分に着目しましょう。
-また、この観点は、標準ライブラリや自分で生成する他の複雑なデータ型にも適用されます。
-<code>String</code>型については、第8章でより深く議論します。</p>
+<p><code>String</code>型の所有権にまつわる部分に着目しましょう。
+またこの観点は、標準ライブラリから提供されたか自分で作成したかを問わず、他の複雑なデータ型にも適用されます。
+<code>String</code>型については、<a href="ch08-02-strings.html">第8章</a>でより深く議論します。</p>
 <!--
 We’ve already seen string literals, where a string value is hardcoded into our
 program. String literals are convenient, but they aren’t suitable for every
 situation in which we may want to use text. One reason is that they’re
 immutable. Another is that not every string value can be known when we write
 our code: for example, what if we want to take user input and store it? For
-these situations, Rust has a second string type, `String`. This type is
-allocated on the heap and as such is able to store an amount of text that is
-unknown to us at compile time. You can create a `String` from a string literal
-using the `from` function, like so:
+these situations, Rust has a second string type, `String`. This type manages
+data allocated on the heap and as such is able to store an amount of text that
+is unknown to us at compile time. You can create a `String` from a string
+literal using the `from` function, like so:
 -->
 <p>既に文字列リテラルは見かけましたね。文字列リテラルでは、文字列の値はプログラムにハードコードされます。
 文字列リテラルは便利ですが、テキストを使いたいかもしれない場面全てに最適なわけではありません。一因は、
@@ -5991,43 +5977,32 @@ using the `from` function, like so:
 </span>let s = String::from(&quot;hello&quot;);
 <span class="boring">}</span></code></pre></pre>
 <!--
-The double colon (`::`) is an operator that allows us to namespace this
-particular `from` function under the `String` type rather than using some sort
-of name like `string_from`. We’ll discuss this syntax more in the “Method
-Syntax” section of Chapter 5 and when we talk about namespacing with modules in
-"Module Definitions" in Chapter 7.
+The double colon `::` operator allows us to namespace this particular `from`
+function under the `String` type rather than using some sort of name like
+`string_from`. We’ll discuss this syntax more in the [“Method
+Syntax”][method-syntax] section of Chapter 5, and when we talk
+about namespacing with modules in [“Paths for Referring to an Item in the
+Module Tree”][paths-module-tree] in Chapter 7.
 -->
-<p>この二重コロンは、<code>string_from</code>などの名前を使うのではなく、
-<code>String</code>型直下の<code>from</code>関数を特定する働きをする演算子です。この記法について詳しくは、
-第5章の「メソッド記法」節と、第7章の「モジュール定義」でモジュールを使った名前空間分けについて話をするときに議論します。</p>
+<p>この二重コロン<code>::</code>演算子は、<code>string_from</code>などの名前を使うのではなく、
+<code>String</code>型直下の<code>from</code>関数を特定する働きをします。この記法について詳しくは、
+第5章の<a href="ch05-03-method-syntax.html#%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E8%A8%98%E6%B3%95">「メソッド記法」</a>節と、第7章の<a href="ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html">「モジュールツリーの要素を示すためのパス」</a>でモジュールを使った名前空間分けについて話をするときに議論します。</p>
 <!--
 This kind of string *can* be mutated:
 -->
-<p>この種の文字列は、可変化することが<em>できます</em>:</p>
-<!--
-```rust
-let mut s = String::from("hello");
--->
-<!--
-s.push_str(", world!"); // push_str() appends a literal to a String
--->
-<!--
-println!("{}", s); // This will print `hello, world!`
-```
--->
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut s = String::from(&quot;hello&quot;);
+<p>この種の文字列は、変更することが<em>できます</em>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let mut s = String::from(&quot;hello&quot;);
 
-s.push_str(&quot;, world!&quot;); // push_str()関数は、リテラルをStringに付け加える
+    s.push_str(&quot;, world!&quot;); // push_str()関数は、リテラルをStringに付け加える
 
-println!(&quot;{}&quot;, s); // これは`hello, world!`と出力する
+    println!(&quot;{}&quot;, s); // これは`hello, world!`と出力する
 <span class="boring">}</span></code></pre></pre>
 <!--
 So, what’s the difference here? Why can `String` be mutated but literals
-cannot? The difference is how these two types deal with memory.
+cannot? The difference is in how these two types deal with memory.
 -->
-<p>では、ここでの違いは何でしょうか？なぜ、<code>String</code>型は可変化できるのに、リテラルはできないのでしょうか？
+<p>では、ここでの違いは何でしょうか？なぜ、<code>String</code>型は変更できるのに、リテラルはできないのでしょうか？
 違いは、これら二つの型がメモリを扱う方法にあります。</p>
 <!--
 ### Memory and Allocation
@@ -6037,7 +6012,7 @@ cannot? The difference is how these two types deal with memory.
 In the case of a string literal, we know the contents at compile time, so the
 text is hardcoded directly into the final executable. This is why string
 literals are fast and efficient. But these properties only come from the string
-literal's immutability. Unfortunately, we can’t put a blob of memory into the
+literal’s immutability. Unfortunately, we can’t put a blob of memory into the
 binary for each piece of text whose size is unknown at compile time and whose
 size might change while running the program.
 -->
@@ -6053,13 +6028,13 @@ to hold the contents. This means:
 <p><code>String</code>型では、可変かつ伸長可能なテキスト破片をサポートするために、コンパイル時には不明な量のメモリを
 ヒープに確保して内容を保持します。つまり:</p>
 <!--
-* The memory must be requested from the operating system at runtime.
-* We need a way of returning this memory to the operating system when we’re
-done with our `String`.
+* The memory must be requested from the memory allocator at runtime.
+* We need a way of returning this memory to the allocator when we’re done with
+  our `String`.
 -->
 <ul>
-<li>メモリは、実行時にOSに要求される。</li>
-<li><code>String</code>型を使用し終わったら、OSにこのメモリを返還する方法が必要である。</li>
+<li>メモリは、実行時にメモリアロケータに要求される。</li>
+<li><code>String</code>型を使用し終わったら、アロケータにこのメモリを返還する方法が必要である。</li>
 </ul>
 <!--
 That first part is done by us: when we call `String::from`, its implementation
@@ -6070,20 +6045,21 @@ languages.
 これは、プログラミング言語において、極めて普遍的です。</p>
 <!--
 However, the second part is different. In languages with a *garbage collector
-(GC)*, the GC keeps track and cleans up memory that isn’t being used anymore,
-and we don’t need to think about it. Without a GC, it’s our responsibility to
-identify when memory is no longer being used and call code to explicitly return
-it, just as we did to request it. Doing this correctly has historically been a
-difficult programming problem. If we forget, we’ll waste memory. If we do it
-too early, we’ll have an invalid variable. If we do it twice, that’s a bug too.
-We need to pair exactly one `allocate` with exactly one `free`.
+(GC)*, the GC keeps track of and cleans up memory that isn’t being used
+anymore, and we don’t need to think about it. In most languages without a GC,
+it’s our responsibility to identify when memory is no longer being used and to
+call code to explicitly free it, just as we did to request it. Doing this
+correctly has historically been a difficult programming problem. If we forget,
+we’ll waste memory. If we do it too early, we’ll have an invalid variable. If
+we do it twice, that’s a bug too. We need to pair exactly one `allocate` with
+exactly one `free`.
 -->
 <!--
 かっこがあると、*が機能しないようなので、(GC)の部分には指定していません
 -->
 <p>しかしながら、2番目の部分は異なります。<em>ガベージコレクタ</em>(GC)付きの言語では、GCがこれ以上、
 使用されないメモリを検知して片付けるため、プログラマは、そのことを考慮する必要はありません。
-GCがないなら、メモリがもう使用されないことを見計らって、明示的に返還するコードを呼び出すのは、
+GCを持たない言語の多くでは、メモリがもう使用されないことを見計らって、明示的に解放するコードを呼び出すのは、
 プログラマの責任になります。ちょうど要求の際にしたようにですね。これを正確にすることは、
 歴史的にも難しいプログラミング問題の一つであり続けています。もし、忘れていたら、メモリを無駄にします。
 タイミングが早すぎたら、無効な変数を作ってしまいます。2回解放してしまっても、バグになるわけです。
@@ -6096,41 +6072,30 @@ from Listing 4-1 using a `String` instead of a string literal:
 <p>Rustは、異なる道を歩んでいます: ひとたび、メモリを所有している変数がスコープを抜けたら、
 メモリは自動的に返還されます。こちらの例は、
 リスト4-1のスコープ例を文字列リテラルから<code>String</code>型を使うものに変更したバージョンになります:</p>
-<!--
-```rust
-{
-let s = String::from("hello"); // s is valid from this point forward
--->
-<!--
-// do stuff with s
-}                                 // this scope is now over, and s is no
-// longer valid
-```
--->
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{
-    let s = String::from(&quot;hello&quot;); // sはここから有効になる
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    {
+        let s = String::from(&quot;hello&quot;); // sはここから有効になる
 
-    // sで作業をする
-}                                  // このスコープはここでおしまい。sは
-                                   // もう有効ではない
+        // sで作業をする
+    }                                  // このスコープはここでおしまい。sは
+                                       // もう有効ではない
 <span class="boring">}</span></code></pre></pre>
 <!--
 There is a natural point at which we can return the memory our `String` needs
-to the operating system: when `s` goes out of scope. When a variable goes out
-of scope, Rust calls a special function for us. This function is called `drop`,
-and it’s where the author of `String` can put the code to return the memory.
-Rust calls `drop` automatically at the closing curly bracket.
+to the allocator: when `s` goes out of scope. When a variable goes out of
+scope, Rust calls a special function for us. This function is called
+[`drop`][drop], and it’s where the author of `String` can put
+the code to return the memory. Rust calls `drop` automatically at the closing
+curly bracket.
 -->
-<p><code>String</code>型が必要とするメモリをOSに返還することが自然な地点があります: <code>s</code>変数がスコープを抜ける時です。
-変数がスコープを抜ける時、Rustは特別な関数を呼んでくれます。この関数は、<code>drop</code>と呼ばれ、
+<p><code>String</code>型が必要とするメモリをアロケータに返還することが自然な地点があります: <code>s</code>変数がスコープを抜ける時です。
+変数がスコープを抜ける時、Rustは特別な関数を呼んでくれます。この関数は、<a href="https://doc.rust-lang.org/std/ops/trait.Drop.html#tymethod.drop"><code>drop</code></a>と呼ばれ、
 ここに<code>String</code>型の書き手はメモリを返還するコードを配置することができます。Rustは、閉じ波括弧で自動的に<code>drop</code>関数を呼び出します。</p>
 <!--
-Note: In C++, this pattern of deallocating resources at the end of an item's
-lifetime is sometimes called *Resource Acquisition Is Initialization (RAII)*.
-The `drop` function in Rust will be familiar to you if you’ve used RAII
-patterns.
+> Note: In C++, this pattern of deallocating resources at the end of an item’s
+> lifetime is sometimes called *Resource Acquisition Is Initialization (RAII)*.
+> The `drop` function in Rust will be familiar to you if you’ve used RAII
+> patterns.
 -->
 <blockquote>
 <p>注釈: C++では、要素の生存期間の終了地点でリソースを解放するこのパターンを時に、
@@ -6146,23 +6111,28 @@ we’ve allocated on the heap. Let’s explore some of those situations now.
 <p>このパターンは、Rustコードの書かれ方に甚大な影響をもたらします。現状は簡単そうに見えるかもしれませんが、
 ヒープ上に確保されたデータを複数の変数に使用させるようなもっと複雑な場面では、コードの振る舞いは、
 予期しないものになる可能性もあります。これから、そのような場面を掘り下げてみましょう。</p>
+<!-- Old heading. Do not remove or links may break. -->
 <!--
-#### Ways Variables and Data Interact: Move
+<a id="ways-variables-and-data-interact-move"></a>
 -->
-<h4 id="変数とデータの相互作用法-ムーブ"><a class="header" href="#変数とデータの相互作用法-ムーブ">変数とデータの相互作用法: ムーブ</a></h4>
+<!--
+#### Variables and Data Interacting with Move
+-->
+<h4 id="ムーブによる変数とデータの相互作用"><a class="header" href="#ムーブによる変数とデータの相互作用">ムーブによる変数とデータの相互作用</a></h4>
 <!--
 Multiple variables can interact with the same data in different ways in Rust.
 Let’s look at an example using an integer in Listing 4-2.
 -->
 <p>Rustにおいては、複数の変数が同じデータに対して異なる手段で相互作用することができます。
 整数を使用したリスト4-2の例を見てみましょう。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let x = 5;
-let y = x;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let x = 5;
+    let y = x;
 <span class="boring">}</span></code></pre></pre>
-<!-- <span class="caption">Listing 4-2: Assigning the integer value of variable `x`
-to `y`</span> -->
+<!--
+<span class="caption">Listing 4-2: Assigning the integer value of variable `x`
+to `y`</span>
+-->
 <p><span class="caption">リスト4-2: 変数<code>x</code>の整数値を<code>y</code>に代入する</span></p>
 <!--
 We can probably guess what this is doing: “bind the value `5` to `x`; then make
@@ -6179,17 +6149,16 @@ onto the stack.
 Now let’s look at the `String` version:
 -->
 <p>では、<code>String</code>バージョンを見ていきましょう:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let s1 = String::from(&quot;hello&quot;);
-let s2 = s1;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;hello&quot;);
+    let s2 = s1;
 <span class="boring">}</span></code></pre></pre>
 <!--
-This looks very similar to the previous code, so we might assume that the way
-it works would be the same: that is, the second line would make a copy of the
-value in `s1` and bind it to `s2`. But this isn’t quite what happens.
+This looks very similar, so we might assume that the way it works would be the
+same: that is, the second line would make a copy of the value in `s1` and bind
+it to `s2`. But this isn’t quite what happens.
 -->
-<p>このコードは先ほどのコードに酷似していますので、動作方法も同じだと思い込んでしまうかもしれません:
+<p>このコードは酷似していますので、動作方法も同じだと思い込んでしまうかもしれません:
 要するに、2行目で<code>s1</code>の値をコピーし、<code>s2</code>に束縛するということです。ところが、
 これは全く起こることを言い当てていません。</p>
 <!--
@@ -6204,21 +6173,29 @@ heap that holds the contents.
 文字列の中身を保持するメモリへのポインタと長さ、そして、許容量です。この種のデータは、スタックに保持されます。
 右側には、中身を保持したヒープ上のメモリがあります。 </p>
 <!--
-<img alt="String in memory" src="img/trpl04-01.svg" class="center" style="width: 50%;" />
+<img alt="Two tables: the first table contains the representation of s1 on the
+stack, consisting of its length (5), capacity (5), and a pointer to the first
+value in the second table. The second table contains the representation of the
+string data on the heap, byte by byte." src="img/trpl04-01.svg" class="center"
+style="width: 50%;" />
 -->
-<img alt="メモリ上の文字列" src="img/trpl04-01.svg" class="center" style="width: 50%;" />
-<!-- <span class="caption">Figure 4-1: Representation in memory of a `String`
-holding the value `"hello"` bound to `s1`</span> -->
+<p><img alt="2個の表: 1個目の表はスタック上のs1の表現を含み、表はs1の長さ(5)、許容量(5)、
+そして2個目の表の最初の値へのポインタからなる。2個目の表はヒープ上の文字列データのバイト単位の表現を含む。"
+src="img/trpl04-01.svg" class="center" style="width: 50%;" /></p>
+<!--
+<span class="caption">Figure 4-1: Representation in memory of a `String`
+holding the value `"hello"` bound to `s1`</span>
+-->
 <p><span class="caption">図4-1: <code>s1</code>に束縛された<code>&quot;hello&quot;</code>という値を保持する<code>String</code>のメモリ上の表現</span></p>
 <!--
-The length is how much memory, in bytes, the contents of the `String` is
+The length is how much memory, in bytes, the contents of the `String` are
 currently using. The capacity is the total amount of memory, in bytes, that the
-`String` has received from the operating system. The difference between length
-and capacity matters, but not in this context, so for now, it’s fine to ignore
-the capacity.
+`String` has received from the allocator. The difference between length and
+capacity matters, but not in this context, so for now, it’s fine to ignore the
+capacity.
 -->
 <p>長さは、<code>String</code>型の中身が現在使用しているメモリ量をバイトで表したものです。許容量は、
-<code>String</code>型がOSから受け取った全メモリ量をバイトで表したものです。長さと許容量の違いは問題になることですが、
+<code>String</code>型がアロケータから受け取った全メモリ量をバイトで表したものです。長さと許容量の違いは問題になることですが、
 この文脈では違うので、とりあえずは、許容量を無視しても構わないでしょう。 </p>
 <!--
 When we assign `s1` to `s2`, the `String` data is copied, meaning we copy the
@@ -6230,11 +6207,16 @@ representation in memory looks like Figure 4-2.
 許容量をコピーするということです。ポインタが指すヒープ上のデータはコピーしません。言い換えると、
 メモリ上のデータ表現は図4-2のようになるということです。</p>
 <!--
-<img alt="s1 and s2 pointing to the same value" src="img/trpl04-02.svg" class="center" style="width: 50%;" />
+<img alt="Three tables: tables s1 and s2 representing those strings on the
+stack, respectively, and both pointing to the same string data on the heap."
+src="img/trpl04-02.svg" class="center" style="width: 50%;" />
 -->
-<img alt="同じ値を指すs1とs2" src="img/trpl04-02.svg" class="center" style="width: 50%;" />
-<!-- <span class="caption">Figure 4-2: Representation in memory of the variable `s2`
-that has a copy of the pointer, length, and capacity of `s1`</span> -->
+<p><img alt="3個の表: 表s1とs2はスタック上の文字列s1とs2それぞれを表現し、どちらもヒープ上の同じ文字列データを指している。"
+src="img/trpl04-02.svg" class="center" style="width: 50%;" /></p>
+<!--
+<span class="caption">Figure 4-2: Representation in memory of the variable `s2`
+that has a copy of the pointer, length, and capacity of `s1`</span>
+-->
 <p><span class="caption">図4-2: <code>s1</code>のポインタ、長さ、許容量のコピーを保持する変数<code>s2</code>のメモリ上での表現</span></p>
 <!--
 The representation does *not* look like Figure 4-3, which is what memory would
@@ -6246,11 +6228,16 @@ the data on the heap were large.
 Rustが代わりにヒープデータもコピーするという選択をしていた場合のメモリ表現ですね。Rustがこれをしていたら、
 ヒープ上のデータが大きい時に<code>s2 = s1</code>という処理の実行時性能がとても悪くなっていた可能性があるでしょう。</p>
 <!--
-<img alt="s1 and s2 to two places" src="img/trpl04-03.svg" class="center" style="width: 50%;" />
+<img alt="Four tables: two tables representing the stack data for s1 and s2,
+and each points to its own copy of string data on the heap."
+src="img/trpl04-03.svg" class="center" style="width: 50%;" />
 -->
-<img alt="2箇所へのs1とs2" src="img/trpl04-03.svg" class="center" style="width: 50%;" />
-<!-- <span class="caption">Figure 4-3: Another possibility of what `s2 = s1` might
-do if Rust copied the heap data as well</span> -->
+<p><img alt="4個の表: 2個の表はs1とs2のスタックデータを表現し、それぞれがヒープ上の文字列データのコピーを指している。"
+src="img/trpl04-03.svg" class="center" style="width: 50%;" /></p>
+<!--
+<span class="caption">Figure 4-3: Another possibility for what `s2 = s1` might
+do if Rust copied the heap data as well</span>
+-->
 <p><span class="caption">図4-3: Rustがヒープデータもコピーしていた場合に<code>s2 = s1</code>という処理が行なった可能性のあること</span></p>
 <!--
 Earlier, we said that when a variable goes out of scope, Rust automatically
@@ -6268,66 +6255,81 @@ corruption, which can potentially lead to security vulnerabilities.
 メモリを2回解放することは、memory corruption (<code>訳注</code>: メモリの崩壊。意図せぬメモリの書き換え) につながり、
 セキュリティ上の脆弱性を生む可能性があります。</p>
 <!--
-To ensure memory safety, there’s one more detail to what happens in this
-situation in Rust. Instead of trying to copy the allocated memory, Rust
-considers `s1` to no longer be valid and, therefore, Rust doesn’t need to free
-anything when `s1` goes out of scope. Check out what happens when you try to
-use `s1` after `s2` is created, it won't work:
+To ensure memory safety, after the line `let s2 = s1;`, Rust considers `s1` as
+no longer valid. Therefore, Rust doesn’t need to free anything when `s1` goes
+out of scope. Check out what happens when you try to use `s1` after `s2` is
+created; it won’t work:
 -->
-<!--
-この最初の文は、こなれた日本語にしにくい
--->
-<p>メモリ安全性を保証するために、Rustにおいてこの場面で起こることの詳細がもう一つあります。
-確保されたメモリをコピーしようとする代わりに、コンパイラは、<code>s1</code>が最早有効ではないと考え、
+<p>メモリ安全性を保証するために、<code>let s2 = s1;</code>の行の後、コンパイラは<code>s1</code>が最早有効ではないとみなします。
 故に<code>s1</code>がスコープを抜けた際に何も解放する必要がなくなるわけです。<code>s2</code>の生成後に<code>s1</code>を使用しようとしたら、
 どうなるかを確認してみましょう。動かないでしょう:</p>
-<pre><code class="language-rust ignore">let s1 = String::from(&quot;hello&quot;);
-let s2 = s1;
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;hello&quot;);
+    let s2 = s1;
 
-println!(&quot;{}, world!&quot;, s1);</code></pre>
+    println!(&quot;{}, world!&quot;, s1);
+<span class="boring">}</span></code></pre>
 <!--
 You’ll get an error like this because Rust prevents you from using the
 invalidated reference:
 -->
 <p>コンパイラが無効化された参照は使用させてくれないので、以下のようなエラーが出るでしょう:</p>
-<pre><code class="language-text">error[E0382]: use of moved value: `s1`
-              (ムーブされた値の使用: `s1`)
+<pre><code class="language-console">$ cargo run
+   Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0382]: borrow of moved value: `s1`
+              (ムーブされた値の借用: `s1`)
  --&gt; src/main.rs:5:28
   |
+2 |     let s1 = String::from(&quot;hello&quot;);
+  |         -- move occurs because `s1` has type `String`, which does not implement the `Copy` trait
+  |            (`s1`は`String`型を持ち、これは`Copy`トレイトを実装していないので、ムーブが発生します)
 3 |     let s2 = s1;
-  |         -- value moved here
+  |              -- value moved here
+  |                 (ここで値がムーブされました)
 4 |
 5 |     println!(&quot;{}, world!&quot;, s1);
-  |                            ^^ value used here after move
-  |                               (ムーブ後にここで使用されています)
+  |                            ^^ value borrowed here after move
+  |                               (ムーブ後にここで借用されています)
   |
-  = note: move occurs because `s1` has type `std::string::String`, which does
-  not implement the `Copy` trait
-    (注釈: ムーブが起きたのは、`s1`が`std::string::String`という
-    `Copy`トレイトを実装していない型だからです)
+  = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `println` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider cloning the value if the performance cost is acceptable
+  |
+3 |     let s2 = s1.clone();
+  |                ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `ownership` (bin &quot;ownership&quot;) due to 1 previous error
 </code></pre>
 <!--
-If you’ve heard the terms “shallow copy” and “deep copy” while working with
+If you’ve heard the terms *shallow copy* and *deep copy* while working with
 other languages, the concept of copying the pointer, length, and capacity
-without copying the data probably sounds like a shallow copy. But
+without copying the data probably sounds like making a shallow copy. But
 because Rust also invalidates the first variable, instead of being called a
 shallow copy, it’s known as a *move*. In this example, we would say that `s1`
-was *moved* into `s2`. So what actually happens is shown in Figure 4-4.
+was *moved* into `s2`. So, what actually happens is shown in Figure 4-4.
 -->
-<p>他の言語を触っている間に&quot;shallow copy&quot;と&quot;deep copy&quot;という用語を耳にしたことがあるなら、
-データのコピーなしにポインタと長さ、許容量をコピーするという概念は、shallow copyのように思えるかもしれません。
+<p>他の言語を触っている間に<em>shallow copy</em>と<em>deep copy</em>という用語を耳にしたことがあるなら、
+データのコピーなしにポインタと長さ、許容量をコピーするという概念は、shallow copyすることのように思えるかもしれません。
 ですが、コンパイラは最初の変数をも無効化するので、shallow copyと呼ばれる代わりに、
 <em>ムーブ</em>として知られているわけです。この例では、<code>s1</code>は<code>s2</code>に<em>ムーブ</em>されたと表現するでしょう。
 以上より、実際に起きることを図4-4に示してみました。</p>
 <!--
-<img alt="s1 moved to s2" src="img/trpl04-04.svg" class="center" style="width: 50%;" />
+<img alt="Three tables: tables s1 and s2 representing those strings on the
+stack, respectively, and both pointing to the same string data on the heap.
+Table s1 is grayed out be-cause s1 is no longer valid; only s2 can be used to
+access the heap data." src="img/trpl04-04.svg" class="center" style="width:
+50%;" />
 -->
-<img alt="s2にムーブされたs1" src="img/trpl04-04.svg" class="center" style="width: 50%;" />
-<!-- <span class="caption">Figure 4-4: Representation in memory after `s1` has been
-invalidated</span> -->
+<p><img alt="3個の表: 表s1とs2はスタック上の文字列s1とs2それぞれを表現し、どちらもヒープ上の同じ文字列データを指している。
+s1はもう有効ではないので、表s1はグレー表示されている。
+s2だけがヒープデータにアクセスするために使用できる。" src="img/trpl04-04.svg" class="center" style="width: 50%;" /></p>
+<!--
+<span class="caption">Figure 4-4: Representation in memory after `s1` has been
+invalidated</span>
+-->
 <p><span class="caption">図4-4: <code>s1</code>が無効化された後のメモリ表現</span></p>
 <!--
-That solves our problem! With only `s2` valid, when it goes out of scope, it
+That solves our problem! With only `s2` valid, when it goes out of scope it
 alone will free the memory, and we’re done.
 -->
 <p>これにて一件落着です。<code>s2</code>だけが有効なので、スコープを抜けたら、それだけがメモリを解放して、
@@ -6340,10 +6342,14 @@ copying can be assumed to be inexpensive in terms of runtime performance.
 <p>付け加えると、これにより暗示される設計上の選択があります: Rustでは、
 自動的にデータの&quot;deep copy&quot;が行われることは絶対にないわけです。それ故に、あらゆる<em>自動</em>コピーは、実行時性能の観点で言うと、
 悪くないと考えてよいことになります。</p>
+<!-- Old heading. Do not remove or links may break. -->
 <!--
-#### Ways Variables and Data Interact: Clone
+<a id="ways-variables-and-data-interact-clone"></a>
 -->
-<h4 id="変数とデータの相互作用法-クローン"><a class="header" href="#変数とデータの相互作用法-クローン">変数とデータの相互作用法: クローン</a></h4>
+<!--
+#### Variables and Data Interacting with Clone
+-->
+<h4 id="クローンによる変数とデータの相互作用"><a class="header" href="#クローンによる変数とデータの相互作用">クローンによる変数とデータの相互作用</a></h4>
 <!--
 If we *do* want to deeply copy the heap data of the `String`, not just the
 stack data, we can use a common method called `clone`. We’ll discuss method
@@ -6357,12 +6363,11 @@ programming languages, you’ve probably seen them before.
 Here’s an example of the `clone` method in action:
 -->
 <p>これは、<code>clone</code>メソッドの動作例です:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let s1 = String::from(&quot;hello&quot;);
-let s2 = s1.clone();
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;hello&quot;);
+    let s2 = s1.clone();
 
-println!(&quot;s1 = {}, s2 = {}&quot;, s1, s2);
+    println!(&quot;s1 = {}, s2 = {}&quot;, s1, s2);
 <span class="boring">}</span></code></pre></pre>
 <!--
 This works just fine and explicitly produces the behavior shown in Figure 4-3,
@@ -6382,17 +6387,16 @@ different is going on.
 -->
 <h4 id="スタックのみのデータ-コピー"><a class="header" href="#スタックのみのデータ-コピー">スタックのみのデータ: コピー</a></h4>
 <!--
-There’s another wrinkle we haven’t talked about yet. This code using integers,
-part of which was shown in Listing 4-2, works and is valid:
+There’s another wrinkle we haven’t talked about yet. This code using
+integers—part of which was shown in Listing 4-2—works and is valid:
 -->
 <p>まだ話題にしていない別の問題があります。
 この整数を使用したコードは、一部をリスト4-2で示しましたが、うまく動作する有効なものです:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let x = 5;
-let y = x;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let x = 5;
+    let y = x;
 
-println!(&quot;x = {}, y = {}&quot;, x, y);
+    println!(&quot;x = {}, y = {}&quot;, x, y);
 <span class="boring">}</span></code></pre></pre>
 <!--
 But this code seems to contradict what we just learned: we don’t have a call to
@@ -6406,7 +6410,7 @@ time are stored entirely on the stack, so copies of the actual values are quick
 to make. That means there’s no reason we would want to prevent `x` from being
 valid after we create the variable `y`. In other words, there’s no difference
 between deep and shallow copying here, so calling `clone` wouldn’t do anything
-differently from the usual shallow copying and we can leave it out.
+different from the usual shallow copying, and we can leave it out.
 -->
 <p>その理由は、整数のようなコンパイル時に既知のサイズを持つ型は、スタック上にすっぽり保持されるので、
 実際の値をコピーするのも高速だからです。これは、変数<code>y</code>を生成した後にも<code>x</code>を無効化したくなる理由がないことを意味します。
@@ -6415,37 +6419,45 @@ differently from the usual shallow copying and we can leave it out.
 そのまま放置しておけるということです。</p>
 <!--
 Rust has a special annotation called the `Copy` trait that we can place on
-types like integers that are stored on the stack (we’ll talk more about traits
-in Chapter 10). If a type has the `Copy` trait, an older variable is still
-usable after assignment. Rust won’t let us annotate a type with the `Copy`
-trait if the type, or any of its parts, has implemented the `Drop` trait. If
-the type needs something special to happen when the value goes out of scope and
-we add the `Copy` annotation to that type, we’ll get a compile-time error. To
-learn about how to add the `Copy` annotation to your type, see "Derivable
-Traits" in Appendix C.
+types that are stored on the stack, as integers are (we’ll talk more about
+traits in [Chapter 10][traits]). If a type implements the `Copy`
+trait, variables that use it do not move, but rather are trivially copied,
+making them still valid after assignment to another variable.
+
 -->
 <p>Rustには<code>Copy</code>トレイトと呼ばれる特別な注釈があり、
-整数のようなスタックに保持される型に対して配置することができます(トレイトについては第10章でもっと詳しく話します)。
-型が<code>Copy</code>トレイトに適合していれば、代入後も古い変数が使用可能になります。コンパイラは、
-型やその一部分でも<code>Drop</code>トレイトを実装している場合、<code>Copy</code>トレイトによる注釈をさせてくれません。
-型の値がスコープを外れた時に何か特別なことを起こす必要がある場合に、<code>Copy</code>注釈を追加すると、コンパイルエラーが出ます。
-型に<code>Copy</code>注釈をつける方法について学ぶには、付録Cの「導出可能なトレイト」をご覧ください。</p>
+整数のようなスタックに保持される型に対して配置することができます(トレイトについては<a href="ch10-02-traits.html">第10章</a>でもっと詳しく話します)。
+型が<code>Copy</code>トレイトを実装していれば、その型を持つ変数はムーブされず、代わりに自明な方法でにコピーされます。
+そのため、他の変数に代入した後でも、元の変数は有効なままです。</p>
 <!--
-So what types are `Copy`? You can check the documentation for the given type to
-be sure, but as a general rule, any group of simple scalar values can be
-`Copy`, and nothing that requires allocation or is some form of resource is
-`Copy`. Here are some of the types that are `Copy`:
+Rust won’t let us annotate a type with `Copy` if the type, or any of its parts,
+has implemented the `Drop` trait. If the type needs something special to happen
+when the value goes out of scope and we add the `Copy` annotation to that type,
+we’ll get a compile-time error. To learn about how to add the `Copy` annotation
+to your type to implement the trait, see [“Derivable
+Traits”][derivable-traits] in Appendix C.
 -->
-<p>では、どの型が<code>Copy</code>なのでしょうか？ある型について、ドキュメントをチェックすればいいのですが、
-一般規則として、単純なスカラー値の集合は何でも<code>Copy</code>であり、メモリ確保が必要だったり、
-何らかの形態のリソースだったりするものは<code>Copy</code>ではありません。ここに<code>Copy</code>の型の一部を並べておきます。</p>
+<p>コンパイラは、型やその一部分でも<code>Drop</code>トレイトを実装している場合、<code>Copy</code>による注釈をさせてくれません。
+型の値がスコープを外れた時に何か特別なことを起こす必要がある場合に、<code>Copy</code>注釈を追加すると、コンパイルエラーが出ます。
+型に<code>Copy</code>注釈をつけてトレイトを実装する方法について学ぶには、付録Cの<a href="appendix-03-derivable-traits.html">「導出可能なトレイト」</a>をご覧ください。</p>
 <!--
-* All the integer types, like `u32`.
+So, what types implement the `Copy` trait? You can check the documentation for
+the given type to be sure, but as a general rule, any group of simple scalar
+values can implement `Copy`, and nothing that requires allocation or is some
+form of resource can implement `Copy`. Here are some of the types that
+implement `Copy`:
+-->
+<p>では、どの型が<code>Copy</code>トレイトを実装しているのでしょうか？
+確実に知るためには、調べたい型のドキュメントをチェックすればいいのですが、
+一般規則として、単純なスカラー値の集合は何でも<code>Copy</code>を実装でき、メモリ確保が必要だったり、
+何らかの形態のリソースだったりするものは<code>Copy</code>を実装できません。ここに<code>Copy</code>を実装する型の一部を並べておきます。</p>
+<!--
+* All the integer types, such as `u32`.
 * The Boolean type, `bool`, with values `true` and `false`.
-* All the floating point types, like `f64`.
+* All the floating-point types, such as `f64`.
 * The character type, `char`.
-* Tuples, but only if they contain types that are also `Copy`. For example
-`(i32, i32)` is `Copy`, but `(i32, String)` is not.
+* Tuples, if they only contain types that also implement `Copy`. For example,
+  `(i32, i32)` implements `Copy`, but `(i32, String)` does not.
 -->
 <ul>
 <li>あらゆる整数型。<code>u32</code>など。</li>
@@ -6460,51 +6472,18 @@ be sure, but as a general rule, any group of simple scalar values can be
 -->
 <h3 id="所有権と関数"><a class="header" href="#所有権と関数">所有権と関数</a></h3>
 <!--
-The semantics for passing a value to a function are similar to those for
+The mechanics of passing a value to a function are similar to those when
 assigning a value to a variable. Passing a variable to a function will move or
 copy, just as assignment does. Listing 4-3 has an example with some annotations
 showing where variables go into and out of scope.
 -->
-<p>意味論的に、関数に値を渡すことと、値を変数に代入することは似ています。関数に変数を渡すと、
+<p>関数に値を渡すことと、値を変数に代入することの仕組みは似ています。関数に変数を渡すと、
 代入のようにムーブやコピーされます。リスト4-3は変数がスコープに入ったり、
 抜けたりする地点について注釈してある例です。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<!--
-```rust
-fn main() {
-let s = String::from("hello");  // s comes into scope
--->
-<!--
-takes_ownership(s);             // s's value moves into the function...
-// ... and so is no longer valid here
--->
-<!--
-let x = 5;                      // x comes into scope
--->
-<!--
-makes_copy(x);                  // x would move into the function,
-// but i32 is Copy, so it’s okay to still
-// use x afterward
--->
-<!--
-} // Here, x goes out of scope, then s. But since s's value was moved, nothing
-// special happens.
--->
-<!--
-fn takes_ownership(some_string: String) { // some_string comes into scope.
-println!("{}", some_string);
-} // Here, some_string goes out of scope and `drop` is called. The backing
-// memory is freed.
--->
-<!--
-fn makes_copy(some_integer: i32) { // some_integer comes into scope
-println!("{}", some_integer);
-} // Here, some_integer goes out of scope. Nothing special happens.
-```
--->
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let s = String::from(&quot;hello&quot;);  // sがスコープに入る
 
@@ -6517,19 +6496,21 @@ println!("{}", some_integer);
                                     // i32はCopyなので、この後にxを使っても
                                     // 大丈夫
 
-} // ここでxがスコープを抜け、sもスコープを抜ける。ただし、sの値はムーブされているので、何も特別なことは起こらない。
-  //
+} // ここでxがスコープを抜け、sもスコープを抜ける。ただし、sの値はムーブされているので、
+  // 何も特別なことは起こらない。
 
 fn takes_ownership(some_string: String) { // some_stringがスコープに入る。
     println!(&quot;{}&quot;, some_string);
 } // ここでsome_stringがスコープを抜け、`drop`が呼ばれる。後ろ盾してたメモリが解放される。
-  // 
+  // 後ろ盾してたメモリが解放される。
 
 fn makes_copy(some_integer: i32) { // some_integerがスコープに入る
     println!(&quot;{}&quot;, some_integer);
 } // ここでsome_integerがスコープを抜ける。何も特別なことはない。</code></pre></pre>
-<!-- <span class="caption">Listing 4-3: Functions with ownership and scope
-annotated</span> -->
+<!--
+<span class="caption">Listing 4-3: Functions with ownership and scope
+annotated</span>
+-->
 <p><span class="caption">リスト4-3: 所有権とスコープが注釈された関数群</span></p>
 <!--
 If we tried to use `s` after the call to `takes_ownership`, Rust would throw a
@@ -6545,54 +6526,15 @@ the ownership rules prevent you from doing so.
 -->
 <h3 id="戻り値とスコープ"><a class="header" href="#戻り値とスコープ">戻り値とスコープ</a></h3>
 <!--
-Returning values can also transfer ownership. Listing 4-4 is an example with
-similar annotations to those in Listing 4-3.
+Returning values can also transfer ownership. Listing 4-4 shows an example of a
+function that returns some value, with similar annotations as those in Listing
+4-3.
 -->
-<p>値を返すことでも、所有権は移動します。リスト4-4は、リスト4-3と似た注釈のついた例です。</p>
+<p>値を返すことでも、所有権は移動します。リスト4-4に値を返す関数の例を、リスト4-3と似た注釈を付けて示します。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<!--
-```rust
-fn main() {
-let s1 = gives_ownership();         // gives_ownership moves its return
-// value into s1
--->
-<!--
-let s2 = String::from("hello");     // s2 comes into scope
--->
-<!--
-let s3 = takes_and_gives_back(s2);  // s2 is moved into
-// takes_and_gives_back, which also
-// moves its return value into s3
-} // Here, s3 goes out of scope and is dropped. s2 goes out of scope but was
-// moved, so nothing happens. s1 goes out of scope and is dropped.
--->
-<!--
-fn gives_ownership() -> String {             // gives_ownership will move its
-// return value into the function
-// that calls it
--->
-<!--
-let some_string = String::from("hello"); // some_string comes into scope
--->
-<!--
-some_string                              // some_string is returned and
-// moves out to the calling
-// function
-}
--->
-<!--
-// takes_and_gives_back will take a String and return one.
-fn takes_and_gives_back(a_string: String) -> String { // a_string comes into
-// scope
--->
-<!--
-a_string  // a_string is returned and moves out to the calling function
-}
-```
--->
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let s1 = gives_ownership();         // gives_ownershipは、戻り値をs1に
                                         // ムーブする
@@ -6601,19 +6543,19 @@ a_string  // a_string is returned and moves out to the calling function
 
     let s3 = takes_and_gives_back(s2);  // s2はtakes_and_gives_backにムーブされ
                                         // 戻り値もs3にムーブされる
-} // ここで、s3はスコープを抜け、ドロップされる。s2もスコープを抜けるが、ムーブされているので、
-  // 何も起きない。s1もスコープを抜け、ドロップされる。
+} // ここで、s3はスコープを抜け、ドロップされる。s2はムーブされているので、何も起きない。
+  // s1もスコープを抜け、ドロップされる。
 
 fn gives_ownership() -&gt; String {             // gives_ownershipは、戻り値を
                                              // 呼び出した関数にムーブする
 
-    let some_string = String::from(&quot;hello&quot;); // some_stringがスコープに入る
+    let some_string = String::from(&quot;yours&quot;); // some_stringがスコープに入る
 
     some_string                              // some_stringが返され、呼び出し元関数に
                                              // ムーブされる
 }
 
-// takes_and_gives_backは、Stringを一つ受け取り、返す。
+// この関数は、Stringを一つ受け取り、返す。
 fn takes_and_gives_back(a_string: String) -&gt; String { // a_stringがスコープに入る。
 
     a_string  // a_stringが返され、呼び出し元関数にムーブされる
@@ -6626,52 +6568,31 @@ values</span>
 <!--
 The ownership of a variable follows the same pattern every time: assigning a
 value to another variable moves it. When a variable that includes data on the
-heap goes out of scope, the value will be cleaned up by `drop` unless the data
-has been moved to be owned by another variable.
+heap goes out of scope, the value will be cleaned up by `drop` unless ownership
+of the data has been moved to another variable.
 -->
 <p>変数の所有権は、毎回同じパターンを辿っています: 別の変数に値を代入すると、ムーブされます。
-ヒープにデータを含む変数がスコープを抜けると、データが別の変数に所有されるようムーブされていない限り、
+ヒープにデータを含む変数がスコープを抜けると、データの所有権が別の変数にムーブされていない限り、
 <code>drop</code>により片付けられるでしょう。</p>
 <!--
-Taking ownership and then returning ownership with every function is a bit
-tedious. What if we want to let a function use a value but not take ownership?
-It’s quite annoying that anything we pass in also needs to be passed back if we
-want to use it again, in addition to any data resulting from the body of the
-function that we might want to return as well.
+While this works, taking ownership and then returning ownership with every
+function is a bit tedious. What if we want to let a function use a value but
+not take ownership? It’s quite annoying that anything we pass in also needs to
+be passed back if we want to use it again, in addition to any data resulting
+from the body of the function that we might want to return as well.
 -->
-<p>所有権を取り、またその所有権を戻す、ということを全ての関数でしていたら、ちょっとめんどくさいですね。
+<p>これでもいいのですが、所有権を取り、またその所有権を戻す、ということを全ての関数でしていたら、ちょっとめんどくさいですね。
 関数に値は使わせるものの所有権を取らないようにさせるにはどうするべきでしょうか。
 返したいと思うかもしれない関数本体で発生したあらゆるデータとともに、再利用したかったら、渡されたものをまた返さなきゃいけないのは、
 非常に煩わしいことです。</p>
 <!--
-It’s possible to return multiple values using a tuple, as shown in Listing 4-5.
+Rust does let us return multiple values using a tuple, as shown in Listing 4-5.
 -->
-<p>タプルで、複数の値を返すことは可能です。リスト4-5のようにですね。</p>
+<p>Rustでは、タプルを使って複数の値を返すことができます。リスト4-5のようにですね。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<!--
-```rust
-fn main() {
-let s1 = String::from("hello");
--->
-<!--
-let (s2, len) = calculate_length(s1);
--->
-<!--
-println!("The length of '{}' is {}.", s2, len);
-}
--->
-<!--
-fn calculate_length(s: String) -> (String, usize) {
-let length = s.len(); // len() returns the length of a String
--->
-<!--
-(s, length)
-}
-```
--->
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let s1 = String::from(&quot;hello&quot;);
 
@@ -6692,11 +6613,20 @@ fn calculate_length(s: String) -&gt; (String, usize) {
 <p><span class="caption">リスト4-5: 引数の所有権を返す</span></p>
 <!--
 But this is too much ceremony and a lot of work for a concept that should be
-common. Luckily for us, Rust has a feature for this concept, called
-*references*.
+common. Luckily for us, Rust has a feature for using a value without
+transferring ownership, called *references*.
 -->
 <p>でも、これでは、大袈裟すぎますし、ありふれているはずの概念に対して、作業量が多すぎます。
-私たちにとって幸運なことに、Rustにはこの概念に対する機能があり、<em>参照</em>と呼ばれます。</p>
+私たちにとって幸運なことに、Rustには所有権を移動することなく値を使うための機能があり、<em>参照</em>と呼ばれます。</p>
+<!--
+[data-types]: ch03-02-data-types.html#data-types
+[ch8]: ch08-02-strings.html
+[traits]: ch10-02-traits.html
+[derivable-traits]: appendix-03-derivable-traits.html
+[method-syntax]: ch05-03-method-syntax.html#method-syntax
+[paths-module-tree]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html
+[drop]: ../std/ops/trait.Drop.html#tymethod.drop
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## References and Borrowing
 -->
@@ -6705,14 +6635,21 @@ common. Luckily for us, Rust has a feature for this concept, called
 The issue with the tuple code in Listing 4-5 is that we have to return the
 `String` to the calling function so we can still use the `String` after the
 call to `calculate_length`, because the `String` was moved into
-`calculate_length`.
+`calculate_length`. Instead, we can provide a reference to the `String` value.
+A *reference* is like a pointer in that it’s an address we can follow to access
+the data stored at that address; that data is owned by some other variable.
+Unlike a pointer, a reference is guaranteed to point to a valid value of a
+particular type for the life of that reference.
 -->
 <p>リスト4-5のタプルコードの問題は、<code>String</code>型を呼び出し元の関数に戻さないと、<code>calculate_length</code>を呼び出した後に、
-<code>String</code>オブジェクトが使えなくなることであり、これは<code>String</code>オブジェクトが<code>calculate_length</code>にムーブされてしまうためでした。</p>
+<code>String</code>オブジェクトが使えなくなることであり、これは<code>String</code>オブジェクトが<code>calculate_length</code>にムーブされてしまうためでした。
+代わりに、<code>String</code>値への参照を渡すことができます。
+<em>参照</em>はアドレスであり、それを辿ってそのアドレスに置かれているデータにアクセスできるという点で、ポインタと似ています;
+データは他の変数によって所有されています。
+ポインタと異なる点としては、参照はその生存期間中を通して、特定の型の有効な値を指していることが保証されています。</p>
 <!--
 Here is how you would define and use a `calculate_length` function that has a
-reference to an object as a parameter instead of taking ownership of the
-value:
+reference to an object as a parameter instead of taking ownership of the value:
 -->
 <p>ここで、値の所有権をもらう代わりに引数としてオブジェクトへの参照を取る<code>calculate_length</code>関数を定義し、
 使う方法を見てみましょう:</p>
@@ -6736,30 +6673,30 @@ fn calculate_length(s: &amp;String) -&gt; usize {
 First, notice that all the tuple code in the variable declaration and the
 function return value is gone. Second, note that we pass `&s1` into
 `calculate_length` and, in its definition, we take `&String` rather than
-`String`.
+`String`. These ampersands represent *references*, and they allow you to refer
+to some value without taking ownership of it. Figure 4-5 depicts this concept.
 -->
 <p>まず、変数宣言と関数の戻り値にあったタプルコードは全てなくなったことに気付いてください。
-2番目に、<code>&amp;s1</code>を<code>calcuate_length</code>に渡し、その定義では、<code>String</code>型ではなく、<code>&amp;String</code>を受け取っていることに注目してください。</p>
+2番目に、<code>&amp;s1</code>を<code>calcuate_length</code>に渡し、その定義では、<code>String</code>型ではなく、<code>&amp;String</code>を受け取っていることに注目してください。
+これらのアンド記号が参照を表しており、これのおかげで所有権をもらうことなく値を参照することができるのです。
+図4-5にこの概念を描写します。</p>
 <!--
-These ampersands are *references*, and they allow you to refer to some value
-without taking ownership of it. Figure 4-5 shows a diagram.
+<img alt="Three tables: the table for s contains only a pointer to the table
+for s1. The table for s1 contains the stack data for s1 and points to the
+string data on the heap." src="img/trpl04-05.svg" class="center" />
 -->
-<p>これらのアンド記号が参照であり、これのおかげで所有権をもらうことなく値を参照することができるのです。
-図4-5はその図解です。</p>
-<!--
-<img alt="&String s pointing at String s1" src="img/trpl04-05.svg" class="center" />
--->
-<img alt="文字列s1を指す&amp;String型のs" src="img/trpl04-05.svg" class="center" />
+<p><img alt="3個の表: sの表はs1の表へのポインタのみを含む。
+s1の表はs1のスタックデータを含み、ヒープ上の文字列データを指している。" src="img/trpl04-05.svg" class="center" /></p>
 <!--
 <span class="caption">Figure 4-5: A diagram of `&String s` pointing at `String
 s1`</span>
 -->
 <p><span class="caption">図4-5: <code>String s1</code>を指す<code>&amp;String s</code>の図表</span></p>
 <!--
-Note: The opposite of referencing by using `&` is *dereferencing*, which is
-accomplished with the dereference operator, `*`. We’ll see some uses of the
-dereference operator in Chapter 8 and discuss details of dereferencing in
-Chapter 15.
+> Note: The opposite of referencing by using `&` is *dereferencing*, which is
+> accomplished with the dereference operator, `*`. We’ll see some uses of the
+> dereference operator in Chapter 8 and discuss details of dereferencing in
+> Chapter 15.
 -->
 <blockquote>
 <p>注釈: <code>&amp;</code>による参照の逆は、<em>参照外し</em>であり、参照外し演算子の<code>*</code>で達成できます。
@@ -6769,62 +6706,63 @@ Chapter 15.
 Let’s take a closer look at the function call here:
 -->
 <p>ここの関数呼び出しについて、もっと詳しく見てみましょう:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;hello&quot;);
+
+    let len = calculate_length(&amp;s1);
+<span class="boring">
+</span><span class="boring">    // '{}'の長さは、{}です
+</span><span class="boring">    println!(&quot;The length of '{}' is {}.&quot;, s1, len);
+</span><span class="boring">}
+</span><span class="boring">
 </span><span class="boring">fn calculate_length(s: &amp;String) -&gt; usize {
 </span><span class="boring">    s.len()
-</span><span class="boring">}
-</span>let s1 = String::from(&quot;hello&quot;);
-
-let len = calculate_length(&amp;s1);
-<span class="boring">}</span></code></pre></pre>
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 The `&s1` syntax lets us create a reference that *refers* to the value of `s1`
 but does not own it. Because it does not own it, the value it points to will
-not be dropped when the reference goes out of scope.
+not be dropped when the reference stops being used.
 -->
 <p>この<code>&amp;s1</code>という記法により、<code>s1</code>の値を<em>参照する</em>参照を生成することができますが、これを所有することはありません。
-所有してないということは、指している値は、参照がスコープを抜けてもドロップされないということです。</p>
+所有してないということは、指している値は、参照が使用されなくなってもドロップされないということです。</p>
 <!--
 Likewise, the signature of the function uses `&` to indicate that the type of
 the parameter `s` is a reference. Let’s add some explanatory annotations:
 -->
 <p>同様に、関数のシグニチャでも、<code>&amp;</code>を使用して引数<code>s</code>の型が参照であることを示しています。
 説明的な注釈を加えてみましょう:</p>
-<!--
-```rust
-fn calculate_length(s: &String) -> usize { // s is a reference to a String
-s.len()
-} // Here, s goes out of scope. But because it does not have ownership of what
-// it refers to, nothing happens.
-```
--->
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span><span class="boring">    let s1 = String::from(&quot;hello&quot;);
+</span><span class="boring">
+</span><span class="boring">    let len = calculate_length(&amp;s1);
+</span><span class="boring">
+</span><span class="boring">    println!(&quot;The length of '{}' is {}.&quot;, s1, len);
+</span><span class="boring">}
+</span><span class="boring">
 </span>fn calculate_length(s: &amp;String) -&gt; usize { // sはStringへの参照
     s.len()
 } // ここで、sはスコープ外になる。けど、参照しているものの所有権を持っているわけではないので
-  // 何も起こらない
-<span class="boring">}</span></code></pre></pre>
+  // ドロップはされない。</code></pre></pre>
 <!--
 The scope in which the variable `s` is valid is the same as any function
-parameter's scope, but we don’t drop what the reference points to when it goes
-out of scope because we don’t have ownership. When functions have references as
-parameters instead of the actual values, we won’t need to return the values in
-order to give back ownership, since we never had ownership.
+parameter’s scope, but the value pointed to by the reference is not dropped
+when `s` stops being used, because `s` doesn’t have ownership. When functions
+have references as parameters instead of the actual values, we won’t need to
+return the values in order to give back ownership, because we never had
+ownership.
 -->
-<p>変数<code>s</code>が有効なスコープは、あらゆる関数の引数のものと同じですが、所有権はないので、<code>s</code>がスコープを抜けても、
-参照が指しているものをドロップすることはありません。関数が実際の値の代わりに参照を引数に取ると、
+<p>変数<code>s</code>が有効なスコープは通常の関数の引数のものと同じですが、<code>s</code>はそれが指す値に対する所有権を持っていないので、
+<code>s</code>が使用されなくなっても指している値をドロップすることはありません。関数が実際の値の代わりに参照を引数に取ると、
 所有権をもらわないので、所有権を返す目的で値を返す必要はありません。</p>
 <!--
-We call having references as function parameters *borrowing*. As in real life,
-if a person owns something, you can borrow it from them. When you’re done, you
-have to give it back.
+We call the action of creating a reference *borrowing*. As in real life, if a
+person owns something, you can borrow it from them. When you’re done, you have
+to give it back. You don’t own it.
 -->
-<p>関数の引数に参照を取ることを<em>借用</em>と呼びます。現実生活のように、誰かが何かを所有していたら、
-それを借りることができます。用が済んだら、返さなきゃいけないわけです。</p>
+<p>参照を作成することを<em>借用</em>と呼びます。現実生活のように、誰かが何かを所有していたら、
+それを借りることができます。用が済んだら、返さないといけません。持っているのとは違うのです。</p>
 <!--
-So what happens if we try to modify something we’re borrowing? Try the code in
+So, what happens if we try to modify something we’re borrowing? Try the code in
 Listing 4-6. Spoiler alert: it doesn’t work!
 -->
 <p>では、借用した何かを変更しようとしたら、どうなるのでしょうか？リスト4-6のコードを試してください。
@@ -6833,7 +6771,7 @@ Listing 4-6. Spoiler alert: it doesn’t work!
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn main() {
+<pre><code class="language-rust ignore does_not_compile">fn main() {
     let s = String::from(&quot;hello&quot;);
 
     change(&amp;s);
@@ -6850,14 +6788,24 @@ fn change(some_string: &amp;String) {
 Here’s the error:
 -->
 <p>これがエラーです:</p>
-<pre><code class="language-text">error[E0596]: cannot borrow immutable borrowed content `*some_string` as mutable
-(エラー: 不変な借用をした中身`*some_string`を可変で借用できません)
- --&gt; error.rs:8:5
+<pre><code class="language-console">$ cargo run
+   Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0596]: cannot borrow `*some_string` as mutable, as it is behind a `&amp;` reference
+             (`*some_string`は`&amp;`参照の背後にあるため、それを可変として借用することはできません)
+ --&gt; src/main.rs:8:5
   |
-7 | fn change(some_string: &amp;String) {
-  |                        ------- use `&amp;mut String` here to make mutable
 8 |     some_string.push_str(&quot;, world&quot;);
-  |     ^^^^^^^^^^^ cannot borrow as mutable
+  |     ^^^^^^^^^^^ `some_string` is a `&amp;` reference, so the data it refers to cannot be borrowed as mutable
+  |                (`some_string`は`&amp;`参照なので、それが指すデータを可変として借用することはできません)
+  |
+help: consider changing this to be a mutable reference
+     (これを可変参照に変更することを検討してください)
+  |
+7 | fn change(some_string: &amp;mut String) {
+  |                         +++
+
+For more information about this error, try `rustc --explain E0596`.
+error: could not compile `ownership` (bin &quot;ownership&quot;) due to 1 previous error
 </code></pre>
 <!--
 Just as variables are immutable by default, so are references. We’re not
@@ -6867,11 +6815,13 @@ allowed to modify something we have a reference to.
 <!--
 ### Mutable References
 -->
-<h3 id="可変な参照"><a class="header" href="#可変な参照">可変な参照</a></h3>
+<h3 id="可変参照"><a class="header" href="#可変参照">可変参照</a></h3>
 <!--
-We can fix the error in the code from Listing 4-6 with just a small tweak:
+We can fix the code from Listing 4-6 to allow us to modify a borrowed value
+with just a few small tweaks that use, instead, a *mutable reference*:
 -->
-<p>一捻り加えるだけでリスト4-6のコードのエラーは解決します:</p>
+<p>借用された値を変更できるようにするには、代わりに<em>可変参照</em>を使うという一捻りを加えるだけでよく、
+これでリスト4-6のコードを修正できます:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -6886,70 +6836,80 @@ fn change(some_string: &amp;mut String) {
     some_string.push_str(&quot;, world&quot;);
 }</code></pre></pre>
 <!--
-First, we had to change `s` to be `mut`. Then we had to create a mutable
-reference with `&mut s` and accept a mutable reference with `some_string: &mut
-String`.
+First we change `s` to be `mut`. Then we create a mutable reference with `&mut
+s` where we call the `change` function, and update the function signature to
+accept a mutable reference with `some_string: &mut String`. This makes it very
+clear that the `change` function will mutate the value it borrows.
 -->
-<p>始めに、<code>s</code>を<code>mut</code>に変えなければなりませんでした。そして、<code>&amp;mut s</code>で可変な参照を生成し、
-<code>some_string: &amp;mut String</code>で可変な参照を受け入れなければなりませんでした。</p>
+<p>まず<code>s</code>が<code>mut</code>となるように変更します。次に、<code>change</code>関数を呼ぶところで<code>&amp;mut s</code>によって可変参照を作成し、
+さらに関数シグネチャを、<code>some_string: &amp;mut String</code>で可変参照を受け入れるように更新します。
+これにより、<code>change</code>関数は借用する値を変更しようとすることがとても明確になります。</p>
 <!--
-But mutable references have one big restriction: you can have only one mutable
-reference to a particular piece of data in a particular scope. This code will
-fail:
+Mutable references have one big restriction: if you have a mutable reference to
+a value, you can have no other references to that value. This code that
+attempts to create two mutable references to `s` will fail:
 -->
-<p>ところが、可変な参照には大きな制約が一つあります: 特定のスコープで、ある特定のデータに対しては、
-一つしか可変な参照を持てないことです。こちらのコードは失敗します:</p>
+<p>可変参照には大きな制約が一つあります: ある値への可変参照が存在するなら、その値への参照を他に作ることはできません。
+このコードは<code>s</code>への可変参照を2個作成しようとしていますが、これは失敗します:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">    let mut s = String::from(&quot;hello&quot;);
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
+</span>    let mut s = String::from(&quot;hello&quot;);
 
     let r1 = &amp;mut s;
     let r2 = &amp;mut s;
 
-    println!(&quot;{}, {}&quot;, r1, r2);</code></pre>
+    println!(&quot;{}, {}&quot;, r1, r2);
+<span class="boring">}</span></code></pre>
 <!--
 Here’s the error:
 -->
 <p>これがエラーです:</p>
-<pre><code class="language-text">$ cargo run
+<pre><code class="language-console">$ cargo run
    Compiling ownership v0.1.0 (file:///projects/ownership)
 error[E0499]: cannot borrow `s` as mutable more than once at a time
-(エラー: 一度に`s`を可変として2回以上借用することはできません)
+             (一度に`s`を可変として2回以上借用することはできません)
  --&gt; src/main.rs:5:14
   |
 4 |     let r1 = &amp;mut s;
   |              ------ first mutable borrow occurs here
-  |                    (最初の可変な参照はここ)
+  |                    (最初の可変借用はここで発生しています)
 5 |     let r2 = &amp;mut s;
   |              ^^^^^^ second mutable borrow occurs here
-  |                    (二つ目の可変な参照はここ)
-6 | 
+  |                    (2つ目の可変借用はここで発生しています)
+6 |
 7 |     println!(&quot;{}, {}&quot;, r1, r2);
   |                        -- first borrow later used here
-
-error: aborting due to previous error
+  |                          (最初の参照はここで後で使用されています)
 
 For more information about this error, try `rustc --explain E0499`.
-error: could not compile `ownership`
-
-To learn more, run the command again with --verbose.
+error: could not compile `ownership` (bin &quot;ownership&quot;) due to 1 previous error
 </code></pre>
 <!--
-This restriction allows for mutation but in a very controlled fashion. It’s
-something that new Rustaceans struggle with, because most languages let you
-mutate whenever you’d like.
+This error says that this code is invalid because we cannot borrow `s` as
+mutable more than once at a time. The first mutable borrow is in `r1` and must
+last until it’s used in the `println!`, but between the creation of that
+mutable reference and its usage, we tried to create another mutable reference
+in `r2` that borrows the same data as `r1`.
 -->
-<p>この制約は、可変化を許可するものの、それを非常に統制の取れた形で行えます。これは、新たなRustaceanにとっては、
-壁です。なぜなら、多くの言語では、いつでも好きな時に可変化できるからです。</p>
+<p>このエラーによると、一度に<code>s</code>を可変として2回以上借用することはできないので、このコードは不正だ、とのことです。
+最初の可変借用は<code>r1</code>にあり、<code>println!</code>で使用されるまで続かないといけませんが、この可変借用の作成から使用までの間に、
+<code>r1</code>と同じデータを借用する別の可変借用を<code>r2</code>に作成しようとしました。</p>
 <!--
-The benefit of having this restriction is that Rust can prevent data races at
-compile time. A *data race* is similar to a race condition and happens when
-these three behaviors occur:
+The restriction preventing multiple mutable references to the same data at the
+same time allows for mutation but in a very controlled fashion. It’s something
+that new Rustaceans struggle with because most languages let you mutate
+whenever you’d like. The benefit of having this restriction is that Rust can
+prevent data races at compile time. A *data race* is similar to a race
+condition and happens when these three behaviors occur:
 -->
-<p>この制約がある利点は、コンパイラがコンパイル時にデータ競合を防ぐことができる点です。
-データ競合とは、競合条件と類似していて、これら3つの振る舞いが起きる時に発生します:</p>
+<p>同じデータへの複数の可変参照が同時に存在することを禁止する、という制約は、可変化を許可するものの、
+それを非常に統制の取れた形で行えます。これは、新たなRustaceanにとっては、
+壁です。なぜなら、多くの言語では、いつでも好きな時に可変化できるからです。
+この制約がある利点は、コンパイラがコンパイル時にデータ競合を防ぐことができる点です。
+データ競合とは、競合状態と類似していて、これら3つの振る舞いが起きる時に発生します:</p>
 <!--
 * Two or more pointers access the same data at the same time.
 * At least one of the pointers is being used to write to the data.
@@ -6962,96 +6922,116 @@ these three behaviors occur:
 </ul>
 <!--
 Data races cause undefined behavior and can be difficult to diagnose and fix
-when you’re trying to track them down at runtime; Rust prevents this problem
-from happening because it won’t even compile code with data races!
+when you’re trying to track them down at runtime; Rust prevents this problem by
+refusing to compile code with data races!
 -->
 <p>データ競合は未定義の振る舞いを引き起こし、実行時に追いかけようとした時に特定し解決するのが難しい問題です。
-しかし、Rustは、データ競合が起こるコードをコンパイルさえしないので、この問題が発生しないようにしてくれるわけです。</p>
+しかし、Rustは、データ競合が起こるコードのコンパイルを拒否することで、この問題が発生しないようにしてくれるわけです。</p>
 <!--
 As always, we can use curly brackets to create a new scope, allowing for
 multiple mutable references, just not *simultaneous* ones:
 -->
 <p>いつものように、波かっこを使って新しいスコープを生成し、<em>同時並行</em>なものでなく、複数の可変な参照を作ることができます。</p>
-<!--
-```rust
-let mut s = String::from("hello");
--->
-<!--
-{
-let r1 = &mut s;
--->
-<!--
-} // r1 goes out of scope here, so we can make a new reference with no problems.
--->
-<!--
-let r2 = &mut s;
-```
--->
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut s = String::from(&quot;hello&quot;);
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let mut s = String::from(&quot;hello&quot;);
 
-{
-    let r1 = &amp;mut s;
+    {
+        let r1 = &amp;mut s;
+    } // r1はここでスコープを抜けるので、問題なく新しい参照を作ることができる。
 
-} // r1はここでスコープを抜けるので、問題なく新しい参照を作ることができる
-
-let r2 = &amp;mut s;
+    let r2 = &amp;mut s;
 <span class="boring">}</span></code></pre></pre>
 <!--
-A similar rule exists for combining mutable and immutable references. This code
-results in an error:
+Rust enforces a similar rule for combining mutable and immutable references.
+This code results in an error:
 -->
-<p>可変と不変な参照を組み合わせることに関しても、似たような規則が存在しています。このコードはエラーになります:</p>
-<!--
-```rust,ignore
-let mut s = String::from("hello");
--->
-<!--
-let r1 = &s; // no problem
-let r2 = &s; // no problem
-let r3 = &mut s; // BIG PROBLEM
-```
--->
-<pre><code class="language-rust ignore">let mut s = String::from(&quot;hello&quot;);
+<p>コンパイラは可変と不変な参照を組み合わせることに関しても、似たような規則を強制します。このコードはエラーになります:</p>
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
+</span>    let mut s = String::from(&quot;hello&quot;);
 
-let r1 = &amp;s; // 問題なし
-let r2 = &amp;s; // 問題なし
-let r3 = &amp;mut s; // 大問題！</code></pre>
+    let r1 = &amp;s; // 問題なし
+    let r2 = &amp;s; // 問題なし
+    let r3 = &amp;mut s; // 大問題！
+
+    println!(&quot;{}, {}, and {}&quot;, r1, r2, r3);
+<span class="boring">}</span></code></pre>
 <!--
 Here’s the error:
 -->
 <p>これがエラーです:</p>
-<pre><code class="language-text">error[E0502]: cannot borrow `s` as mutable because it is also borrowed as
-immutable
-(エラー: `s`は不変で借用されているので、可変で借用できません)
- --&gt; borrow_thrice.rs:6:19
+<pre><code class="language-console">$ cargo run
+   Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+             (`s`は不変で借用されているので、可変で借用できません)
+ --&gt; src/main.rs:6:14
   |
-4 |     let r1 = &amp;s; // no problem
-  |               - immutable borrow occurs here
-5 |     let r2 = &amp;s; // no problem
-6 |     let r3 = &amp;mut s; // BIG PROBLEM
-  |                   ^ mutable borrow occurs here
-7 | }
-  | - immutable borrow ends here
+4 |     let r1 = &amp;s; // 問題なし
+  |              -- immutable borrow occurs here
+  |                 (不変借用はここで発生しています)
+5 |     let r2 = &amp;s; // 問題なし
+6 |     let r3 = &amp;mut s; // 大問題！
+  |              ^^^^^^ mutable borrow occurs here
+  |                     (可変借用はここで発生しています)
+7 |
+8 |     println!(&quot;{}, {}, and {}&quot;, r1, r2, r3);
+  |                                -- immutable borrow later used here
+  |                                   (不変借用はその後ここで使われています)
+
+For more information about this error, try `rustc --explain E0502`.
+error: could not compile `ownership` (bin &quot;ownership&quot;) due to 1 previous error
 </code></pre>
 <!--
-Whew! We *also* cannot have a mutable reference while we have an immutable one.
-Users of an immutable reference don’t expect the values to suddenly change out
-from under them! However, multiple immutable references are okay because no one
-who is just reading the data has the ability to affect anyone else’s reading of
-the data.
+Whew! We *also* cannot have a mutable reference while we have an immutable one
+to the same value.
 -->
-<p>ふう！<em>さらに</em>不変な参照をしている間は、可変な参照をすることはできません。不変参照の使用者は、
-それ以降に値が突然変わることなんて予想してません！しかしながら、複数の不変参照をすることは可能です。
+<p>ふう！<em>さらに</em>不変な参照をしている間は、同じ値に対して可変な参照をすることはできません。</p>
+<!--
+Users of an immutable reference don’t expect the value to suddenly change out
+from under them! However, multiple immutable references are allowed because no
+one who is just reading the data has the ability to affect anyone else’s
+reading of the data.
+-->
+<p>不変参照の使用者は、それ以降に値が突然変わることなんて予想してません！
+しかしながら、複数の不変参照をすることは許されています。
 データを読み込んでいるだけの人に、他人がデータを読み込むことに対して影響を与える能力はないからです。</p>
 <!--
-Even though these errors may be frustrating at times, remember that it’s the
-Rust compiler pointing out a potential bug early (at compile time rather than
-at runtime) and showing you exactly where the problem is. Then you don't have
-to track down why your data isn’t what you thought it was.
+Note that a reference’s scope starts from where it is introduced and continues
+through the last time that reference is used. For instance, this code will
+compile because the last usage of the immutable references, the `println!`,
+occurs before the mutable reference is introduced:
 -->
-<p>これらのエラーは、時としてイライラするものではありますが、Rustコンパイラがバグの可能性を早期に指摘してくれ(それも実行時ではなくコンパイル時に)、
+<p>参照のスコープは、それが導入されたところから始まり、その参照が最後に使用される時点まで続きます。
+例えば、次のコードはコンパイルできるでしょう。不変参照の最後の使用箇所である<code>println!</code>は、
+可変参照が導入されるよりも前に発生するからです:</p>
+<pre><pre class="playground"><code class="language-rust edition2021"><span class="boring">fn main() {
+</span>    let mut s = String::from(&quot;hello&quot;);
+
+    let r1 = &amp;s; // 問題なし
+    let r2 = &amp;s; // 問題なし
+    println!(&quot;{} and {}&quot;, r1, r2);
+    // r1とr2はもうこれ以降使用されません
+
+    let r3 = &amp;mut s; // 問題なし
+    println!(&quot;{}&quot;, r3);
+<span class="boring">}</span></code></pre></pre>
+<!--
+The scopes of the immutable references `r1` and `r2` end after the `println!`
+where they are last used, which is before the mutable reference `r3` is
+created. These scopes don’t overlap, so this code is allowed: the compiler can
+tell that the reference is no longer being used at a point before the end of
+the scope.
+-->
+<p>不変参照<code>r1</code>と<code>r2</code>のスコープは、それらが最後に使用される<code>println!</code>の後で終了します。
+これは可変参照<code>r3</code>が作成されるより前のことです。これらのスコープは重なっていないので、
+このコードは許可されます: コンパイラは、スコープの終了より前の時点で参照がもはや使用されていないということを、
+判別できるのです。</p>
+<!--
+Even though borrowing errors may be frustrating at times, remember that it’s
+the Rust compiler pointing out a potential bug early (at compile time rather
+than at runtime) and showing you exactly where the problem is. Then you don’t
+have to track down why your data isn’t what you thought it was.
+-->
+<p>借用エラーは、時としてイライラするものではありますが、Rustコンパイラがバグの可能性を早期に指摘してくれ(それも実行時ではなくコンパイル時に)、
 問題の発生箇所をズバリ示してくれるのだと覚えておいてください。そうして想定通りにデータが変わらない理由を追いかける必要がなくなります。</p>
 <!--
 ### Dangling References
@@ -7059,9 +7039,9 @@ to track down why your data isn’t what you thought it was.
 <h3 id="宙に浮いた参照"><a class="header" href="#宙に浮いた参照">宙に浮いた参照</a></h3>
 <!--
 In languages with pointers, it’s easy to erroneously create a *dangling
-pointer*, a pointer that references a location in memory that may have been
-given to someone else, by freeing some memory while preserving a pointer to
-that memory. In Rust, by contrast, the compiler guarantees that references will
+pointer*—a pointer that references a location in memory that may have been
+given to someone else—by freeing some memory while preserving a pointer to that
+memory. In Rust, by contrast, the compiler guarantees that references will
 never be dangling references: if you have a reference to some data, the
 compiler will ensure that the data will not go out of scope before the
 reference to the data does.
@@ -7072,15 +7052,15 @@ reference to the data does.
 参照がダングリング参照に絶対ならないよう保証してくれます: つまり、何らかのデータへの参照があったら、
 コンパイラは参照がスコープを抜けるまで、データがスコープを抜けることがないよう確認してくれるわけです。</p>
 <!--
-Let’s try to create a dangling reference, which Rust will prevent with a
+Let’s try to create a dangling reference to see how Rust prevents them with a
 compile-time error:
 -->
-<p>ダングリング参照作りを試してみますが、コンパイラはこれをコンパイルエラーで阻止します:</p>
+<p>ダングリング参照を作ってみて、コンパイラがどのようにこれをコンパイルエラーで阻止するか見てみましょう:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn main() {
+<pre><code class="language-rust ignore does_not_compile">fn main() {
     let reference_to_nothing = dangle();
 }
 
@@ -7093,29 +7073,43 @@ fn dangle() -&gt; &amp;String {
 Here’s the error:
 -->
 <p>こちらがエラーです:</p>
-<pre><code class="language-text">error[E0106]: missing lifetime specifier
+<pre><code class="language-console">$ cargo run
+   Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0106]: missing lifetime specifier
 (エラー: ライフタイム指定子がありません)
- --&gt; main.rs:5:16
+ --&gt; src/main.rs:5:16
   |
 5 | fn dangle() -&gt; &amp;String {
-  |                ^ expected lifetime parameter
+  |                ^ expected named lifetime parameter
+  |                  (名前付きのライフタイムパラメータが期待されていました)
   |
-  = help: this function's return type contains a borrowed value, but there is no
-    value for it to be borrowed from
-    (助言: この関数の戻り値型は、借用した値を含んでいますが、借用される値がどこにもありません)
-  = help: consider giving it a 'static lifetime
-  ('staticライフタイムを与えることを考慮してみてください)
+  = help: this function's return type contains a borrowed value, but there is no value for it to be borrowed from
+  = (助言: この関数の戻り値型は、借用した値を含んでいますが、借用される値がどこにもありません)
+help: consider using the `'static` lifetime, but this is uncommon unless you're returning a borrowed value from a `const` or a `static`
+(助言: `'static`ライフタイムを使うことを検討してください、ただし`const`または`static`から借用した値を返すのでない限り、これはあまり使われません)
+  |
+5 | fn dangle() -&gt; &amp;'static String {
+  |                 +++++++
+help: instead, you are more likely to want to return an owned value
+(助言: または、所有権を持つ値を返す方がいいかもしれません)
+  |
+5 - fn dangle() -&gt; &amp;String {
+5 + fn dangle() -&gt; String {
+  |
+
+For more information about this error, try `rustc --explain E0106`.
+error: could not compile `ownership` (bin &quot;ownership&quot;) due to 1 previous error
 </code></pre>
 <!--
-This error message refers to a feature we haven’t covered yet: *lifetimes*. We'll
+This error message refers to a feature we haven’t covered yet: lifetimes. We’ll
 discuss lifetimes in detail in Chapter 10. But, if you disregard the parts
 about lifetimes, the message does contain the key to why this code is a problem:
 -->
-<p>このエラーメッセージは、まだ講義していない機能について触れています: <em>ライフタイム</em>です。
+<p>このエラーメッセージは、まだ講義していない機能について触れています: ライフタイムです。
 ライフタイムについては第10章で詳しく議論しますが、ライフタイムに関する部分を無視すれば、
 このメッセージは、確かにこのコードが問題になる理由に関する鍵を握っています:</p>
 <pre><code class="language-text">this function's return type contains a borrowed value, but there is no value
-for it to be borrowed from.
+for it to be borrowed from
 </code></pre>
 <!--
 Let’s take a closer look at exactly what’s happening at each stage of our
@@ -7123,23 +7117,14 @@ Let’s take a closer look at exactly what’s happening at each stage of our
 -->
 <p><code>dangle</code>コードの各段階で一体何が起きているのかを詳しく見ていきましょう:</p>
 <!--
-```rust,ignore
-fn dangle() -> &String { // dangle returns a reference to a String
--->
-<!--
-let s = String::from("hello"); // s is a new String
--->
-<!--
-&s // we return a reference to the String, s
-} // Here, s goes out of scope, and is dropped. Its memory goes away.
-// Danger!
-```
--->
-<!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn dangle() -&gt; &amp;String { // dangleはStringへの参照を返す
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
+</span><span class="boring">    let reference_to_nothing = dangle();
+</span><span class="boring">}
+</span><span class="boring">
+</span>fn dangle() -&gt; &amp;String { // dangleはStringへの参照を返す
 
     let s = String::from(&quot;hello&quot;); // sは新しいString
 
@@ -7159,14 +7144,15 @@ won’t let us do this.
 The solution here is to return the `String` directly:
 -->
 <p>ここでの解決策は、<code>String</code>を直接返すことです:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span><span class="boring">    let string = no_dangle();
+</span><span class="boring">}
+</span><span class="boring">
 </span>fn no_dangle() -&gt; String {
     let s = String::from(&quot;hello&quot;);
 
     s
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre></pre>
 <!--
 This works without any problems. Ownership is moved out, and nothing is
 deallocated.
@@ -7182,7 +7168,7 @@ Let’s recap what we’ve discussed about references:
 <p>参照について議論したことを再確認しましょう:</p>
 <!--
 * At any given time, you can have *either* one mutable reference *or* any
-number of immutable references.
+  number of immutable references.
 * References must always be valid.
 -->
 <ul>
@@ -7198,34 +7184,36 @@ Next, we’ll look at a different kind of reference: slices.
 -->
 <h2 id="スライス型"><a class="header" href="#スライス型">スライス型</a></h2>
 <!--
-Another data type that does not have ownership is the *slice*. Slices let you
-reference a contiguous sequence of elements in a collection rather than the
-whole collection.
+*Slices* let you reference a contiguous sequence of elements in a collection
+rather than the whole collection. A slice is a kind of reference, so it does
+not have ownership.
 -->
-<p>所有権のない別のデータ型は、<em>スライス</em>です。スライスにより、コレクション全体ではなく、
-その内の一連の要素を参照することができます。</p>
+<p><em>スライス</em>により、コレクション全体ではなく、その内の連続した要素の列を参照することができます。
+スライスは参照の一種であり、そのため所有権を持っていません。</p>
 <!--
-Here’s a small programming problem: write a function that takes a string and
-returns the first word it finds in that string. If the function doesn’t find a
-space in the string, the whole string must be one word, so the entire string
-should be returned.
+Here’s a small programming problem: write a function that takes a string of
+words separated by spaces and returns the first word it finds in that string.
+If the function doesn’t find a space in the string, the whole string must be
+one word, so the entire string should be returned.
 -->
-<p>ちょっとしたプログラミングの問題を考えてみましょう: 文字列を受け取って、その文字列中の最初の単語を返す関数を書いてください。
+<p>ちょっとしたプログラミングの問題を考えてみましょう: スペースで区切られた複数の単語からなる文字列を受け取って、その文字列中の最初の単語を返す関数を書いてください。
 関数が文字列中に空白を見つけられなかったら、文字列全体が一つの単語に違いないので、文字列全体が返されるべきです。</p>
 <!--
-Let’s think about the signature of this function:
+Let’s work through how we’d write the signature of this function without using
+slices, to understand the problem that slices will solve:
 -->
-<p>この関数のシグニチャについて考えてみましょう:</p>
+<p>スライスが解決しようとしている問題を理解するために、スライスを使わずにこの関数のシグネチャをどう書くかという問題を通して、
+考えてみましょう。</p>
 <pre><code class="language-rust ignore">fn first_word(s: &amp;String) -&gt; ?</code></pre>
 <!--
-This function, `first_word`, has a `&String` as a parameter. We don’t want
+The `first_word` function has a `&String` as a parameter. We don’t want
 ownership, so this is fine. But what should we return? We don’t really have a
 way to talk about *part* of a string. However, we could return the index of the
-end of the word. Let’s try that, as shown in Listing 4-7.
+end of the word, indicated by a space. Let’s try that, as shown in Listing 4-7.
 -->
-<p>この関数、<code>first_word</code>は引数に<code>&amp;String</code>をとります。所有権はいらないので、これで十分です。
+<p><code>first_word</code>関数は引数に<code>&amp;String</code>をとります。所有権はいらないので、これで十分です。
 ですが、何を返すべきでしょうか？文字列の<em>一部</em>について語る方法が全くありません。しかし、
-単語の終端の添え字を返すことができますね。リスト4-7に示したように、その方法を試してみましょう。</p>
+空白によって示される単語の終端の添え字を返すことができますね。リスト4-7に示したように、その方法を試してみましょう。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -7251,7 +7239,7 @@ byte index value into the `String` parameter</span>
 <!--
 Because we need to go through the `String` element by element and check whether
 a value is a space, we’ll convert our `String` to an array of bytes using the
-`as_bytes` method:
+`as_bytes` method.
 -->
 <p><code>String</code>の値を要素ごとに見て、空白かどうかを確かめる必要があるので、
 <code>as_bytes</code>メソッドを使って、<code>String</code>オブジェクトをバイト配列に変換しています。</p>
@@ -7286,31 +7274,33 @@ Next, we create an iterator over the array of bytes using the `iter` method:
 </span><span class="boring">
 </span><span class="boring">fn main() {}</span></code></pre>
 <!--
-We’ll discuss iterators in more detail in Chapter 13. For now, know that `iter`
-is a method that returns each element in a collection and that `enumerate`
-wraps the result of `iter` and returns each element as part of a tuple instead.
-The first element of the tuple returned from `enumerate` is the index, and the
-second element is a reference to the element. This is a bit more convenient
-than calculating the index ourselves.
+We’ll discuss iterators in more detail in [Chapter 13][ch13].
+For now, know that `iter` is a method that returns each element in a collection
+and that `enumerate` wraps the result of `iter` and returns each element as
+part of a tuple instead. The first element of the tuple returned from
+`enumerate` is the index, and the second element is a reference to the element.
+This is a bit more convenient than calculating the index ourselves.
 -->
-<p>イテレータについて詳しくは、第13章で議論します。今は、<code>iter</code>は、コレクション内の各要素を返すメソッドであること、
+<p>イテレータについて詳しくは、<a href="ch13-02-iterators.html">第13章</a>で議論します。今は、<code>iter</code>は、コレクション内の各要素を返すメソッドであること、
 <code>enumerate</code>が<code>iter</code>の結果をラップして、（結果をそのまま返す）代わりにタプルの一部として各要素を返すことを知っておいてください。
 <code>enumerate</code>から返ってくるタプルの第1要素は、添え字であり、2番目の要素は、(コレクションの）要素への参照になります。
 これは、手動で添え字を計算するよりも少しだけ便利です。</p>
 <!--
 Because the `enumerate` method returns a tuple, we can use patterns to
-destructure that tuple, just like everywhere else in Rust. So in the `for`
-loop, we specify a pattern that has `i` for the index in the tuple and `&item`
-for the single byte in the tuple. Because we get a reference to the element
-from `.iter().enumerate()`, we use `&` in the pattern.
+destructure that tuple. We’ll be discussing patterns more in [Chapter
+6][ch6]. In the `for` loop, we specify a pattern that has `i`
+for the index in the tuple and `&item` for the single byte in the tuple.
+Because we get a reference to the element from `.iter().enumerate()`, we use
+`&` in the pattern.
 -->
-<p><code>enumerate</code>メソッドがタプルを返すので、Rustのあらゆる場所同様、パターンを使って、そのタプルを分配できます。
-従って、<code>for</code>ループ内で、タプルの添え字に対する<code>i</code>とタプルの1バイトに対応する<code>&amp;item</code>を含むパターンを指定しています。
+<p><code>enumerate</code>メソッドがタプルを返すので、パターンを使って、そのタプルを分配できます。
+パターンについては<a href="ch06-02-match.html#%E5%80%A4%E3%81%AB%E6%9D%9F%E7%B8%9B%E3%81%95%E3%82%8C%E3%82%8B%E3%83%91%E3%82%BF%E3%83%BC%E3%83%B3">第6章</a>でさらに議論します。
+<code>for</code>ループ内で、タプルの添え字に対する<code>i</code>とタプルの1バイトに対応する<code>&amp;item</code>を含むパターンを指定しています。
 <code>.iter().enumerate()</code>から要素への参照を取得するので、パターンに<code>&amp;</code>を使っています。</p>
 <!--
 Inside the `for` loop, we search for the byte that represents the space by
 using the byte literal syntax. If we find a space, we return the position.
-Otherwise, we return the length of the string by using `s.len()`:
+Otherwise, we return the length of the string by using `s.len()`.
 -->
 <p><code>for</code>ループ内で、バイトリテラル表記を使用して空白を表すバイトを検索しています。空白が見つかったら、その位置を返します。
 それ以外の場合、<code>s.len()</code>を使って文字列の長さを返します。</p>
@@ -7397,8 +7387,8 @@ we write a `second_word` function. Its signature would have to look like this:
 <!--
 Now we’re tracking a starting *and* an ending index, and we have even more
 values that were calculated from data in a particular state but aren’t tied to
-that state at all. We now have three unrelated variables floating around that
-need to be kept in sync.
+that state at all. We have three unrelated variables floating around that need
+to be kept in sync.
 -->
 <p>今、私たちは開始<em>と</em>終端の添え字を追うようになりました。特定の状態のデータから計算されたが、
 その状態に全く紐付けられていない値がさらに増えました。いつの間にか変わってしまうので、同期を取る必要のある、関連性のない変数が3つになってしまいました。</p>
@@ -7421,44 +7411,46 @@ A *string slice* is a reference to part of a `String`, and it looks like this:
     let world = &amp;s[6..11];
 <span class="boring">}</span></code></pre></pre>
 <!--
-This is similar to taking a reference to the whole `String` but with the extra
-`[0..5]` bit. Rather than a reference to the entire `String`, it’s a reference
-to a portion of the `String`.
+Rather than a reference to the entire `String`, `hello` is a reference to a
+portion of the `String`, specified in the extra `[0..5]` bit. We create slices
+using a range within brackets by specifying `[starting_index..ending_index]`,
+where `starting_index` is the first position in the slice and `ending_index` is
+one more than the last position in the slice. Internally, the slice data
+structure stores the starting position and the length of the slice, which
+corresponds to `ending_index` minus `starting_index`. So, in the case of `let
+world = &s[6..11];`, `world` would be a slice that contains a pointer to the
+byte at index 6 of `s` with a length value of `5`.
 -->
-<p>これは、<code>String</code>全体への参照を取ることに似ていますが、余計な<code>[0..5]</code>という部分が付いています。
-<code>String</code>全体への参照ではなく、<code>String</code>の一部への参照です。</p>
-<!--
-We can create slices using a range within brackets by specifying
-`[starting_index..ending_index]`, where `starting_index` is the first position
-in the slice and `ending_index` is one more than the last position in the
-slice. Internally, the slice data structure stores the starting position and
-the length of the slice, which corresponds to `ending_index` minus
-`starting_index`. So in the case of `let world = &s[6..11];`, `world` would be
-a slice that contains a pointer to the 7th byte (counting from 1) of `s` with a length value of 5.
--->
-<p><code>[starting_index..ending_index]</code>と指定することで、角かっこに範囲を使い、スライスを生成できます。
+<p><code>hello</code>は<code>String</code>全体への参照ではなく、追加の<code>[0..5]</code>という部分で指定された、<code>String</code>の一部への参照です。
+<code>[starting_index..ending_index]</code>と指定することで、角かっこに範囲を使い、スライスを生成します。
 ここで、<code>starting_index</code>はスライスの最初の位置、<code>ending_index</code>はスライスの終端位置よりも、
 1大きい値です。内部的には、スライスデータ構造は、開始地点とスライスの長さを保持しており、
 スライスの長さは<code>ending_index</code>から<code>starting_index</code>を引いたものに対応します。以上より、
-<code>let world = &amp;s[6..11];</code>の場合には、<code>world</code>は<code>s</code>の添え字6のバイトへのポインタと5という長さを持つスライスになるでしょう。</p>
+<code>let world = &amp;s[6..11];</code>の場合には、<code>world</code>は<code>s</code>の添え字6のバイトへのポインタと<code>5</code>という長さを持つスライスになるでしょう。</p>
 <!--
 Figure 4-6 shows this in a diagram.
 -->
 <p>図4-6は、これを図解しています。</p>
 <!--
-<img alt="world containing a pointer to the 6th byte of String s and a length 5" src="img/trpl04-06.svg" class="center" style="width: 50%;" />
+<img alt="Three tables: a table representing the stack data of s, which points
+to the byte at index 0 in a table of the string data &quot;hello world&quot; on
+the heap. The third table rep-resents the stack data of the slice world, which
+has a length value of 5 and points to byte 6 of the heap data table."
+src="img/trpl04-06.svg" class="center" style="width: 50%;" />
 -->
-<img alt="文字列sの6バイト目へのポインタと長さ5を保持するworld" src="img/trpl04-06.svg" class="center" style="width: 50%;" />
+<p><img alt="3個の表: sのスタックデータを表現するテーブルは、ヒープ上の文字列データ&quot;hello world&quot;のテーブル内の添え字0のバイトを指している。
+3個目の表はスライスworldのスタックデータを表現していて、長さの値5を持ち、ヒープデータの表のバイト6を指している。"
+src="img/trpl04-06.svg" class="center" style="width: 50%;" /></p>
 <!--
 <span class="caption">Figure 4-6: String slice referring to part of a
 `String`</span>
 -->
 <p><span class="caption">図4-6: <code>String</code>オブジェクトの一部を参照する文字列スライス</span></p>
 <!--
-With Rust’s `..` range syntax, if you want to start at the first index (zero),
-you can drop the value before the two periods. In other words, these are equal:
+With Rust’s `..` range syntax, if you want to start at index 0, you can drop
+the value before the two periods. In other words, these are equal:
 -->
-<p>Rustの<code>..</code>という範囲記法で、最初の番号(ゼロ)から始めたければ、2連ピリオドの前に値を書かなければいいです。
+<p>Rustの<code>..</code>という範囲記法で、添え字0から始めたければ、2連ピリオドの前に値を書かなければいいです。
 換言すれば、これらは等価です:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -7534,10 +7526,10 @@ slice. The type that signifies “string slice” is written as `&str`:
 <span class="boring">
 </span><span class="boring">fn main() {}</span></code></pre></pre>
 <!--
-We get the index for the end of the word in the same way as we did in Listing
-4-7, by looking for the first occurrence of a space. When we find a space, we
-return a string slice using the start of the string and the index of the space
-as the starting and ending indices.
+We get the index for the end of the word the same way we did in Listing 4-7, by
+looking for the first occurrence of a space. When we find a space, we return a
+string slice using the start of the string and the index of the space as the
+starting and ending indices.
 -->
 <p>リスト4-7で取った方法と同じように、最初の空白を探すことで単語の終端の添え字を取得しています。
 空白を発見したら、文字列の最初を開始地点、空白の添え字を終了地点として使用して文字列スライスを返しています。</p>
@@ -7554,7 +7546,7 @@ Returning a slice would also work for a `second_word` function:
 <p><code>second_word</code>関数についても、スライスを返すことでうまくいくでしょう:</p>
 <pre><code class="language-rust ignore">fn second_word(s: &amp;String) -&gt; &amp;str {</code></pre>
 <!--
-We now have a straightforward API that’s much harder to mess up, because the
+We now have a straightforward API that’s much harder to mess up because the
 compiler will ensure the references into the `String` remain valid. Remember
 the bug in the program in Listing 4-8, when we got the index to the end of the
 first word but then cleared the string so our index was invalid? That code was
@@ -7609,36 +7601,41 @@ error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immuta
 16 |     let word = first_word(&amp;s);
    |                           -- immutable borrow occurs here
    |                             (不変借用はここで発生しています)
-17 | 
+17 |
 18 |     s.clear(); // error!
    |     ^^^^^^^^^ mutable borrow occurs here
    |              (可変借用はここで発生しています)
-19 | 
+19 |
 20 |     println!(&quot;the first word is: {}&quot;, word);
    |                                       ---- immutable borrow later used here
                                                 (不変借用はその後ここで使われています)
 
-error: aborting due to previous error
-
 For more information about this error, try `rustc --explain E0502`.
-error: could not compile `ownership`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `ownership` (bin &quot;ownership&quot;) due to 1 previous error
 </code></pre>
 <!--
 Recall from the borrowing rules that if we have an immutable reference to
 something, we cannot also take a mutable reference. Because `clear` needs to
-truncate the `String`, it needs to get a mutable reference. Rust disallows
-this, and compilation fails. Not only has Rust made our API easier to use, but
-it has also eliminated an entire class of errors at compile time!
+truncate the `String`, it needs to get a mutable reference. The `println!`
+after the call to `clear` uses the reference in `word`, so the immutable
+reference must still be active at that point. Rust disallows the mutable
+reference in `clear` and the immutable reference in `word` from existing at the
+same time, and compilation fails. Not only has Rust made our API easier to use,
+but it has also eliminated an entire class of errors at compile time!
 -->
 <p>借用規則から、何かへの不変な参照がある時、さらに可変な参照を得ることはできないことを思い出してください。
-<code>clear</code>は<code>String</code>を切り詰める必要があるので、可変な参照を得る必要があります。Rustはこれを認めないので、コンパイルが失敗します。
+<code>clear</code>は<code>String</code>を切り詰める必要があるので、可変な参照を得る必要があります。
+<code>clear</code>の呼び出しの後の<code>println!</code>は<code>word</code>中の参照を使用するので、不変参照はその時点でもまだ有効でなくてはいけません。
+Rustは<code>clear</code>中の可変参照と<code>word</code>中の不変参照が同時に存在することを認めないので、コンパイルが失敗します。
 RustのおかげでAPIが使いやすくなるだけでなく、ある種のエラー全てを完全にコンパイル時に排除してくれるのです！</p>
+<!-- Old heading. Do not remove or links may break. -->
 <!--
-#### String Literals Are Slices
+<a id="string-literals-are-slices"></a>
 -->
-<h4 id="文字列リテラルはスライスである"><a class="header" href="#文字列リテラルはスライスである">文字列リテラルはスライスである</a></h4>
+<!--
+#### String Literals as Slices
+-->
+<h4 id="スライスとしての文字列リテラル"><a class="header" href="#スライスとしての文字列リテラル">スライスとしての文字列リテラル</a></h4>
 <!--
 Recall that we talked about string literals being stored inside the binary. Now
 that we know about slices, we can properly understand string literals:
@@ -7689,14 +7686,21 @@ and `&str` values.
 </span><span class="boring">fn main() {
 </span><span class="boring">    let my_string = String::from(&quot;hello world&quot;);
 </span><span class="boring">
-</span><span class="boring">    // first_word works on slices of `String`s
-</span><span class="boring">    // first_wordは`String`のスライスに対して機能する
+</span><span class="boring">    // `first_word` works on slices of `String`s, whether partial or whole
+</span><span class="boring">    // `first_word`は`String`の全体または部分へのスライスに対して機能する
+</span><span class="boring">    let word = first_word(&amp;my_string[0..6]);
 </span><span class="boring">    let word = first_word(&amp;my_string[..]);
+</span><span class="boring">    // `first_word` also works on references to `String`s, which are equivalent
+</span><span class="boring">    // to whole slices of `String`s
+</span><span class="boring">    // `first_word`は`String`の参照に対しても機能する。この場合は
+</span><span class="boring">    // `String`全体へのスライスと同等。
+</span><span class="boring">    let word = first_word(&amp;my_string);
 </span><span class="boring">
 </span><span class="boring">    let my_string_literal = &quot;hello world&quot;;
 </span><span class="boring">
-</span><span class="boring">    // first_word works on slices of string literals
-</span><span class="boring">    // first_wordは文字列リテラルのスライスに対して機能する
+</span><span class="boring">    // `first_word` works on slices of string literals, whether partial or whole
+</span><span class="boring">    // `first_word`は文字列リテラルの全体または部分へのスライスに対して機能する
+</span><span class="boring">    let word = first_word(&amp;my_string_literal[0..6]);
 </span><span class="boring">    let word = first_word(&amp;my_string_literal[..]);
 </span><span class="boring">
 </span><span class="boring">    // Because string literals *are* string slices already,
@@ -7712,12 +7716,19 @@ a string slice for the type of the `s` parameter</span>
 <p><span class="caption">リスト4-9: <code>s</code>引数の型に文字列スライスを使用して<code>first_word</code>関数を改善する</span></p>
 <!--
 If we have a string slice, we can pass that directly. If we have a `String`, we
-can pass a slice of the entire `String`. Defining a function to take a string
-slice instead of a reference to a `String` makes our API more general and useful
-without losing any functionality:
+can pass a slice of the `String` or a reference to the `String`. This
+flexibility takes advantage of *deref coercions*, a feature we will cover in
+[“Implicit Deref Coercions with Functions and
+Methods”][deref-coercions] section of Chapter 15.
 -->
 <p>もし、文字列スライスがあるなら、それを直接渡せます。<code>String</code>があるなら、
-その<code>String</code>全体のスライスを渡せます。<code>String</code>への参照の代わりに文字列スライスを取るよう関数を定義すると、
+その<code>String</code>のスライスか、<code>String</code>への参照を渡せます。この柔軟性は、第15章の<a href="ch15-02-deref.html#%E9%96%A2%E6%95%B0%E3%82%84%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%81%A7%E6%9A%97%E9%BB%99%E7%9A%84%E3%81%AA%E5%8F%82%E7%85%A7%E5%A4%96%E3%81%97%E5%9E%8B%E5%BC%B7%E5%88%B6">「関数やメソッドで暗黙的な参照外し型強制」</a>で扱う機能、
+<em>参照外し型強制</em>の利点を活用して実現されています。</p>
+<!--
+Defining a function to take a string slice instead of a reference to a `String`
+makes our API more general and useful without losing any functionality:
+-->
+<p><code>String</code>への参照の代わりに文字列スライスを取るよう関数を定義すると、
 何も機能を失うことなくAPIをより一般的で有益なものにできるのです。</p>
 <p><span class="filename">Filename: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn first_word(s: &amp;str) -&gt; &amp;str {
@@ -7735,14 +7746,21 @@ without losing any functionality:
 </span>fn main() {
     let my_string = String::from(&quot;hello world&quot;);
 
-    // first_word works on slices of `String`s
-    // first_wordは`String`のスライスに対して機能する
+    // `first_word` works on slices of `String`s, whether partial or whole
+    // `first_word`は`String`の全体または部分へのスライスに対して機能する
+    let word = first_word(&amp;my_string[0..6]);
     let word = first_word(&amp;my_string[..]);
+    // `first_word` also works on references to `String`s, which are equivalent
+    // to whole slices of `String`s
+    // `first_word`は`String`の参照に対しても機能する。この場合は
+    // `String`全体へのスライスと同等。
+    let word = first_word(&amp;my_string);
 
     let my_string_literal = &quot;hello world&quot;;
 
-    // first_word works on slices of string literals
-    // first_wordは文字列リテラルのスライスに対して機能する
+    // `first_word` works on slices of string literals, whether partial or whole
+    // `first_word`は文字列リテラルの全体または部分へのスライスに対して機能する
+    let word = first_word(&amp;my_string_literal[0..6]);
     let word = first_word(&amp;my_string_literal[..]);
 
     // Because string literals *are* string slices already,
@@ -7757,7 +7775,7 @@ without losing any functionality:
 <h3 id="他のスライス"><a class="header" href="#他のスライス">他のスライス</a></h3>
 <!--
 String slices, as you might imagine, are specific to strings. But there’s a
-more general slice type, too. Consider this array:
+more general slice type too. Consider this array:
 -->
 <p>文字列リテラルは、ご想像通り、文字列に特化したものです。ですが、もっと一般的なスライス型も存在します。
 この配列を考えてください:</p>
@@ -7766,8 +7784,8 @@ more general slice type, too. Consider this array:
 </span>let a = [1, 2, 3, 4, 5];
 <span class="boring">}</span></code></pre></pre>
 <!--
-Just as we might want to refer to a part of a string, we might want to refer
-to part of an array. We’d do so like this:
+Just as we might want to refer to part of a string, we might want to refer to
+part of an array. We’d do so like this:
 -->
 <p>文字列の一部を参照したくなる可能性があるのと同様、配列の一部を参照したくなる可能性もあります。
 以下のようにすれば、参照することができます:</p>
@@ -7776,6 +7794,8 @@ to part of an array. We’d do so like this:
 </span>let a = [1, 2, 3, 4, 5];
 
 let slice = &amp;a[1..3];
+
+assert_eq!(slice, &amp;[2, 3]);
 <span class="boring">}</span></code></pre></pre>
 <!--
 This slice has the type `&[i32]`. It works the same way as string slices do, by
@@ -7810,7 +7830,10 @@ Chapter 5 and look at grouping pieces of data together in a `struct`.
 <p>所有権は、Rustの他のいろんな部分が動作する方法に影響を与えるので、これ以降もこれらの概念についてさらに語っていく予定です。
 第5章に移って、<code>struct</code>でデータをグループ化することについて見ていきましょう。</p>
 <!--
+[ch13]: ch13-02-iterators.html
+[ch6]: ch06-02-match.html#patterns-that-bind-to-values
 [strings]: ch08-02-strings.html#storing-utf-8-encoded-text-with-strings
+[deref-coercions]: ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods
 -->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Using Structs to Structure Related Data
