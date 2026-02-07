@@ -10925,42 +10925,41 @@ Rust’s modules.
 -->
 <h1 id="肥大化していくプロジェクトをパッケージクレートモジュールを利用して管理する"><a class="header" href="#肥大化していくプロジェクトをパッケージクレートモジュールを利用して管理する">肥大化していくプロジェクトをパッケージ、クレート、モジュールを利用して管理する</a></h1>
 <!--
-As you write large programs, organizing your code will be important because
-keeping track of your entire program in your head will become impossible. By
-grouping related functionality and separating code with distinct features,
-you’ll clarify where to find code that implements a particular feature and
-where to go to change how a feature works.
+As you write large programs, organizing your code will become increasingly
+important. By grouping related functionality and separating code with distinct
+features, you’ll clarify where to find code that implements a particular
+feature and where to go to change how a feature works.
 -->
-<p>大きなプログラムを書く時、そのすべてを頭の中に入れておくのは不可能になるため、コードのまとまりを良くすることが重要になります。
+<p>書いているプログラムが大きいときほど、コードを整理しておくことはますます重要になります。
 関係した機能をまとめ、異なる特徴を持つコードを分割することにより、特定の機能を実装しているコードを見つけたり、機能を変更したりするためにどこを探せば良いのかを明確にできます。</p>
 <!--
 The programs we’ve written so far have been in one module in one file. As a
-project grows, you can organize code by splitting it into multiple modules and
-then multiple files. A package can contain multiple binary crates and
+project grows, you should organize code by splitting it into multiple modules
+and then multiple files. A package can contain multiple binary crates and
 optionally one library crate. As a package grows, you can extract parts into
 separate crates that become external dependencies. This chapter covers all
-these techniques. For very large projects of a set of interrelated packages
-that evolve together, Cargo provides workspaces, which we’ll cover in the
-[“Cargo Workspaces”][workspaces] section in Chapter 14.
+these techniques. For very large projects comprising a set of interrelated
+packages that evolve together, Cargo provides *workspaces*, which we’ll cover
+in the [“Cargo Workspaces”][workspaces] section in Chapter 14.
 -->
 <p>私達がこれまでに書いてきたプログラムは、一つのファイル内の一つのモジュール内にありました。
-プロジェクトが大きくなるにつれて、これを複数のモジュールに、ついで複数のファイルに分割することで、プログラムを整理することができます。
+プロジェクトが大きくなるにつれて、これを複数のモジュールに、ついで複数のファイルに分割することで、プログラムを整理するべきです。
 パッケージは複数のバイナリクレートからなり、またライブラリクレートを1つもつこともできます。
 パッケージが大きくなるにつれて、その一部を抜き出して分離したクレートにし、外部依存とするのもよいでしょう。
 この章ではそれらのテクニックすべてを学びます。
 相互に関係し合い、同時に成長するパッケージの集まりからなる巨大なプロジェクトには、
-Cargoがワークスペースという機能を提供します。これは14章の<a href="ch14-03-cargo-workspaces.html">Cargoワークスペース</a><!-- ignore -->で解説します。</p>
+Cargoが<em>ワークスペース</em>という機能を提供します。これは14章の<a href="ch14-03-cargo-workspaces.html">Cargoワークスペース</a>で解説します。</p>
 <!--
-In addition to grouping functionality, encapsulating implementation details
-lets you reuse code at a higher level: once you’ve implemented an operation,
-other code can call that code via the code’s public interface without knowing
-how the implementation works. The way you write code defines which parts are
-public for other code to use and which parts are private implementation details
-that you reserve the right to change. This is another way to limit the amount
-of detail you have to keep in your head.
+We’ll also discuss encapsulating implementation details, which lets you reuse
+code at a higher level: once you’ve implemented an operation, other code can
+call your code via its public interface without having to know how the
+implementation works. The way you write code defines which parts are public for
+other code to use and which parts are private implementation details that you
+reserve the right to change. This is another way to limit the amount of detail
+you have to keep in your head.
 -->
-<p>機能をグループにまとめられることに加え、実装の詳細がカプセル化されることにより、コードをより高いレベルで再利用できるようになります：
-手続きを実装し終えてしまえば、他のコードはそのコードの公開されたインターフェースを通じて、実装の詳細を知ることなくそのコードを呼び出すことができるのです。
+<p>実装の詳細をカプセル化することについても議論します。カプセル化によって、コードをより高いレベルで再利用できるようになります：
+手続きを実装し終えてしまえば、他のコードはその公開されたインターフェースを通じて、実装の詳細を知る必要なくそのコードを呼び出すことができるのです。
 コードをどう書くかによって、どの部分が他のコードにも使える公開のものになるのか、それとも自分だけが変更できる非公開のものになるのかが決定されます。
 これもまた、記憶しておくべき細部を制限してくれる方法のひとつです。</p>
 <!--
@@ -11010,28 +11009,74 @@ understanding of the module system and be able to work with scopes like a pro!
 -->
 <h2 id="パッケージとクレート"><a class="header" href="#パッケージとクレート">パッケージとクレート</a></h2>
 <!--
-The first parts of the module system we’ll cover are packages and crates. A
-crate is a binary or library. The *crate root* is a source file that the Rust
-compiler starts from and makes up the root module of your crate (we’ll explain
-modules in depth in the [“Defining Modules to Control Scope and
-Privacy”][modules] section). A *package* is one or more crates
-that provide a set of functionality. A package contains a *Cargo.toml* file
-that describes how to build those crates.
+The first parts of the module system we’ll cover are packages and crates.
 -->
-<p>最初に学ぶモジュールシステムの要素は、パッケージとクレートです。
-クレートはバイナリかライブラリのどちらかです。
-<em>クレートルート (crate root)</em> とは、Rustコンパイラの開始点となり、クレートのルートモジュールを作るソースファイルのことです（モジュールについて詳しくは<a href="ch07-02-defining-modules-to-control-scope-and-privacy.html">「モジュールを定義して、スコープとプライバシーを制御する」</a><!-- ignore -->のセクションで説明します）。
-<em>パッケージ</em> はある機能群を提供する1つ以上のクレートです。
-パッケージは <em>Cargo.toml</em> という、それらのクレートをどのようにビルドするかを説明するファイルを持っています。</p>
+<p>最初に学ぶモジュールシステムの要素は、パッケージとクレートです。</p>
 <!--
-Several rules determine what a package can contain. A package *must* contain
-zero or one library crates, and no more. It can contain as many binary crates
-as you’d like, but it must contain at least one crate (either library or
-binary).
+A *crate* is the smallest amount of code that the Rust compiler considers at a
+time. Even if you run `rustc` rather than `cargo` and pass a single source code
+file (as we did all the way back in the “Writing and Running a Rust Program”
+section of Chapter 1), the compiler considers that file to be a crate. Crates
+can contain modules, and the modules may be defined in other files that get
+compiled with the crate, as we’ll see in the coming sections.
 -->
-<p>パッケージが何を持ってよいかはいくつかのルールで決まっています。
-パッケージは0個か1個のライブラリクレートを持っていないといけません。それ以上は駄目です。
-バイナリクレートはいくらでも持って良いですが、少なくとも（ライブラリでもバイナリでも良いですが）1つのクレートを持っていないといけません。</p>
+<p><em>クレート (crate)</em> は、Rustコンパイラが一度に考慮する最小限のコードです。
+<code>cargo</code>を実行するのではなく、（ちょうど第1章の「Rustプログラムを書いて走らせる」節でやったように）単一のソースコードファイルを渡して<code>rustc</code>を実行した場合でも、
+コンパイラはそのファイルをクレートとしてみなします。
+クレートはモジュールを含むことができ、モジュールは、クレートとともにコンパイルされる他のファイル内で定義することができます。
+このことについてはこれからの節で見ていきます。</p>
+<!--
+A crate can come in one of two forms: a binary crate or a library crate.
+*Binary crates* are programs you can compile to an executable that you can run,
+such as a command-line program or a server. Each must have a function called
+`main` that defines what happens when the executable runs. All the crates we’ve
+created so far have been binary crates.
+-->
+<p>クレートは2種類の形態のうちいずれかです: バイナリクレートか、ライブラリクレートです。
+<em>バイナリクレート (binary crate)</em> は、コマンドラインプログラムやサーバなどの実行可能形式にコンパイルされ、実行することができるプログラムです。
+どのバイナリクレートも、その実行可能形式が実行されたときに何が起きるかを定義する<code>main</code>と呼ばれる関数を持たなくてはなりません。
+今まで作ってきたクレートはすべてバイナリクレートでした。</p>
+<!--
+*Library crates* don’t have a `main` function, and they don’t compile to an
+executable. Instead, they define functionality intended to be shared with
+multiple projects. For example, the `rand` crate we used in [Chapter
+2][rand] provides functionality that generates random numbers.
+Most of the time when Rustaceans say “crate”, they mean library crate, and they
+use “crate” interchangeably with the general programming concept of a “library".
+-->
+<p><em>ライブラリクレート (library crate)</em> は<code>main</code>関数を持たず、実行可能形式へとコンパイルされません。
+代わりに、複数のプロジェクトで共有されることを想定した機能を定義するものです。
+例えば、<a href="ch02-00-guessing-game-tutorial.html#%E4%B9%B1%E6%95%B0%E3%82%92%E7%94%9F%E6%88%90%E3%81%99%E3%82%8B">第2章</a>で使用した<code>rand</code>クレートは乱数を生成する機能を提供します。
+Rustaceanが「クレート」と言うときの、ほとんどの場合それはライブラリクレートのことであり、
+Rustaceanは「クレート」を一般的なプログラミング概念の「ライブラリ」と同じ意味で使用します。</p>
+<!--
+The *crate root* is a source file that the Rust compiler starts from and makes
+up the root module of your crate (we’ll explain modules in depth in the
+[“Defining Modules to Control Scope and Privacy”][modules]
+section).
+-->
+<p><em>クレートルート (crate root)</em> とは、Rustコンパイラの開始点となり、クレートのルートモジュールを作るソースファイルのことです（モジュールについて詳しくは<a href="ch07-02-defining-modules-to-control-scope-and-privacy.html">「モジュールを定義して、スコープとプライバシーを制御する」</a>のセクションで説明します）。</p>
+<!--
+A *package* is a bundle of one or more crates that provides a set of
+functionality. A package contains a *Cargo.toml* file that describes how to
+build those crates. Cargo is actually a package that contains the binary crate
+for the command-line tool you’ve been using to build your code. The Cargo
+package also contains a library crate that the binary crate depends on. Other
+projects can depend on the Cargo library crate to use the same logic the Cargo
+command-line tool uses.
+-->
+<p><em>パッケージ (package)</em> はある機能群を提供する1つ以上のクレートのまとまりです。
+パッケージは <em>Cargo.toml</em> という、それらのクレートをどのようにビルドするかを説明するファイルを持っています。
+Cargoは実のところパッケージで、今までコードをビルドするために使ってきたコマンドラインツールのためのバイナリクレートを含んでいます。
+Cargoパッケージは、このバイナリクレートが依存するライブラリクレートも含んでいます。
+他のプロジェクトはCargoライブラリクレートに依存することで、Cargoコマンドラインツールが使用するのと同じロジックを使用することもできます。</p>
+<!--
+A package can contain as many binary crates as you like, but at most only one
+library crate. A package must contain at least one crate, whether that’s a
+library or binary crate.
+-->
+<p>パッケージは好きなだけバイナリクレートを持つことができますが、ライブラリクレートは最大で1個しか持つことができません。
+パッケージはライブラリクレートかバイナリクレートを問わず、少なくとも1個のクレートを持っていないといけません。</p>
 <!--
 Let’s walk through what happens when we create a package. First, we enter the
 command `cargo new`:
@@ -11047,61 +11092,37 @@ $ ls my-project/src
 main.rs
 </code></pre>
 <!--
-When we entered the command, Cargo created a *Cargo.toml* file, giving us a
-package. Looking at the contents of *Cargo.toml*, there’s no mention of
-*src/main.rs* because Cargo follows a convention that *src/main.rs* is the
-crate root of a binary crate with the same name as the package. Likewise, Cargo
-knows that if the package directory contains *src/lib.rs*, the package contains
-a library crate with the same name as the package, and *src/lib.rs* is its
-crate root. Cargo passes the crate root files to `rustc` to build the library
-or binary.
+After we run `cargo new`, we use `ls` to see what Cargo creates. In the project
+directory, there’s a *Cargo.toml* file, giving us a package. There’s also a
+*src* directory that contains *main.rs*. Open *Cargo.toml* in your text editor,
+and note there’s no mention of *src/main.rs*. Cargo follows a convention that
+*src/main.rs* is the crate root of a binary crate with the same name as the
+package. Likewise, Cargo knows that if the package directory contains
+*src/lib.rs*, the package contains a library crate with the same name as the
+package, and *src/lib.rs* is its crate root. Cargo passes the crate root files
+to `rustc` to build the library or binary.
 -->
-<p>このコマンドを入力したとき、Cargoは <em>Cargo.toml</em> ファイルを作り、パッケージを作ってくれました。
-<em>Cargo.toml</em> の中身を見ても、<em>src/main.rs</em> については何も書いてありません。これは、Cargoは <em>src/main.rs</em> が、パッケージと同じ名前を持つバイナリクレートのクレートルートであるという慣習に従っているためです。
+<p><code>cargo new</code>を実行した後、Cargoが作成したものを確認するために<code>ls</code>を使っています。
+プロジェクトディレクトリ内には <em>Cargo.toml</em> ファイルがあり、これがパッケージを構成します。
+また、<em>main.rs</em> を含む <em>src</em> ディレクトリもあります。
+<em>Cargo.toml</em> をテキストエディタで開くと、<em>src/main.rs</em> については何も書いていないことに気づくでしょう。
+Cargoは <em>src/main.rs</em> が、パッケージと同じ名前を持つバイナリクレートのクレートルートであるという慣習に従っています。
 同じように、Cargoはパッケージディレクトリに <em>src/lib.rs</em> が含まれていたら、パッケージにはパッケージと同じ名前のライブラリクレートが含まれており、<em>src/lib.rs</em> がそのクレートルートなのだと判断します。
 Cargoはクレートルートファイルを <code>rustc</code>に渡し、ライブラリやバイナリをビルドします。</p>
 <!--
 Here, we have a package that only contains *src/main.rs*, meaning it only
 contains a binary crate named `my-project`. If a package contains *src/main.rs*
-and *src/lib.rs*, it has two crates: a library and a binary, both with the same
+and *src/lib.rs*, it has two crates: a binary and a library, both with the same
 name as the package. A package can have multiple binary crates by placing files
 in the *src/bin* directory: each file will be a separate binary crate.
 -->
 <p>今、このパッケージには <em>src/main.rs</em> しか含まれておらず、つまりこのパッケージは<code>my-project</code>という名前のバイナリクレートのみを持っているということです。
-もしパッケージが <em>src/main.rs</em> と <em>src/lib.rs</em> を持っていたら、クレートは2つになります：どちらもパッケージと同じ名前を持つ、ライブラリクレートとバイナリクレートです。
+もしパッケージが <em>src/main.rs</em> と <em>src/lib.rs</em> を持っていたら、クレートは2つになります：どちらもパッケージと同じ名前を持つ、バイナリクレートとライブラリクレートです。
 ファイルを <em>src/bin</em> ディレクトリに置くことで、パッケージは複数のバイナリクレートを持つことができます。それぞれのファイルが別々のバイナリクレートになります。</p>
 <!--
-A crate will group related functionality together in a scope so the
-functionality is easy to share between multiple projects. For example, the
-`rand` crate we used in [Chapter 2][rand] provides functionality
-that generates random numbers. We can use that functionality in our own
-projects by bringing the `rand` crate into our project’s scope. All the
-functionality provided by the `rand` crate is accessible through the crate’s
-name, `rand`.
+[modules]: ch07-02-defining-modules-to-control-scope-and-privacy.html
+[rand]: ch02-00-guessing-game-tutorial.html#generating-a-random-number
 -->
-<p>クレートは、関連した機能を一つのスコープにまとめることで、その機能が複数のプロジェクト間で共有しやすいようにします。
-例えば、<a href="ch02-00-guessing-game-tutorial.html#%E4%B9%B1%E6%95%B0%E3%82%92%E7%94%9F%E6%88%90%E3%81%99%E3%82%8B">2章</a>で使った<code>rand</code>クレートは、乱数を生成する機能を提供します。
-<code>rand</code>クレートを私達のプロジェクトのスコープに持ち込むことで、この機能を私達のプロジェクトで使うことができます。
-<code>rand</code>クレートが提供する機能にはすべて、クレートの名前<code>rand</code>を使ってアクセスできます。</p>
-<!--
-Keeping a crate’s functionality in its own scope clarifies whether particular
-functionality is defined in our crate or the `rand` crate and prevents
-potential conflicts. For example, the `rand` crate provides a trait named
-`Rng`. We can also define a `struct` named `Rng` in our own crate. Because a
-crate’s functionality is namespaced in its own scope, when we add `rand` as a
-dependency, the compiler isn’t confused about what the name `Rng` refers to. In
-our crate, it refers to the `struct Rng` that we defined. We would access the
-`Rng` trait from the `rand` crate as `rand::Rng`.
--->
-<p>クレートの機能をそれ自身のスコープの中に入れたままにしておくことは、ある機能が私達のクレートで定義されたのか<code>rand</code>クレートで定義されたのかを明確にし、名前の衝突を予防してくれます。
-例えば、<code>rand</code>クレートは<code>Rng</code>という名前のトレイトを提供しています。
-更に、私達のクレートで<code>Rng</code>という名前の<code>struct</code>を定義することもできます。
-クレートの機能はそのスコープ内の名前空間に位置づけられているので、<code>rand</code>を依存先として追加しても、コンパイラは<code>Rng</code>という名前が何を意味するのかについて混乱することはないのです。
-私達のクレートでは、私達の定義した<code>struct Rng</code>のことであり、<code>rand</code>クレートの<code>Rng</code>トレイトには<code>rand::Rng</code>でアクセスするというわけです。</p>
-<!--
-Let’s move on and talk about the module system!
--->
-<p>では、モジュールシステムの話に移りましょう！</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Defining Modules to Control Scope and Privacy
 -->
@@ -11110,53 +11131,197 @@ Let’s move on and talk about the module system!
 In this section, we’ll talk about modules and other parts of the module system,
 namely *paths* that allow you to name items; the `use` keyword that brings a
 path into scope; and the `pub` keyword to make items public. We’ll also discuss
-the `as` keyword, external packages, and the glob operator. For now, let’s
-focus on modules!
+the `as` keyword, external packages, and the glob operator.
 -->
 <p>この節では、モジュールと、その他のモジュールシステムの要素
 ――すなわち、要素に名前をつけるための <em>パス</em> 、パスをスコープに持ち込む<code>use</code>キーワード、要素を公開する<code>pub</code>キーワード――
 について学びます。
-また、<code>as</code>キーワード、外部パッケージ、glob演算子についても話します。
-とりあえず、今はモジュールに集中しましょう！</p>
+また、<code>as</code>キーワード、外部パッケージ、glob演算子についても話します。</p>
 <!--
-*Modules* let us organize code within a crate into groups for readability and
-easy reuse. Modules also control the *privacy* of items, which is whether an
-item can be used by outside code (*public*) or is an internal implementation
-detail and not available for outside use (*private*).
+First, we’re going to start with a list of rules for easy reference when you’re
+organizing your code in the future. Then we’ll explain each of the rules in
+detail.
 -->
-<p><em>モジュール</em> はクレート内のコードをグループ化し、可読性と再利用性を上げるのに役に立ちます。
-モジュールは要素の <em>プライバシー</em> も制御できます。プライバシーとは、要素がコードの外側で使える <em>(公開 public)</em> のか、内部の実装の詳細であり外部では使えない <em>(非公開 private)</em> のかです。</p>
+<p>まずは、将来コードを整理するときの簡単なリファレンスとして、規則の一覧を示します。
+その後で各規則を詳細に説明します。</p>
+<!--
+### Modules Cheat Sheet
+-->
+<h3 id="モジュールのチートシート"><a class="header" href="#モジュールのチートシート">モジュールのチートシート</a></h3>
+<!--
+Here we provide a quick reference on how modules, paths, the `use` keyword, and
+the `pub` keyword work in the compiler, and how most developers organize their
+code. We’ll be going through examples of each of these rules throughout this
+chapter, but this is a great place to refer to as a reminder of how modules
+work.
+-->
+<p>以下に、モジュール、パス、<code>use</code>キーワード、そして<code>pub</code>キーワードがコンパイラ内でどう機能するか、そして多くの開発者はどのようにコードを整理するかについての、クイックリファレンスを提供します。
+この章ではこれらの各規則の実例を見ていきますが、ここはモジュールがどう機能するか思い出すために見直すのに良い場所となるでしょう。</p>
+<!--
+- **Start from the crate root**: When compiling a crate, the compiler first
+  looks in the crate root file (usually *src/lib.rs* for a library crate or
+  *src/main.rs* for a binary crate) for code to compile.
+- **Declaring modules**: In the crate root file, you can declare new modules;
+say, you declare a “garden” module with `mod garden;`. The compiler will look
+for the module’s code in these places:
+  - Inline, within curly brackets that replace the semicolon following `mod
+    garden`
+  - In the file *src/garden.rs*
+  - In the file *src/garden/mod.rs*
+- **Declaring submodules**: In any file other than the crate root, you can
+  declare submodules. For example, you might declare `mod vegetables;` in
+  *src/garden.rs*. The compiler will look for the submodule’s code within the
+  directory named for the parent module in these places:
+  - Inline, directly following `mod vegetables`, within curly brackets instead
+    of the semicolon
+  - In the file *src/garden/vegetables.rs*
+  - In the file *src/garden/vegetables/mod.rs*
+- **Paths to code in modules**: Once a module is part of your crate, you can
+  refer to code in that module from anywhere else in that same crate, as long
+  as the privacy rules allow, using the path to the code. For example, an
+  `Asparagus` type in the garden vegetables module would be found at
+  `crate::garden::vegetables::Asparagus`.
+- **Private vs public**: Code within a module is private from its parent
+  modules by default. To make a module public, declare it with `pub mod`
+  instead of `mod`. To make items within a public module public as well, use
+  `pub` before their declarations.
+- **The `use` keyword**: Within a scope, the `use` keyword creates shortcuts to
+  items to reduce repetition of long paths. In any scope that can refer to
+  `crate::garden::vegetables::Asparagus`, you can create a shortcut with `use
+  crate::garden::vegetables::Asparagus;` and from then on you only need to
+  write `Asparagus` to make use of that type in the scope.
+-->
+<ul>
+<li><strong>クレートルートから始める</strong>: クレートをコンパイルするとき、
+コンパイラはまずコンパイル対象のコードとしてクレートルートファイル（通常は、ライブラリクレートでは <em>src/lib.rs</em>、バイナリクレートでは <em>src/main.rs</em>）の中を探します。</li>
+<li><strong>モジュールを宣言する</strong>: クレートルートファイルの中で、新しいモジュールを宣言することができます;
+例えば、<code>mod garden;</code>として“garden”モジュールを宣言したとします。コンパイラは以下の場所からモジュールのコードを探します:
+<ul>
+<li>インライン。<code>mod garden</code>の後のセミコロンが波かっこで置き換えられているとき、その中</li>
+<li><em>src/garden.rs</em> ファイルの中</li>
+<li><em>src/garden/mod.rs</em> ファイルの中</li>
+</ul>
+</li>
+<li><strong>サブモジュールを宣言する</strong>: クレートルート以外のすべてのファイルの中で、サブモジュールを宣言することができます。
+例えば、<em>src/garden.rs</em> 内で<code>mod vegetables;</code>と宣言することができます。コンパイラはサブモジュールのコードを、親モジュールに対応するディレクトリ内の以下の場所から探します:
+<ul>
+<li>インライン。<code>mod vegetables</code>のすぐ後にセミコロンの代わりに波かっこがあるとき、その中</li>
+<li><em>src/garden/vegetables.rs</em> ファイルの中</li>
+<li><em>src/garden/vegetables/mod.rs</em> ファイルの中</li>
+</ul>
+</li>
+<li><strong>モジュール内のコードへのパス</strong>: モジュールがクレートの一部となったら、プライバシー規則が許す限り同じクレート内のどこからでも、そのモジュール内のコードをコードへのパスを使用して参照できます。
+例えば、garden vegetablesモジュール内の<code>Asparagus</code>型は<code>crate::garden::vegetables::Asparagus</code>で参照できます。</li>
+<li><strong>非公開と公開</strong>: モジュール内のコードはデフォルトでは非公開で、親モジュールからアクセスすることができません。
+モジュールを公開にするには、<code>mod</code>ではなく<code>pub mod</code>で宣言してください。
+公開モジュール内の要素も公開にするには、それらの宣言の前に<code>pub</code>を付けてください。</li>
+<li><strong><code>use</code>キーワード</strong>: <code>use</code>キーワードは、長いパスの繰り返しを減らすために、要素へのショートカットをスコープ内に作成します。
+<code>crate::garden::vegetables::Asparagus</code>を参照できるスコープ内であれば、<code>use crate::garden::vegetables::Asparagus;</code>でショートカットを作成でき、
+以降はそのスコープ内ではその型を使用するためには<code>Asparagus</code>とだけ書けばよくなります。</li>
+</ul>
+<!--
+Here we create a binary crate named `backyard` that illustrates these rules. The
+crate’s directory, also named `backyard`, contains these files and directories:
+-->
+<p>これらの規則を説明するための例として、ここに<code>backyard</code>という名前のバイナリクレートを作成します。
+クレートのディレクトリは、同じく<code>backyard</code>と名付けられ、以下のファイルとディレクトリを含んでいます:</p>
+<pre><code class="language-text">backyard
+├── Cargo.lock
+├── Cargo.toml
+└── src
+    ├── garden
+    │   └── vegetables.rs
+    ├── garden.rs
+    └── main.rs
+</code></pre>
+<!--
+The crate root file in this case is *src/main.rs*, and it contains:
+-->
+<p>この場合のクレートルートファイルは <em>src/main.rs</em> であり、以下の内容を含んでいます:</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><code class="language-rust noplayground ignore">use crate::garden::vegetables::Asparagus;
+
+pub mod garden;
+
+fn main() {
+    let plant = Asparagus {};
+    println!(&quot;I'm growing {:?}!&quot;, plant);
+}</code></pre>
+<!--
+The `pub mod garden;` line tells the compiler to include the code it finds in
+*src/garden.rs*, which is:
+-->
+<p><code>pub mod garden;</code>の行は、コンパイラに<em>src/garden.rs</em>で見つかるコードを含めるように指示します。
+その内容は:</p>
+<!--
+<span class="filename">Filename: src/garden.rs</span>
+-->
+<p><span class="filename">ファイル名: src/garden.rs</span></p>
+<pre><code class="language-rust noplayground ignore">pub mod vegetables;</code></pre>
+<!--
+Here, `pub mod vegetables;` means the code in *src/garden/vegetables.rs* is
+included too. That code is:
+-->
+<p>この<code>pub mod vegetables;</code>は <em>src/garden/vegetables.rs</em> のコードも含めると言う意味です。
+そのコードは:</p>
+<pre><code class="language-rust noplayground ignore">#[derive(Debug)]
+pub struct Asparagus {}</code></pre>
+<!--
+Now let’s get into the details of these rules and demonstrate them in action!
+-->
+<p>それでは、これらのルールの詳細を知り、実際に試してみましょう！</p>
+<!--
+### Grouping Related Code in Modules
+-->
+<h3 id="関連するコードをモジュールにまとめる"><a class="header" href="#関連するコードをモジュールにまとめる">関連するコードをモジュールにまとめる</a></h3>
+<!--
+*Modules* let us organize code within a crate for readability and easy reuse.
+Modules also allow us to control the *privacy* of items, because code within a
+module is private by default. Private items are internal implementation details
+not available for outside use. We can choose to make modules and the items
+within them public, which exposes them to allow external code to use and depend
+on them.
+-->
+<p><em>モジュール (module)</em> はクレート内のコードを整理し、可読性と再利用性を上げるのに役に立ちます。
+モジュール内のコードはデフォルトでは非公開なので、モジュールは要素の<em>プライバシー (priavacy)</em> の制御も可能にします。
+非公開の要素は、外部からの使用ができない内部的な実装の詳細です。
+モジュールとそれらの中の要素は公開にするかどうかを選ぶことができ、公開にすると、外部のコードがそれを使用し、それに依存できるようになります。</p>
 <!--
 As an example, let’s write a library crate that provides the functionality of a
 restaurant. We’ll define the signatures of functions but leave their bodies
-empty to concentrate on the organization of the code, rather than actually
-implement a restaurant in code.
+empty to concentrate on the organization of the code, rather than the
+implementation of a restaurant.
 -->
 <p>例えば、レストランの機能を提供するライブラリクレートを書いてみましょう。
-実際にレストランを実装することではなく、コードの関係性に注目したいので、関数にシグネチャをつけますが中身は空白のままにします。</p>
+レストランの実装ではなくコードの関係性に注目したいので、関数にシグネチャをつけますが中身は空白のままにします。</p>
 <!--
 In the restaurant industry, some parts of a restaurant are referred to as
 *front of house* and others as *back of house*. Front of house is where
-customers are; this is where hosts seat customers, servers take orders and
-payment, and bartenders make drinks. Back of house is where the chefs and cooks
-work in the kitchen, dishwashers clean up, and managers do administrative work.
+customers are; this encompasses where the hosts seat customers, servers take
+orders and payment, and bartenders make drinks. Back of house is where the
+chefs and cooks work in the kitchen, dishwashers clean up, and managers do
+administrative work.
 -->
-<p>レストラン業界では、レストランの一部を <em>接客部門 (front of house)</em> といい、その他を <em>後方部門 (back of house)</em> といいます。
+<p>レストラン業界では、レストランの一部を<em>接客部門 (front of house)</em> といい、その他を<em>後方部門 (back of house)</em> といいます。
 接客部門とはお客さんがいるところです。接客係がお客様を席に案内し、給仕係が注文と支払いを受け付け、バーテンダーが飲み物を作ります。
 後方部門とはシェフや料理人がキッチンで働き、皿洗い係が食器を片付け、マネージャが管理業務をする場所です。</p>
 <!--
-To structure our crate in the same way that a real restaurant works, we can
-organize the functions into nested modules. Create a new library named
-`restaurant` by running `cargo new --lib restaurant`; then put the code in
-Listing 7-1 into *src/lib.rs* to define some modules and function signatures.
+To structure our crate in this way, we can organize its functions into nested
+modules. Create a new library named `restaurant` by running `cargo new
+restaurant --lib`; then enter the code in Listing 7-1 into *src/lib.rs* to
+define some modules and function signatures. Here’s the front of house section:
 -->
-<p>私達のクレートを現実のレストランと同じような構造にするために、関数をネストしたモジュールにまとめましょう。
-<code>restaurant</code>という名前の新しいライブラリを<code>cargo new --lib restaurant</code>と実行することで作成し、Listing 7-1 のコードを <em>src/lib.rs</em> に書き込み、モジュールと関数のシグネチャを定義してください。</p>
+<p>私達のクレートをこのような構造にするために、関数をネストしたモジュールにまとめましょう。
+<code>restaurant</code>という名前の新しいライブラリを<code>cargo new --lib restaurant</code>と実行することで作成し、リスト7-1のコードを <em>src/lib.rs</em> に書き込み、モジュールと関数のシグネチャを定義してください。
+以下が接客部門です:</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">mod front_of_house {
+<pre><code class="language-rust noplayground">mod front_of_house {
     mod hosting {
         fn add_to_waitlist() {}
 
@@ -11170,32 +11335,30 @@ Listing 7-1 into *src/lib.rs* to define some modules and function signatures.
 
         fn take_payment() {}
     }
-}
-<span class="boring">
-</span><span class="boring">fn main() {}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-1: A `front_of_house` module containing other
 modules that then contain functions</span>
 -->
-<p><span class="caption">Listing 7-1: <code>front_of_house</code>モジュールにその他のモジュールが含まれ、さらにそれらが関数を含んでいる</span></p>
+<p><span class="caption">リスト7-1: <code>front_of_house</code>モジュールにその他のモジュールが含まれ、さらにそれらが関数を含んでいる</span></p>
 <!--
-We define a module by starting with the `mod` keyword and then specify the
-name of the module (in this case, `front_of_house`) and place curly brackets
-around the body of the module. Inside modules, we can have other modules, as in
-this case with the modules `hosting` and `serving`. Modules can also hold
-definitions for other items, such as structs, enums, constants, traits, or—as
-in Listing 7-1—functions.
+We define a module with the `mod` keyword followed by the name of the module
+(in this case, `front_of_house`). The body of the module then goes inside curly
+brackets. Inside modules, we can place other modules, as in this case with the
+modules `hosting` and `serving`. Modules can also hold definitions for other
+items, such as structs, enums, constants, traits, and—as in Listing
+7-1—functions.
 -->
-<p>モジュールは、<code>mod</code>キーワードを書き、次にモジュールの名前（今回の場合、<code>front_of_house</code>）を指定することで定義されます。
+<p>モジュールは、<code>mod</code>キーワードと、それに続くモジュールの名前（今回の場合、<code>front_of_house</code>）によって定義されます。
+次にモジュールの本体が波かっこの中に入ります。
 モジュールの中には、今回だと<code>hosting</code>と<code>serving</code>のように、他のモジュールをおくこともできます。
-モジュールにはその他の要素の定義も置くことができます。例えば、構造体、enum、定数、トレイト、そして（Listing 7-1のように）関数です。</p>
+モジュールにはその他の要素の定義も置くことができます。例えば、構造体、enum、定数、トレイト、そして（リスト7-1のように）関数です。</p>
 <!--
 By using modules, we can group related definitions together and name why
-they’re related. Programmers using this code would have an easier time finding
-the definitions they wanted to use because they could navigate the code based
-on the groups rather than having to read through all the definitions.
-Programmers adding new functionality to this code would know where to place the
-code to keep the program organized.
+they’re related. Programmers using this code can navigate the code based on the
+groups rather than having to read through all the definitions, making it easier
+to find the definitions relevant to them. Programmers adding new functionality
+to this code would know where to place the code to keep the program organized.
 -->
 <p>モジュールを使うことで、関連する定義を一つにまとめ、関連する理由を名前で示せます。
 このコードを使うプログラマーは、定義を全部読むことなく、グループ単位でコードを読み進められるので、欲しい定義を見つけ出すのが簡単になるでしょう。
@@ -11211,7 +11374,7 @@ known as the *module tree*.
 <!--
 Listing 7-2 shows the module tree for the structure in Listing 7-1.
 -->
-<p>Listing 7-2は、Listing 7-1の構造のモジュールツリーを示しています。</p>
+<p>リスト7-2は、リスト7-1の構造のモジュールツリーを示しています。</p>
 <pre><code class="language-text">crate
  └── front_of_house
      ├── hosting
@@ -11226,20 +11389,19 @@ Listing 7-2 shows the module tree for the structure in Listing 7-1.
 <span class="caption">Listing 7-2: The module tree for the code in Listing
 7-1</span>
 -->
-<p><span class="caption">Listing 7-2: Listing 7-1 のコードのモジュールツリー</span></p>
+<p><span class="caption">リスト7-2: リスト7-1 のコードのモジュールツリー</span></p>
 <!--
-This tree shows how some of the modules nest inside one another (for example,
-`hosting` nests inside `front_of_house`). The tree also shows that some modules
-are *siblings* to each other, meaning they’re defined in the same module
-(`hosting` and `serving` are defined within `front_of_house`). To continue the
-family metaphor, if module A is contained inside module B, we say that module A
-is the *child* of module B and that module B is the *parent* of module A.
-Notice that the entire module tree is rooted under the implicit module named
-`crate`.
+This tree shows how some of the modules nest inside one another; for example,
+`hosting` nests inside `front_of_house`. The tree also shows that some modules
+are *siblings* to each other, meaning they’re defined in the same module;
+`hosting` and `serving` are siblings defined within `front_of_house`. If module
+A is contained inside module B, we say that module A is the *child* of module B
+and that module B is the *parent* of module A. Notice that the entire module
+tree is rooted under the implicit module named `crate`.
 -->
-<p>このツリーを見ると、どのモジュールがどのモジュールの中にネストしているのかがわかります（例えば、<code>hosting</code>は<code>front_of_house</code>の中にネストしています）。
-また、いくつかのモジュールはお互いに <em>兄弟</em> の関係にある、つまり、同じモジュール内で定義されていることもわかります（例えば<code>hosting</code>と<code>serving</code>は<code>front_of_house</code>で定義されています）。
-他にも、家族関係の比喩を使って、モジュールAがモジュールBの中に入っている時、AはBの <em>子</em> であるといい、BはAの <em>親</em> であるといいます。
+<p>このツリーを見ると、どのモジュールがどのモジュールの中にネストしているのかがわかります; 例えば、<code>hosting</code>は<code>front_of_house</code>の中にネストしています。
+また、いくつかのモジュールはお互いに<em>兄弟 (siblings)</em> の関係にある、つまり、同じモジュール内で定義されていることもわかります; 例えば<code>hosting</code>と<code>serving</code>は<code>front_of_house</code>で定義されている兄弟同士です。
+他にも、モジュールAがモジュールBの中に入っている時、AはBの<em>子 (child)</em> であるといい、BはAの<em>親 (parent)</em> であるといいます。
 モジュールツリー全体が、暗黙のうちに作られた<code>crate</code>というモジュールの下にあることにも注目してください。</p>
 <!--
 The module tree might remind you of the filesystem’s directory tree on your
@@ -11256,24 +11418,26 @@ need a way to find our modules.
 <h2 id="モジュールツリーの要素を示すためのパス"><a class="header" href="#モジュールツリーの要素を示すためのパス">モジュールツリーの要素を示すためのパス</a></h2>
 <!--
 To show Rust where to find an item in a module tree, we use a path in the same
-way we use a path when navigating a filesystem. If we want to call a function,
-we need to know its path.
+way we use a path when navigating a filesystem. To call a function, we need to
+know its path.
 -->
 <p>ファイルシステムの中を移動する時と同じように、Rustにモジュールツリー内の要素を見つけるためにはどこを探せばいいのか教えるためにパスを使います。
-関数を呼び出したいなら、そのパスを知っていなければなりません。</p>
+関数を呼び出すためには、そのパスを知っていなければなりません。</p>
 <!--
 A path can take two forms:
 -->
 <p>パスは2つの形を取ることができます：</p>
 <!--
-* An *absolute path* starts from a crate root by using a crate name or a
-  literal `crate`.
+* An *absolute path* is the full path starting from a crate root; for code
+  from an external crate, the absolute path begins with the crate name, and for
+  code from the current crate, it starts with the literal `crate`.
 * A *relative path* starts from the current module and uses `self`, `super`, or
   an identifier in the current module.
 -->
 <ul>
-<li><em>絶対パス</em> は、クレートの名前か<code>crate</code>という文字列を使うことで、クレートルートからスタートします。</li>
-<li><em>相対パス</em> は、<code>self</code>、<code>super</code>または今のモジュール内の識別子を使うことで、現在のモジュールからスタートします。</li>
+<li><em>絶対パス</em> は、クレートルートを起点とするフルパスです;
+絶対パスは、外部のクレートに属するコードに関してはそのクレート名で始まり、現在のクレートに属するコードに関してはリテラル<code>crate</code>で始まります。</li>
+<li><em>相対パス</em> は、現在のモジュールを起点とし、<code>self</code>、<code>super</code>、または今のモジュール内の識別子を使います。</li>
 </ul>
 <!--
 Both absolute and relative paths are followed by one or more identifiers
@@ -11281,25 +11445,30 @@ separated by double colons (`::`).
 -->
 <p>絶対パスも相対パスも、その後に一つ以上の識別子がダブルコロン(<code>::</code>)で仕切られて続きます。</p>
 <!--
-Let’s return to the example in Listing 7-1. How do we call the
-`add_to_waitlist` function? This is the same as asking, what’s the path of the
-`add_to_waitlist` function? In Listing 7-3, we simplified our code a bit by
-removing some of the modules and functions. We’ll show two ways to call the
-`add_to_waitlist` function from a new function `eat_at_restaurant` defined in
-the crate root. The `eat_at_restaurant` function is part of our library crate’s
-public API, so we mark it with the `pub` keyword. In the [”Exposing Paths with
-the `pub` Keyword”][pub] section, we’ll go into more detail
-about `pub`. Note that this example won’t compile just yet; we’ll explain why
-in a bit.
+Returning to Listing 7-1, say we want to call the `add_to_waitlist` function.
+This is the same as asking: what’s the path of the `add_to_waitlist` function?
+Listing 7-3 contains Listing 7-1 with some of the modules and functions
+removed.
 -->
-<p>Listing 7-1の例に戻ってみましょう。
-<code>add_to_waitlist</code>関数をどうやって呼べばいいでしょうか？
-すなわち、<code>add_to_waitlist</code>のパスは何でしょうか？
-Listing 7-3 は、モジュールと関数をいくつか取り除いてコードをやや簡潔にしています。
-これを使って、クレートルートに定義された新しい<code>eat_at_restaurant</code>という関数から、<code>add_to_waitlist</code>関数を呼びだす2つの方法を示しましょう。
-<code>eat_at_restaurant</code>関数はこのライブラリクレートの公開 (public) APIの1つなので、<code>pub</code>キーワードをつけておきます。
-<code>pub</code>については、<a href="ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#%E3%83%91%E3%82%B9%E3%82%92pub%E3%82%AD%E3%83%BC%E3%83%AF%E3%83%BC%E3%83%89%E3%81%A7%E5%85%AC%E9%96%8B%E3%81%99%E3%82%8B">パスを<code>pub</code>キーワードで公開する</a><!-- ignore -->の節でより詳しく学びます。
-この例はまだコンパイルできないことに注意してください。理由はすぐに説明します。</p>
+<p>リスト7-1に戻ってみて、例えば<code>add_to_waitlist</code>関数を呼びたいとしましょう。
+これはこう聞くのと同じです: <code>add_to_waitlist</code>のパスは何でしょうか？
+リスト7-3は、リスト7-1からいくつかのモジュールと関数を削除したものを含んでいます。</p>
+<!--
+We’ll show two ways to call the `add_to_waitlist` function from a new function
+`eat_at_restaurant` defined in the crate root. These paths are correct, but
+there’s another problem remaining that will prevent this example from compiling
+as-is. We’ll explain why in a bit.
+-->
+<p>これを使って、クレートルートに定義された新しい<code>eat_at_restaurant</code>という関数から、<code>add_to_waitlist</code>関数を呼び出す2つの方法を示しましょう。
+これらのパスは正しいものですが、この例をこのままではコンパイルできなくしている問題が他に残っています。
+理由はすぐに説明します。</p>
+<!--
+The `eat_at_restaurant` function is part of our library crate’s public API, so
+we mark it with the `pub` keyword. In the [“Exposing Paths with the `pub`
+Keyword”][pub] section, we’ll go into more detail about `pub`.
+-->
+<p><code>eat_at_restaurant</code>関数はこのライブラリクレートの公開 (public) APIの1つなので、<code>pub</code>キーワードをつけておきます。
+<code>pub</code>については、<a href="ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#%E3%83%91%E3%82%B9%E3%82%92pub%E3%82%AD%E3%83%BC%E3%83%AF%E3%83%BC%E3%83%89%E3%81%A7%E5%85%AC%E9%96%8B%E3%81%99%E3%82%8B">「パスを<code>pub</code>キーワードで公開する」</a>の節でより詳しく学びます。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
@@ -11323,129 +11492,131 @@ pub fn eat_at_restaurant() {
 <span class="caption">Listing 7-3: Calling the `add_to_waitlist` function using
 absolute and relative paths</span>
 -->
-<p><span class="caption">Listing 7-3: <code>add_to_waitlist</code> 関数を絶対パスと相対パスで呼び出す</span></p>
+<p><span class="caption">リスト7-3: <code>add_to_waitlist</code> 関数を絶対パスと相対パスで呼び出す</span></p>
 <!--
 The first time we call the `add_to_waitlist` function in `eat_at_restaurant`,
 we use an absolute path. The `add_to_waitlist` function is defined in the same
 crate as `eat_at_restaurant`, which means we can use the `crate` keyword to
-start an absolute path.
+start an absolute path. We then include each of the successive modules until we
+make our way to `add_to_waitlist`. You can imagine a filesystem with the same
+structure: we’d specify the path `/front_of_house/hosting/add_to_waitlist` to
+run the `add_to_waitlist` program; using the `crate` name to start from the
+crate root is like using `/` to start from the filesystem root in your shell.
 -->
 <p><code>eat_at_restaurant</code>で最初に<code>add_to_waitlist</code>関数を呼び出す時、絶対パスを使っています。
-<code>add_to_waitlist</code>関数は<code>eat_at_restaurant</code>と同じクレートで定義されているので、<code>crate</code>キーワードで絶対パスを始めることができます。</p>
-<!--
-After `crate`, we include each of the successive modules until we make our way
-to `add_to_waitlist`. You can imagine a filesystem with the same structure, and
-we’d specify the path `/front_of_house/hosting/add_to_waitlist` to run the
-`add_to_waitlist` program; using the `crate` name to start from the crate root
-is like using `/` to start from the filesystem root in your shell.
--->
-<p><code>crate</code>の後は、<code>add_to_waitlist</code>にたどり着くまで、後に続くモジュールを書き込んでいます。
-同じ構造のファイルシステムを想像すれば、<code>/front_of_house/hosting/add_to_waitlist</code>とパスを指定して<code>add_to_waitlist</code>を実行していることに相当します。
+<code>add_to_waitlist</code>関数は<code>eat_at_restaurant</code>と同じクレートで定義されているので、<code>crate</code>キーワードで絶対パスを始めることができます。
+続けて、<code>add_to_waitlist</code>にたどり着くまで、後に続くモジュールを書き込んでいます。
+同じ構造のファイルシステムを想像してもよいでしょう: <code>/front_of_house/hosting/add_to_waitlist</code>とパスを指定して<code>add_to_waitlist</code>を実行していることに相当します。
 <code>crate</code>という名前を使ってクレートルートからスタートするというのは、<code>/</code>を使ってファイルシステムのルートからスタートするようなものです。</p>
 <!--
 The second time we call `add_to_waitlist` in `eat_at_restaurant`, we use a
 relative path. The path starts with `front_of_house`, the name of the module
 defined at the same level of the module tree as `eat_at_restaurant`. Here the
 filesystem equivalent would be using the path
-`front_of_house/hosting/add_to_waitlist`. Starting with a name means that the
-path is relative.
+`front_of_house/hosting/add_to_waitlist`. Starting with a module name means
+that the path is relative.
 -->
 <p><code>eat_at_restaurant</code>で2回目に<code>add_to_waitlist</code>関数を呼び出す時、相対パスを使っています。
 パスは、モジュールツリーにおいて<code>eat_at_restaurant</code>と同じ階層で定義されているモジュールである<code>front_of_house</code>からスタートします。
 これはファイルシステムで<code>front_of_house/hosting/add_to_waitlist</code>というパスを使っているのに相当します。
-名前から始めるのは、パスが相対パスであることを意味します。</p>
+モジュール名から始めるのは、パスが相対パスであることを意味します。</p>
 <!--
 Choosing whether to use a relative or absolute path is a decision you’ll make
-based on your project. The decision should depend on whether you’re more likely
-to move item definition code separately from or together with the code that
-uses the item. For example, if we move the `front_of_house` module and the
-`eat_at_restaurant` function into a module named `customer_experience`, we’d
-need to update the absolute path to `add_to_waitlist`, but the relative path
-would still be valid. However, if we moved the `eat_at_restaurant` function
-separately into a module named `dining`, the absolute path to the
-`add_to_waitlist` call would stay the same, but the relative path would need to
-be updated. Our preference is to specify absolute paths because it’s more
-likely to move code definitions and item calls independently of each other.
+based on your project, and depends on whether you’re more likely to move item
+definition code separately from or together with the code that uses the item.
+For example, if we move the `front_of_house` module and the `eat_at_restaurant`
+function into a module named `customer_experience`, we’d need to update the
+absolute path to `add_to_waitlist`, but the relative path would still be valid.
+However, if we moved the `eat_at_restaurant` function separately into a module
+named `dining`, the absolute path to the `add_to_waitlist` call would stay the
+same, but the relative path would need to be updated. Our preference in general
+is to specify absolute paths because it’s more likely we’ll want to move code
+definitions and item calls independently of each other.
 -->
 <p>相対パスを使うか絶対パスを使うかは、プロジェクトによって決めましょう。
 要素を定義するコードを、その要素を使うコードと別々に動かすか一緒に動かすか、どちらが起こりそうかによって決めるのが良いです。
 例えば、<code>front_of_house</code>モジュールと<code>eat_at_restaurant</code>関数を<code>customer_experience</code>というモジュールに移動させると、<code>add_to_waitlist</code>への絶対パスを更新しないといけませんが、相対パスは有効なままです。
 しかし、<code>eat_at_restaurant</code>関数だけを<code>dining</code>というモジュールに移動させると、<code>add_to_waitlist</code>への絶対パスは同じままですが、相対パスは更新しないといけないでしょう。
-コードの定義と、その要素の呼び出しは独立に動かしそうなので、絶対パスのほうが好ましいです。</p>
+一般論としては、コードの定義と、その要素の呼び出しは独立に動かしたいことが多いと思われるので、絶対パスのほうが好ましいです。</p>
 <!--
 Let’s try to compile Listing 7-3 and find out why it won’t compile yet! The
 error we get is shown in Listing 7-4.
 -->
-<p>では、Listing 7-3 をコンパイルしてみて、どうしてこれはまだコンパイルできないのか考えてみましょう！
-エラーをListing 7-4 に示しています。</p>
+<p>では、リスト7-3をコンパイルしてみて、どうしてこれはまだコンパイルできないのか考えてみましょう！
+エラーをリスト7-4に示しています。</p>
 <pre><code class="language-console">$ cargo build
    Compiling restaurant v0.1.0 (file:///projects/restaurant)
 error[E0603]: module `hosting` is private
  --&gt; src/lib.rs:9:28
   |
 9 |     crate::front_of_house::hosting::add_to_waitlist();
-  |                            ^^^^^^^
+  |                            ^^^^^^^  --------------- function `add_to_waitlist` is not publicly re-exported
+  |                            |
+  |                            private module
+  |
+note: the module `hosting` is defined here
+ --&gt; src/lib.rs:2:5
+  |
+2 |     mod hosting {
+  |     ^^^^^^^^^^^
 
 error[E0603]: module `hosting` is private
   --&gt; src/lib.rs:12:21
    |
 12 |     front_of_house::hosting::add_to_waitlist();
-   |                     ^^^^^^^
-
-error: aborting due to 2 previous errors
+   |                     ^^^^^^^  --------------- function `add_to_waitlist` is not publicly re-exported
+   |                     |
+   |                     private module
+   |
+note: the module `hosting` is defined here
+  --&gt; src/lib.rs:2:5
+   |
+2  |     mod hosting {
+   |     ^^^^^^^^^^^
 
 For more information about this error, try `rustc --explain E0603`.
-error: could not compile `restaurant`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `restaurant` (lib) due to 2 previous errors
 </code></pre>
 <!--
 <span class="caption">Listing 7-4: Compiler errors from building the code in
 Listing 7-3</span>
 -->
-<p><span class="caption">Listing 7-4: Listing 7-3のコードをビルドしたときのコンパイルエラー</span></p>
+<p><span class="caption">リスト7-4: リスト7-3のコードをビルドしたときのコンパイルエラー</span></p>
 <!--
 The error messages say that module `hosting` is private. In other words, we
 have the correct paths for the `hosting` module and the `add_to_waitlist`
 function, but Rust won’t let us use them because it doesn’t have access to the
-private sections.
+private sections. In Rust, all items (functions, methods, structs, enums,
+modules, and constants) are private to parent modules by default. If you want
+to make an item like a function or struct private, you put it in a module.
+
 -->
 <p>エラーメッセージは、<code>hosting</code>は非公開 (private) だ、と言っています。
-言い換えるなら、<code>hosting</code>モジュールと<code>add_to_waitlist</code>関数へのパスは正しいが、非公開な部分へのアクセスは許可されていないので、Rustがそれを使わせてくれないということです。</p>
+言い換えるなら、<code>hosting</code>モジュールと<code>add_to_waitlist</code>関数へのパスは正しいが、非公開な部分へのアクセスは許可されていないので、Rustがそれを使わせてくれないということです。
+Rustでは、すべての要素（関数、メソッド、構造体、enum、モジュール、そして定数）はデフォルトでは親モジュールに対して非公開です。
+関数や構造体などの要素を非公開にしたければ、モジュールの中に置いてください。</p>
 <!--
-Modules aren’t useful only for organizing your code. They also define Rust’s
-*privacy boundary*: the line that encapsulates the implementation details
-external code isn’t allowed to know about, call, or rely on. So, if you want to
-make an item like a function or struct private, you put it in a module.
+Items in a parent module can’t use the private items inside child modules, but
+items in child modules can use the items in their ancestor modules. This is
+because child modules wrap and hide their implementation details, but the child
+modules can see the context in which they’re defined. To continue with our
+metaphor, think of the privacy rules as being like the back office of a
+restaurant: what goes on in there is private to restaurant customers, but
+office managers can see and do everything in the restaurant they operate.
 -->
-<p>モジュールはコードの整理に役立つだけではありません。
-モジュールはRustの <em>プライバシー境界</em> も定義します。これは、外部のコードが知ったり、呼び出したり、依存したりしてはいけない実装の詳細をカプセル化する線引きです。
-なので、関数や構造体といった要素を非公開にしたければ、モジュールに入れればよいのです。</p>
-<!--
-The way privacy works in Rust is that all items (functions, methods, structs,
-enums, modules, and constants) are private by default. Items in a parent module
-can’t use the private items inside child modules, but items in child modules
-can use the items in their ancestor modules. The reason is that child modules
-wrap and hide their implementation details, but the child modules can see the
-context in which they’re defined. To continue with the restaurant metaphor,
-think of the privacy rules as being like the back office of a restaurant: what
-goes on in there is private to restaurant customers, but office managers can
-see and do everything in the restaurant in which they operate.
--->
-<p>Rustにおけるプライバシーは、「あらゆる要素（関数、メソッド、構造体、enum、モジュールおよび定数）は標準では非公開」というやり方で動いています。
-親モジュールの要素は子モジュールの非公開要素を使えませんが、子モジュールの要素はその祖先モジュールの要素を使えます。
+<p>親モジュールの要素は子モジュールの非公開要素を使えませんが、子モジュールの要素はその祖先モジュールの要素を使えます。
 これは、子モジュールは実装の詳細を覆い隠しますが、子モジュールは自分の定義された文脈を見ることができるためです。
-レストランの喩えを続けるなら、レストランの後方部門になったつもりでプライバシーのルールを考えてみてください。レストランの顧客にはそこで何が起こっているのかは非公開ですが、そこで働くオフィスマネージャには、レストランのことは何でも見えるし何でもできるのです。</p>
+レストランの喩えを続けるなら、レストランの後方部門になったつもりでプライバシーのルールを考えてみてください。レストランの顧客にはそこで何が起こっているのかは非公開ですが、そこを運営するオフィスマネージャには、レストランのことは何でも見えるし何でもできるのです。</p>
 <!--
 Rust chose to have the module system function this way so that hiding inner
 implementation details is the default. That way, you know which parts of the
-inner code you can change without breaking outer code. But you can expose inner
-parts of child modules' code to outer ancestor modules by using the `pub`
-keyword to make an item public.
+inner code you can change without breaking outer code. However, Rust does give
+you the option to expose inner parts of child modules’ code to outer ancestor
+modules by using the `pub` keyword to make an item public.
 -->
 <p>Rustは、内部実装の詳細を隠すことが標準であるようにモジュールシステムを機能させることを選択しました。
 こうすることで、内部のコードのどの部分が、外部のコードを壊すことなく変更できるのかを知ることができます。
-しかし、<code>pub</code>キーワードを使って要素を公開することで、子モジュールの内部部品を外部の祖先モジュールに見せることができます。</p>
+しかし、Rustは<code>pub</code>キーワードを使って要素を公開することで、子モジュールの内部部品を外部の祖先モジュールに見せるという選択肢も与えています。</p>
 <!--
 ### Exposing Paths with the `pub` Keyword
 -->
@@ -11456,8 +11627,8 @@ private. We want the `eat_at_restaurant` function in the parent module to have
 access to the `add_to_waitlist` function in the child module, so we mark the
 `hosting` module with the `pub` keyword, as shown in Listing 7-5.
 -->
-<p>Listing 7-4の、<code>hosting</code>モジュールが非公開だと言ってきていたエラーに戻りましょう。
-親モジュールの<code>eat_at_restaurant</code>関数が子モジュールの<code>add_to_waitlist</code>関数にアクセスできるようにしたいので、<code>hosting</code>モジュールに<code>pub</code>キーワードをつけます。Listing 7-5のようになります。</p>
+<p>リスト7-4の、<code>hosting</code>モジュールが非公開だと言ってきていたエラーに戻りましょう。
+親モジュールの<code>eat_at_restaurant</code>関数が子モジュールの<code>add_to_waitlist</code>関数にアクセスできるようにしたいので、<code>hosting</code>モジュールに<code>pub</code>キーワードをつけます。リスト7-5のようになります。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
@@ -11481,55 +11652,68 @@ pub fn eat_at_restaurant() {
 <span class="caption">Listing 7-5: Declaring the `hosting` module as `pub` to
 use it from `eat_at_restaurant`</span>
 -->
-<p><span class="caption">Listing 7-5: <code>hosting</code> モジュールを <code>pub</code> として宣言することで<code>eat_at_restaurant</code>から使う</span></p>
+<p><span class="caption">リスト7-5: <code>hosting</code> モジュールを <code>pub</code> として宣言することで<code>eat_at_restaurant</code>から使う</span></p>
 <!--
 Unfortunately, the code in Listing 7-5 still results in an error, as shown in
 Listing 7-6.
 -->
-<p>残念ながら、Listing 7-5 のコードもListing 7-6 に示されるようにエラーとなります。</p>
+<p>残念ながら、リスト7-5のコードもリスト7-6に示されるようにエラーとなります。</p>
 <pre><code class="language-console">$ cargo build
    Compiling restaurant v0.1.0 (file:///projects/restaurant)
 error[E0603]: function `add_to_waitlist` is private
  --&gt; src/lib.rs:9:37
   |
 9 |     crate::front_of_house::hosting::add_to_waitlist();
-  |                                     ^^^^^^^^^^^^^^^
+  |                                     ^^^^^^^^^^^^^^^ private function
+  |
+note: the function `add_to_waitlist` is defined here
+ --&gt; src/lib.rs:3:9
+  |
+3 |         fn add_to_waitlist() {}
+  |         ^^^^^^^^^^^^^^^^^^^^
 
 error[E0603]: function `add_to_waitlist` is private
   --&gt; src/lib.rs:12:30
    |
 12 |     front_of_house::hosting::add_to_waitlist();
-   |                              ^^^^^^^^^^^^^^^
-
-error: aborting due to 2 previous errors
+   |                              ^^^^^^^^^^^^^^^ private function
+   |
+note: the function `add_to_waitlist` is defined here
+  --&gt; src/lib.rs:3:9
+   |
+3  |         fn add_to_waitlist() {}
+   |         ^^^^^^^^^^^^^^^^^^^^
 
 For more information about this error, try `rustc --explain E0603`.
-error: could not compile `restaurant`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `restaurant` (lib) due to 2 previous errors
 </code></pre>
 <!--
 <span class="caption">Listing 7-6: Compiler errors from building the code in
 Listing 7-5</span>
 -->
-<p><span class="caption">Listing 7-6: Listing 7-5 のコードをビルドしたときのコンパイルエラー</span></p>
+<p><span class="caption">リスト7-6: リスト7-5のコードをビルドしたときのコンパイルエラー</span></p>
 <!--
 What happened? Adding the `pub` keyword in front of `mod hosting` makes the
 module public. With this change, if we can access `front_of_house`, we can
 access `hosting`. But the *contents* of `hosting` are still private; making the
 module public doesn’t make its contents public. The `pub` keyword on a module
-only lets code in its ancestor modules refer to it.
+only lets code in its ancestor modules refer to it, not access its inner code.
+Because modules are containers, there’s not much we can do by only making the
+module public; we need to go further and choose to make one or more of the
+items within the module public as well.
 -->
 <p>何が起きたのでしょう？<code>pub</code>キーワードを<code>mod hosting</code>の前に追加したことで、このモジュールは公開されました。
 この変更によって、<code>front_of_house</code>にアクセスできるなら、<code>hosting</code>にもアクセスできるようになりました。
 しかし<code>hosting</code>の <em>中身</em> はまだ非公開です。モジュールを公開してもその中身は公開されないのです。
-モジュールに<code>pub</code>キーワードがついていても、祖先モジュールのコードはモジュールを参照できるようになるだけです。</p>
+モジュールに<code>pub</code>キーワードがついていても、祖先モジュールのコードはモジュールを参照できるようになるだけで、その内部のコードへのアクセスは許可されません。
+モジュールはコンテナなので、モジュールを公開しただけでは、できることはあまりありません;
+さらに先へ進み、モジュール内のひとつまたは複数の要素も公開することを選択する必要があります。</p>
 <!--
 The errors in Listing 7-6 say that the `add_to_waitlist` function is private.
 The privacy rules apply to structs, enums, functions, and methods as well as
 modules.
 -->
-<p>Listing 7-6 のエラーは<code>add_to_waitlist</code>関数が非公開だと言っています。
+<p>リスト7-6のエラーは<code>add_to_waitlist</code>関数が非公開だと言っています。
 プライバシーのルールは、モジュール同様、構造体、enum、関数、メソッドにも適用されるのです。</p>
 <!--
 Let’s also make the `add_to_waitlist` function public by adding the `pub`
@@ -11540,7 +11724,7 @@ keyword before its definition, as in Listing 7-7.
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">mod front_of_house {
+<pre><code class="language-rust noplayground test_harness">mod front_of_house {
     pub mod hosting {
         pub fn add_to_waitlist() {}
     }
@@ -11554,32 +11738,31 @@ pub fn eat_at_restaurant() {
     // Relative path
     // 相対パス
     front_of_house::hosting::add_to_waitlist();
-}
-<span class="boring">
-</span><span class="boring">fn main() {}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-7: Adding the `pub` keyword to `mod hosting`
 and `fn add_to_waitlist` lets us call the function from
 `eat_at_restaurant`</span>
 -->
-<p><span class="caption">Listing 7-7: <code>pub</code>キーワードを<code>mod hosting</code>と<code>fn add_to_waitlist</code>に追加することで、<code>eat_at_restaurant</code>からこの関数を呼べるようになる</span></p>
+<p><span class="caption">リスト7-7: <code>pub</code>キーワードを<code>mod hosting</code>と<code>fn add_to_waitlist</code>に追加することで、<code>eat_at_restaurant</code>からこの関数を呼べるようになる</span></p>
 <!--
-Now the code will compile! Let’s look at the absolute and the relative path and
-double-check why adding the `pub` keyword lets us use these paths in
-`add_to_waitlist` with respect to the privacy rules.
+Now the code will compile! To see why adding the `pub` keyword lets us use
+these paths in `add_to_waitlist` with respect to the privacy rules, let’s look
+at the absolute and the relative paths.
 -->
 <p>これでこのコードはコンパイルできます！
-絶対パスと相対パスをもう一度確認して、どうして<code>pub</code>キーワードを追加することで<code>add_to_waitlist</code>のそれらのパスを使えるようになるのか、プライバシールールの観点からもう一度確認してみてみましょう。</p>
+どうして<code>pub</code>キーワードを追加することで<code>add_to_waitlist</code>のそれらのパスを使えるようになるのか、
+プライバシールールの観点から確認するために、絶対パスと相対パスを見てみましょう。</p>
 <!--
 In the absolute path, we start with `crate`, the root of our crate’s module
-tree. Then the `front_of_house` module is defined in the crate root. The
-`front_of_house` module isn’t public, but because the `eat_at_restaurant`
-function is defined in the same module as `front_of_house` (that is,
-`eat_at_restaurant` and `front_of_house` are siblings), we can refer to
-`front_of_house` from `eat_at_restaurant`. Next is the `hosting` module marked
-with `pub`. We can access the parent module of `hosting`, so we can access
-`hosting`. Finally, the `add_to_waitlist` function is marked with `pub` and we
-can access its parent module, so this function call works!
+tree. The `front_of_house` module is defined in the crate root. While
+`front_of_house` isn’t public, because the `eat_at_restaurant` function is
+defined in the same module as `front_of_house` (that is, `eat_at_restaurant`
+and `front_of_house` are siblings), we can refer to `front_of_house` from
+`eat_at_restaurant`. Next is the `hosting` module marked with `pub`. We can
+access the parent module of `hosting`, so we can access `hosting`. Finally, the
+`add_to_waitlist` function is marked with `pub` and we can access its parent
+module, so this function call works!
 -->
 <p>絶対パスは、クレートのモジュールツリーのルートである<code>crate</code>から始まります。
 クレートルートの中に<code>front_of_house</code>が定義されています。
@@ -11600,60 +11783,114 @@ function call is valid!
 <code>front_of_house</code>モジュールは<code>eat_at_restaurant</code>と同じモジュールで定義されているので、<code>eat_at_restaurant</code>が定義されている場所からの相対パスが使えます。
 そして、<code>hosting</code>と<code>add_to_waitlist</code>は<code>pub</code>が付いていますから、残りのパスについても問題はなく、この関数呼び出しは有効というわけです。</p>
 <!--
+If you plan on sharing your library crate so other projects can use your code,
+your public API is your contract with users of your crate that determines how
+they can interact with your code. There are many considerations around managing
+changes to your public API to make it easier for people to depend on your
+crate. These considerations are out of the scope of this book; if you’re
+interested in this topic, see [The Rust API Guidelines][api-guidelines].
+-->
+<p>他のプロジェクトからあなたのコードを利用できるようにライブラリクレートを共有するつもりなら、
+公開APIは、クレート利用者があなたのコードとどう相互作用できるかを決定する、クレート利用者との契約となります。
+人々があなたのクレートに依存しやすくするためには、公開APIへの変更の管理に関する多数の考慮事項があります。
+これらの考慮事項はこの本のスコープ外です; このトピックに興味がある場合は、<a href="https://rust-lang.github.io/api-guidelines/">The Rust API Guidelines</a>を参照してください。</p>
+<!--
+> #### Best Practices for Packages with a Binary and a Library
+>
+> We mentioned a package can contain both a *src/main.rs* binary crate root as
+> well as a *src/lib.rs* library crate root, and both crates will have the
+> package name by default. Typically, packages with this pattern of containing
+> both a library and a binary crate will have just enough code in the binary
+> crate to start an executable that calls code with the library crate. This
+> lets other projects benefit from the most functionality that the package
+> provides, because the library crate’s code can be shared.
+>
+> The module tree should be defined in *src/lib.rs*. Then, any public items can
+> be used in the binary crate by starting paths with the name of the package.
+> The binary crate becomes a user of the library crate just like a completely
+> external crate would use the library crate: it can only use the public API.
+> This helps you design a good API; not only are you the author, you’re also a
+> client!
+>
+> In [Chapter 12][ch12], we’ll demonstrate this organizational
+> practice with a command-line program that will contain both a binary crate
+> and a library crate.
+-->
+<blockquote>
+<h4 id="バイナリとライブラリの両方を持つパッケージでのベストプラクティス"><a class="header" href="#バイナリとライブラリの両方を持つパッケージでのベストプラクティス">バイナリとライブラリの両方を持つパッケージでのベストプラクティス</a></h4>
+<p>パッケージは<em>src/main.rs</em>バイナリクレートルートと<em>src/lib.rs</em>ライブラリクレートルートの両方を含むことができ、
+デフォルトでは両方のクレートがパッケージ名を持つことを説明しました。
+典型的には、ライブラリとバイナリのクレート両方を含むこのパターンのパッケージでは、バイナリクレートには
+ライブラリクレートのコードを呼び出して、実行可能形式を開始するために必要な最低限のコードを持たせます。
+こうすることで、ライブラリクレートのコードは共有できるので、
+他のプロジェクトはこのパッケージが提供するほとんどの機能を活用することができます。</p>
+<p>モジュールツリーは<em>src/lib.rs</em>内に定義してください。
+その場合、バイナリクレートからは、パッケージ名でから始まるパスを使って公開された要素を使用することができます。
+バイナリクレートは、そのライブラリクレートを利用する完全に外部のクレートとまったく同じように、
+ライブラリクレートの利用者になります: 公開APIしか使用することができません。
+これは良いAPIを設計する助けになります; あなたは作者であるだけでなく、利用者にもなるのです！</p>
+<p><a href="ch12-00-an-io-project.html">第12章</a>では、バイナリクレートとライブラリクレートの両方を含むコマンドラインプログラムを使って、
+この整理法の実践を示します。</p>
+</blockquote>
+<!--
 ### Starting Relative Paths with `super`
 -->
 <h3 id="相対パスをsuperで始める"><a class="header" href="#相対パスをsuperで始める">相対パスを<code>super</code>で始める</a></h3>
 <!--
-We can also construct relative paths that begin in the parent module by using
-`super` at the start of the path. This is like starting a filesystem path with
-the `..` syntax. Why would we want to do this?
+We can construct relative paths that begin in the parent module, rather than
+the current module or the crate root, by using `super` at the start of the
+path. This is like starting a filesystem path with the `..` syntax. Using
+`super` allows us to reference an item that we know is in the parent module,
+which can make rearranging the module tree easier when the module is closely
+related to the parent, but the parent might be moved elsewhere in the module
+tree someday.
 -->
-<p>親モジュールから始まる相対パスなら、<code>super</code>を最初につけることで構成できます。
+<p>現在のモジュールやクレートルートではなく、親モジュールから始まる相対パスなら、<code>super</code>を最初につけることで構成できます。
 ファイルシステムパスを<code>..</code>構文で始めるのに似ています。
-どのようなときにこの機能が使いたくなるのでしょう？</p>
+<code>super</code>を使用することで、親モジュールにあることを知っている要素を参照することができます。
+これにより、そのモジュールが親と密接に関連しているが、いつか親がモジュールツリー内のどこかに移動されるかもしれないという場合に、モジュールツリーを再編成するのがより簡単になるかもしれません。</p>
 <!--
 Consider the code in Listing 7-8 that models the situation in which a chef
 fixes an incorrect order and personally brings it out to the customer. The
-function `fix_incorrect_order` calls the function `serve_order` by specifying
-the path to `serve_order` starting with `super`:
+function `fix_incorrect_order` defined in the `back_of_house` module calls the
+function `deliver_order` defined in the parent module by specifying the path to
+`deliver_order` starting with `super`:
 -->
-<p>シェフが間違った注文を修正し、自分でお客さんに持っていくという状況をモデル化している、Listing 7-8 を考えてみてください。
-<code>fix_incorrect_order</code>関数は<code>serve_order</code>関数を呼び出すために、<code>super</code>から始まる<code>serve_order</code>関数へのパスを使っています。</p>
+<p>シェフが間違った注文を修正し、自分でお客さんに持っていくという状況をモデル化している、リスト7-8を考えてみてください。
+<code>back_of_house</code>モジュールで定義されている<code>fix_incorrect_order</code>関数は、親モジュールで定義されている<code>deliver_order</code>関数を呼び出すために、<code>super</code>から始まる<code>deliver_order</code>関数へのパスを使っています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">fn serve_order() {}
+<pre><code class="language-rust noplayground test_harness">fn deliver_order() {}
 
 mod back_of_house {
     fn fix_incorrect_order() {
         cook_order();
-        super::serve_order();
+        super::deliver_order();
     }
 
     fn cook_order() {}
-}
-<span class="boring">
-</span><span class="boring">fn main() {}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-8: Calling a function using a relative path
 starting with `super`</span>
 -->
-<p><span class="caption">Listing 7-8: <code>super</code> で始まる相対パスを使って関数を呼び出す</span></p>
+<p><span class="caption">リスト7-8: <code>super</code> で始まる相対パスを使って関数を呼び出す</span></p>
 <!--
 The `fix_incorrect_order` function is in the `back_of_house` module, so we can
 use `super` to go to the parent module of `back_of_house`, which in this case
-is `crate`, the root. From there, we look for `serve_order` and find it.
-Success! We think the `back_of_house` module and the `serve_order` function are
-likely to stay in the same relationship to each other and get moved together
-should we decide to reorganize the crate’s module tree. Therefore, we used
-`super` so we’ll have fewer places to update code in the future if this code
-gets moved to a different module.
+is `crate`, the root. From there, we look for `deliver_order` and find it.
+Success! We think the `back_of_house` module and the `deliver_order` function
+are likely to stay in the same relationship to each other and get moved
+together should we decide to reorganize the crate’s module tree. Therefore, we
+used `super` so we’ll have fewer places to update code in the future if this
+code gets moved to a different module.
 -->
 <p><code>fix_incorrect_order</code>関数は<code>back_of_house</code>モジュールの中にあるので、<code>super</code>を使って<code>back_of_house</code>の親モジュールにいけます。親モジュールは、今回の場合ルートである<code>crate</code>です。
-そこから、<code>serve_order</code>を探し、見つけ出します。
+そこから、<code>deliver_order</code>を探し、見つけ出します。
 成功！
-もしクレートのモジュールツリーを再編成することにした場合でも、<code>back_of_house</code>モジュールと<code>serve_order</code>関数は同じ関係性で有り続け、一緒に動くように思われます。
+もしクレートのモジュールツリーを再編成することにした場合でも、<code>back_of_house</code>モジュールと<code>deliver_order</code>関数は同じ関係性で有り続け、一緒に動くように思われます。
 そのため、<code>super</code>を使うことで、将来このコードが別のモジュールに移動するとしても、更新する場所が少なくて済むようにしました。</p>
 <!--
 ### Making Structs and Enums Public
@@ -11661,29 +11898,27 @@ gets moved to a different module.
 <h3 id="構造体とenumを公開する"><a class="header" href="#構造体とenumを公開する">構造体とenumを公開する</a></h3>
 <!--
 We can also use `pub` to designate structs and enums as public, but there are a
-few extra details. If we use `pub` before a struct definition, we make the
-struct public, but the struct’s fields will still be private. We can make each
-field public or not on a case-by-case basis. In Listing 7-9, we’ve defined a
-public `back_of_house::Breakfast` struct with a public `toast` field but a
-private `seasonal_fruit` field. This models the case in a restaurant where the
-customer can pick the type of bread that comes with a meal, but the chef
-decides which fruit accompanies the meal based on what’s in season and in
-stock. The available fruit changes quickly, so customers can’t choose the fruit
-or even see which fruit they’ll get.
+few details extra to the usage of `pub` with structs and enums. If we use `pub`
+before a struct definition, we make the struct public, but the struct’s fields
+will still be private. We can make each field public or not on a case-by-case
+basis. In Listing 7-9, we’ve defined a public `back_of_house::Breakfast` struct
+with a public `toast` field but a private `seasonal_fruit` field. This models
+the case in a restaurant where the customer can pick the type of bread that
+comes with a meal, but the chef decides which fruit accompanies the meal based
+on what’s in season and in stock. The available fruit changes quickly, so
+customers can’t choose the fruit or even see which fruit they’ll get.
 -->
-<p>構造体やenumも<code>pub</code>を使って公開するよう指定できますが、追加の細目がいくつかあります。
+<p>構造体やenumも<code>pub</code>を使って公開するよう指定できますが、構造体とenumでの<code>pub</code>の使用に関しては追加の細目がいくつかあります。
 構造体定義の前に<code>pub</code>を使うと、構造体は公開されますが、構造体のフィールドは非公開のままなのです。
 それぞれのフィールドを公開するか否かを個々に決められます。
-Listing 7-9 では、公開の<code>toast</code>フィールドと、非公開の<code>seasonal_fruit</code>フィールドをもつ公開の<code>back_of_house::Breakfast</code>構造体を定義しました。
+リスト7-9では、公開の<code>toast</code>フィールドと、非公開の<code>seasonal_fruit</code>フィールドをもつ公開の<code>back_of_house::Breakfast</code>構造体を定義しました。
 これは、例えば、レストランで、お客さんが食事についてくるパンの種類は選べるけれど、食事についてくるフルーツは季節と在庫に合わせてシェフが決める、という状況をモデル化しています。
 提供できるフルーツはすぐに変わるので、お客さんはフルーツを選ぶどころかどんなフルーツが提供されるのか知ることもできません。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>mod back_of_house {
+<pre><code class="language-rust noplayground">mod back_of_house {
     pub struct Breakfast {
         pub toast: String,
         seasonal_fruit: String,
@@ -11713,13 +11948,12 @@ pub fn eat_at_restaurant() {
     // 下の行のコメントを外すとコンパイルできない。食事についてくる
     // 季節のフルーツを知ることも修正することも許されていないので
     // meal.seasonal_fruit = String::from(&quot;blueberries&quot;);
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-9: A struct with some public fields and some
 private fields</span>
 -->
-<p><span class="caption">Listing 7-9: 公開のフィールドと非公開のフィールドとを持つ構造体</span></p>
+<p><span class="caption">リスト7-9: 公開のフィールドと非公開のフィールドとを持つ構造体</span></p>
 <!--
 Because the `toast` field in the `back_of_house::Breakfast` struct is public,
 in `eat_at_restaurant` we can write and read to the `toast` field using dot
@@ -11745,14 +11979,12 @@ In contrast, if we make an enum public, all of its variants are then public. We
 only need the `pub` before the `enum` keyword, as shown in Listing 7-10.
 -->
 <p>一方で、enumを公開すると、そのヴァリアントはすべて公開されます。
-Listing 7-10 に示されているように、<code>pub</code>は<code>enum</code>キーワードの前にだけおけばよいのです。</p>
+リスト7-10に示されているように、<code>pub</code>は<code>enum</code>キーワードの前にだけおけばよいのです。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>mod back_of_house {
+<pre><code class="language-rust noplayground">mod back_of_house {
     pub enum Appetizer {
         Soup,
         Salad,
@@ -11762,23 +11994,25 @@ Listing 7-10 に示されているように、<code>pub</code>は<code>enum</cod
 pub fn eat_at_restaurant() {
     let order1 = back_of_house::Appetizer::Soup;
     let order2 = back_of_house::Appetizer::Salad;
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-10: Designating an enum as public makes all its
 variants public</span>
 -->
-<p><span class="caption">Listing 7-10: enumを公開に指定することはそのヴァリアントをすべて公開にする</span></p>
+<p><span class="caption">リスト7-10: enumを公開に指定することはそのヴァリアントをすべて公開にする</span></p>
 <!--
 Because we made the `Appetizer` enum public, we can use the `Soup` and `Salad`
-variants in `eat_at_restaurant`. Enums aren’t very useful unless their variants
-are public; it would be annoying to have to annotate all enum variants with
-`pub` in every case, so the default for enum variants is to be public. Structs
-are often useful without their fields being public, so struct fields follow the
-general rule of everything being private by default unless annotated with `pub`.
+variants in `eat_at_restaurant`.
 -->
-<p><code>Appetizer</code>というenumを公開したので、<code>Soup</code>と<code>Salad</code>というヴァリアントも<code>eat_at_restaurant</code>で使えます。
-enumはヴァリアントが公開されてないとあまり便利ではないのですが、毎回enumのすべてのヴァリアントに<code>pub</code>をつけるのは面倒なので、enumのヴァリアントは標準で公開されるようになっているのです。
+<p><code>Appetizer</code>というenumを公開したので、<code>Soup</code>と<code>Salad</code>というヴァリアントも<code>eat_at_restaurant</code>で使えます。</p>
+<!--
+Enums aren’t very useful unless their variants are public; it would be annoying
+to have to annotate all enum variants with `pub` in every case, so the default
+for enum variants is to be public. Structs are often useful without their
+fields being public, so struct fields follow the general rule of everything
+being private by default unless annotated with `pub`.
+-->
+<p>enumはヴァリアントが公開されてないとあまり便利ではないのですが、毎回enumのすべてのヴァリアントに<code>pub</code>をつけるのは面倒なので、enumのヴァリアントは標準で公開されるようになっているのです。
 構造体はフィールドが公開されていなくても便利なことが多いので、構造体のフィールドは、<code>pub</code>がついてない限り標準で非公開という通常のルールに従うわけです。</p>
 <!--
 There’s one more situation involving `pub` that we haven’t covered, and that is
@@ -11787,35 +12021,39 @@ first, and then we’ll show how to combine `pub` and `use`.
 -->
 <p>まだ勉強していない、<code>pub</code>の関わるシチュエーションがもう一つあります。モジュールシステムの最後の機能、<code>use</code>キーワードです。
 <code>use</code>自体の勉強をした後、<code>pub</code>と<code>use</code>を組み合わせる方法についてお見せします。</p>
+<!--
+[pub]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#exposing-paths-with-the-pub-keyword
+[api-guidelines]: https://rust-lang.github.io/api-guidelines/
+[ch12]: ch12-00-an-io-project.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Bringing Paths into Scope with the `use` Keyword
 -->
 <h2 id="useキーワードでパスをスコープに持ち込む"><a class="header" href="#useキーワードでパスをスコープに持ち込む"><code>use</code>キーワードでパスをスコープに持ち込む</a></h2>
 <!--
-It might seem like the paths we’ve written to call functions so far are
-inconveniently long and repetitive. For example, in Listing 7-7, whether we
-chose the absolute or relative path to the `add_to_waitlist` function, every
-time we wanted to call `add_to_waitlist` we had to specify `front_of_house` and
-`hosting` too. Fortunately, there’s a way to simplify this process. We can
-bring a path into a scope once and then call the items in that path as if
-they’re local items with the `use` keyword.
+Having to write out the paths to call functions can feel inconvenient and
+repetitive. In Listing 7-7, whether we chose the absolute or relative path to
+the `add_to_waitlist` function, every time we wanted to call `add_to_waitlist`
+we had to specify `front_of_house` and `hosting` too. Fortunately, there’s a
+way to simplify this process: we can create a shortcut to a path with the `use`
+keyword once, and then use the shorter name everywhere else in the scope.
 -->
-<p>これまで関数呼び出しのために書いてきたパスは、長く、繰り返しも多くて不便なものでした。
-例えば、Listing 7-7 においては、絶対パスを使うか相対パスを使うかにかかわらず、<code>add_to_waitlist</code>関数を呼ぼうと思うたびに<code>front_of_house</code>と<code>hosting</code>も指定しないといけませんでした。
-ありがたいことに、この手続きを簡単化する方法があります。
-<code>use</code>キーワードを使うことで、パスを一度スコープに持ち込んでしまえば、それ以降はパス内の要素がローカルにあるかのように呼び出すことができるのです。</p>
+<p>関数を呼び出すためにパスを略さずに書かなくてはならないのは、繰り返しも多くて不便に感じられるでしょう。
+リスト7-7においては、絶対パスを使うか相対パスを使うかにかかわらず、<code>add_to_waitlist</code>関数を呼ぼうと思うたびに<code>front_of_house</code>と<code>hosting</code>も指定しないといけませんでした。
+ありがたいことに、この手続きを簡単化する方法があります:
+一度<code>use</code>キーワードを使ってショートカットを作成すれば、そのスコープ内であればどこでも、より短い名前を使用できます。</p>
 <!--
 In Listing 7-11, we bring the `crate::front_of_house::hosting` module into the
 scope of the `eat_at_restaurant` function so we only have to specify
 `hosting::add_to_waitlist` to call the `add_to_waitlist` function in
 `eat_at_restaurant`.
 -->
-<p>Listing 7-11 では、<code>crate::front_of_house::hosting</code>モジュールを<code>eat_at_restaurant</code>関数のスコープに持ち込むことで、<code>eat_at_restaurant</code>において、<code>hosting::add_to_waitlist</code>と指定するだけで<code>add_to_waitlist</code>関数を呼び出せるようにしています。</p>
+<p>リスト7-11では、<code>crate::front_of_house::hosting</code>モジュールを<code>eat_at_restaurant</code>関数のスコープに持ち込むことで、<code>eat_at_restaurant</code>において、<code>hosting::add_to_waitlist</code>と指定するだけで<code>add_to_waitlist</code>関数を呼び出せるようにしています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">mod front_of_house {
+<pre><code class="language-rust noplayground test_harness">mod front_of_house {
     pub mod hosting {
         pub fn add_to_waitlist() {}
     }
@@ -11825,16 +12063,12 @@ use crate::front_of_house::hosting;
 
 pub fn eat_at_restaurant() {
     hosting::add_to_waitlist();
-    hosting::add_to_waitlist();
-    hosting::add_to_waitlist();
-}
-<span class="boring">
-</span><span class="boring">fn main() {}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-11: Bringing a module into scope with
 `use`</span>
 -->
-<p><span class="caption">Listing 7-11: <code>use</code> でモジュールをスコープに持ち込む</span></p>
+<p><span class="caption">リスト7-11: <code>use</code> でモジュールをスコープに持ち込む</span></p>
 <!--
 Adding `use` and a path in a scope is similar to creating a symbolic link in
 the filesystem. By adding `use crate::front_of_house::hosting` in the crate
@@ -11846,36 +12080,77 @@ also check privacy, like any other paths.
 <code>use crate::front_of_house::hosting</code>をクレートルートに追加することで、<code>hosting</code>はこのスコープで有効な名前となり、まるで<code>hosting</code>はクレートルートで定義されていたかのようになります。
 スコープに<code>use</code>で持ち込まれたパスも、他のパスと同じようにプライバシーがチェックされます。</p>
 <!--
-You can also bring an item into scope with `use` and a relative path. Listing
-7-12 shows how to specify a relative path to get the same behavior as in
-Listing 7-11.
+Note that `use` only creates the shortcut for the particular scope in which the
+`use` occurs. Listing 7-12 moves the `eat_at_restaurant` function into a new
+child module named `customer`, which is then a different scope than the `use`
+statement, so the function body won’t compile:
 -->
-<p><code>use</code>と相対パスで要素をスコープに持ち込むこともできます。
-Listing 7-12 はListing 7-11 と同じふるまいを得るためにどう相対パスを書けば良いかを示しています。</p>
+<p><code>use</code>は、<code>use</code>が出現した特定のスコープでのみ使えるショートカットを作成することに注意してください。
+リスト7-12は<code>eat_at_restaurant</code>関数を新しい子モジュール<code>customer</code>の中に移動していますが、このモジュールは<code>use</code>文とは異なるスコープなので、この関数本体はコンパイルできないでしょう:</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">mod front_of_house {
+<pre><code class="language-rust noplayground test_harness does_not_compile ignore">mod front_of_house {
     pub mod hosting {
         pub fn add_to_waitlist() {}
     }
 }
 
-use self::front_of_house::hosting;
+use crate::front_of_house::hosting;
 
-pub fn eat_at_restaurant() {
-    hosting::add_to_waitlist();
-    hosting::add_to_waitlist();
-    hosting::add_to_waitlist();
-}
-<span class="boring">
-</span><span class="boring">fn main() {}</span></code></pre></pre>
+mod customer {
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist();
+    }
+}</code></pre>
 <!--
-<span class="caption">Listing 7-12: Bringing a module into scope with `use` and
-a relative path</span>
+<span class="caption">Listing 7-12: A `use` statement only applies in the scope
+it’s in</span>
 -->
-<p><span class="caption">Listing 7-12: モジュールを<code>use</code>と相対パスを使ってスコープに持ち込む</span></p>
+<p><span class="caption">リスト7-12: <code>use</code>文はそれが属するスコープ内にのみ適用される</span></p>
+<!--
+The compiler error shows that the shortcut no longer applies within the
+`customer` module:
+-->
+<p>コンパイルエラーは<code>customer</code>モジュール内ではショートカットが適用されないことを示しています:</p>
+<pre><code class="language-console">$ cargo build
+   Compiling restaurant v0.1.0 (file:///projects/restaurant)
+error[E0433]: failed to resolve: use of undeclared crate or module `hosting`
+(エラー: 名前解決に失敗しました: 宣言されていないクレートまたはモジュール`hosting`の使用)
+  --&gt; src/lib.rs:11:9
+   |
+11 |         hosting::add_to_waitlist();
+   |         ^^^^^^^ use of undeclared crate or module `hosting`
+   |                 (宣言されていないクレートまたはモジュール`hosting`の使用)
+   |
+help: consider importing this module through its public re-export
+(ヘルプ: 公開再エクスポートからこのモジュールをインポートすることを検討してください)
+   |
+10 +     use crate::hosting;
+   |
+
+warning: unused import: `crate::front_of_house::hosting`
+(警告: 未使用のインポート: `crate::front_of_house::hosting`)
+ --&gt; src/lib.rs:7:5
+  |
+7 | use crate::front_of_house::hosting;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+For more information about this error, try `rustc --explain E0433`.
+warning: `restaurant` (lib) generated 1 warning
+error: could not compile `restaurant` (lib) due to 1 previous error; 1 warning emitted
+</code></pre>
+<!--
+Notice there’s also a warning that the `use` is no longer used in its scope! To
+fix this problem, move the `use` within the `customer` module too, or reference
+the shortcut in the parent module with `super::hosting` within the child
+`customer` module.
+-->
+<p><code>use</code>がそのスコープ内で使用されていないという警告も出ていることに気づくでしょう！
+この問題を修正するには、<code>use</code>も<code>customer</code>モジュールの中に移動するか、<code>customer</code>子モジュールの中で<code>super::hosting</code>によって親モジュールにあるショートカットを参照してください。</p>
 <!--
 ### Creating Idiomatic `use` Paths
 -->
@@ -11886,12 +12161,12 @@ crate::front_of_house::hosting` and then called `hosting::add_to_waitlist` in
 `eat_at_restaurant` rather than specifying the `use` path all the way out to
 the `add_to_waitlist` function to achieve the same result, as in Listing 7-13.
 -->
-<p>Listing 7-11 を見て、なぜ<code>use crate::front_of_house::hosting</code>と書いて<code>eat_at_restaurant</code>内で<code>hosting::add_to_waitlist</code>と呼び出したのか不思議に思っているかもしれません。Listing 7-13 のように、<code>use</code>で<code>add_to_waitlist</code>までのパスをすべて指定しても同じ結果が得られるのに、と。</p>
+<p>リスト7-11を見て、なぜ<code>use crate::front_of_house::hosting</code>と書いて<code>eat_at_restaurant</code>内で<code>hosting::add_to_waitlist</code>と呼び出したのか不思議に思っているかもしれません。リスト7-13のように、<code>use</code>で<code>add_to_waitlist</code>までのパスをすべて指定しても同じ結果が得られるのに、と。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">mod front_of_house {
+<pre><code class="language-rust noplayground test_harness">mod front_of_house {
     pub mod hosting {
         pub fn add_to_waitlist() {}
     }
@@ -11901,27 +12176,25 @@ use crate::front_of_house::hosting::add_to_waitlist;
 
 pub fn eat_at_restaurant() {
     add_to_waitlist();
-    add_to_waitlist();
-    add_to_waitlist();
-}
-<span class="boring">
-</span><span class="boring">fn main() {}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-13: Bringing the `add_to_waitlist` function
 into scope with `use`, which is unidiomatic</span>
 -->
-<p><span class="caption">Listing 7-13: <code>add_to_waitlist</code> 関数を<code>use</code> でスコープに持ち込む。このやりかたは慣例的ではない</span></p>
+<p><span class="caption">リスト7-13: <code>add_to_waitlist</code> 関数を<code>use</code> でスコープに持ち込む。このやりかたは慣例的ではない</span></p>
 <!--
 Although both Listing 7-11 and 7-13 accomplish the same task, Listing 7-11 is
 the idiomatic way to bring a function into scope with `use`. Bringing the
-function’s parent module into scope with `use` so we have to specify the parent
-module when calling the function makes it clear that the function isn’t locally
-defined while still minimizing repetition of the full path. The code in Listing
-7-13 is unclear as to where `add_to_waitlist` is defined.
+function’s parent module into scope with `use` means we have to specify the
+parent module when calling the function. Specifying the parent module when
+calling the function makes it clear that the function isn’t locally defined
+while still minimizing repetition of the full path. The code in Listing 7-13 is
+unclear as to where `add_to_waitlist` is defined.
 -->
-<p>Listing 7-11 も 7-13 もおなじ仕事をしてくれますが、関数をスコープに<code>use</code>で持ち込む場合、Listing 7-11 のほうが慣例的なやり方です。
-関数の親モジュールを<code>use</code>で持ち込むことで、関数を呼び出す際、毎回親モジュールを指定しなければならないようにすれば、フルパスを繰り返して書くことを抑えつつ、関数がローカルで定義されていないことを明らかにできます。
-Listing 7-13 のコードではどこで<code>add_to_waitlist</code>が定義されたのかが不明瞭です。</p>
+<p>リスト7-11も7-13もおなじ仕事をしてくれますが、関数をスコープに<code>use</code>で持ち込む場合、リスト7-11のほうが慣例的なやり方です。
+関数の親モジュールを<code>use</code>で持ち込むということは、関数を呼び出す際、毎回親モジュールを指定しなければならないということです。
+関数を呼び出すときに親モジュールを指定することで、フルパスを繰り返して書くことを抑えつつ、関数がローカルで定義されていないことを明らかにできます。
+リスト7-13のコードではどこで<code>add_to_waitlist</code>が定義されたのかが不明瞭です。</p>
 <!--
 On the other hand, when bringing in structs, enums, and other items with `use`,
 it’s idiomatic to specify the full path. Listing 7-14 shows the idiomatic way
@@ -11929,7 +12202,7 @@ to bring the standard library’s `HashMap` struct into the scope of a binary
 crate.
 -->
 <p>一方で、構造体やenumその他の要素を<code>use</code>で持ち込むときは、フルパスを書くのが慣例的です。
-Listing 7-14 は標準ライブラリの<code>HashMap</code>構造体をバイナリクレートのスコープに持ち込む慣例的なやり方を示しています。</p>
+リスト7-14は標準ライブラリの<code>HashMap</code>構造体をバイナリクレートのスコープに持ち込む慣例的なやり方を示しています。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -11944,7 +12217,7 @@ fn main() {
 <span class="caption">Listing 7-14: Bringing `HashMap` into scope in an
 idiomatic way</span>
 -->
-<p><span class="caption">Listing 7-14: <code>HashMap</code>を慣例的なやり方でスコープに持ち込む</span></p>
+<p><span class="caption">リスト7-14: <code>HashMap</code>を慣例的なやり方でスコープに持ち込む</span></p>
 <!--
 There’s no strong reason behind this idiom: it’s just the convention that has
 emerged, and folks have gotten used to reading and writing Rust code this way.
@@ -11957,14 +12230,12 @@ shows how to bring two `Result` types into scope that have the same name but
 different parent modules and how to refer to them.
 -->
 <p>同じ名前の2つの要素を<code>use</code>でスコープに持ち込むのはRustでは許されないので、そのときこの慣例は例外的に不可能です。
-Listing 7-15は、同じ名前を持つけれど異なる親モジュールを持つ2つの<code>Result</code>型をスコープに持ち込み、それらを参照するやり方を示しています。</p>
+リスト7-15は、同じ名前を持つけれど異なる親モジュールを持つ2つの<code>Result</code>型をスコープに持ち込み、それらを参照するやり方を示しています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::fmt;
+<pre><code class="language-rust noplayground">use std::fmt;
 use std::io;
 
 fn function1() -&gt; fmt::Result {
@@ -11977,13 +12248,12 @@ fn function2() -&gt; io::Result&lt;()&gt; {
     // --snip--
     // （略）
 <span class="boring">    Ok(())
-</span>}
-<span class="boring">}</span></code></pre></pre>
+</span>}</code></pre>
 <!--
 <span class="caption">Listing 7-15: Bringing two types with the same name into
 the same scope requires using their parent modules.</span>
 -->
-<p><span class="caption">Listing 7-15: 同じ名前を持つ2つの型を同じスコープに持ち込むには親モジュールを使わないといけない。</span></p>
+<p><span class="caption">リスト7-15: 同じ名前を持つ2つの型を同じスコープに持ち込むには親モジュールを使わないといけない。</span></p>
 <!--
 As you can see, using the parent modules distinguishes the two `Result` types.
 If instead we specified `use std::fmt::Result` and `use std::io::Result`, we’d
@@ -11999,18 +12269,16 @@ meant when we used `Result`.
 <!--
 There’s another solution to the problem of bringing two types of the same name
 into the same scope with `use`: after the path, we can specify `as` and a new
-local name, or alias, for the type. Listing 7-16 shows another way to write the
-code in Listing 7-15 by renaming one of the two `Result` types using `as`.
+local name, or *alias*, for the type. Listing 7-16 shows another way to write
+the code in Listing 7-15 by renaming one of the two `Result` types using `as`.
 -->
-<p>同じ名前の2つの型を<code>use</code>を使って同じスコープに持ち込むという問題には、もう一つ解決策があります。パスの後に、<code>as</code>と型の新しいローカル名、即ちエイリアスを指定すればよいのです。
-Listing 7-16 は、Listing 7-15 のコードを、2つの<code>Result</code>型のうち一つを<code>as</code>を使ってリネームするという別のやり方で書いたものを表しています。</p>
+<p>同じ名前の2つの型を<code>use</code>を使って同じスコープに持ち込むという問題には、もう一つ解決策があります。パスの後に、<code>as</code>と型の新しいローカル名、即ち<em>エイリアス</em>を指定すればよいのです。
+リスト7-16は、リスト7-15のコードを、2つの<code>Result</code>型のうち一つを<code>as</code>を使ってリネームするという別のやり方で書いたものを表しています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::fmt::Result;
+<pre><code class="language-rust noplayground">use std::fmt::Result;
 use std::io::Result as IoResult;
 
 fn function1() -&gt; Result {
@@ -12021,13 +12289,12 @@ fn function1() -&gt; Result {
 fn function2() -&gt; IoResult&lt;()&gt; {
     // --snip--
 <span class="boring">    Ok(())
-</span>}
-<span class="boring">}</span></code></pre></pre>
+</span>}</code></pre>
 <!--
 <span class="caption">Listing 7-16: Renaming a type when it’s brought into
 scope with the `as` keyword</span>
 -->
-<p><span class="caption">Listing 7-16: 型がスコープに持ち込まれた時、<code>as</code>キーワードを使ってその名前を変えている</span></p>
+<p><span class="caption">リスト7-16: 型がスコープに持ち込まれた時、<code>as</code>キーワードを使ってその名前を変えている</span></p>
 <!--
 In the second `use` statement, we chose the new name `IoResult` for the
 `std::io::Result` type, which won’t conflict with the `Result` from `std::fmt`
@@ -12035,7 +12302,7 @@ that we’ve also brought into scope. Listing 7-15 and Listing 7-16 are
 considered idiomatic, so the choice is up to you!
 -->
 <p>2つめの<code>use</code>文では、<code>std::io::Result</code>に、<code>IoResult</code>という新たな名前を選んでやります。<code>std::fmt</code>の<code>Result</code>もスコープに持ち込んでいますが、この名前はこれとは衝突しません。
-Listing 7-15もListing 7-16も慣例的とみなされているので、どちらを使っても構いませんよ！</p>
+リスト7-15もリスト7-16も慣例的とみなされているので、どちらを使っても構いませんよ！</p>
 <!--
 ### Re-exporting Names with `pub use`
 -->
@@ -12055,12 +12322,12 @@ their scope.
 Listing 7-17 shows the code in Listing 7-11 with `use` in the root module
 changed to `pub use`.
 -->
-<p>Listing 7-17 は Listing 7-11 のコードのルートモジュールでの<code>use</code>を<code>pub use</code>に変更したものを示しています。</p>
+<p>リスト7-17はリスト7-11のコードのルートモジュールでの<code>use</code>を<code>pub use</code>に変更したものを示しています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">mod front_of_house {
+<pre><code class="language-rust noplayground test_harness">mod front_of_house {
     pub mod hosting {
         pub fn add_to_waitlist() {}
     }
@@ -12070,24 +12337,21 @@ pub use crate::front_of_house::hosting;
 
 pub fn eat_at_restaurant() {
     hosting::add_to_waitlist();
-    hosting::add_to_waitlist();
-    hosting::add_to_waitlist();
-}
-<span class="boring">
-</span><span class="boring">fn main() {}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 7-17: Making a name available for any code to use
 from a new scope with `pub use`</span>
 -->
-<p><span class="caption">Listing 7-17: <code>pub use</code>で、新たなスコープのコードがその名前を使えるようにする</span></p>
+<p><span class="caption">リスト7-17: <code>pub use</code>で、新たなスコープのコードがその名前を使えるようにする</span></p>
 <!--
-By using `pub use`, external code can now call the `add_to_waitlist` function
-using `hosting::add_to_waitlist`. If we hadn’t specified `pub use`, the
-`eat_at_restaurant` function could call `hosting::add_to_waitlist` in its
-scope, but external code couldn’t take advantage of this new path.
+Before this change, external code would have to call the `add_to_waitlist`
+function by using the path
+`restaurant::front_of_house::hosting::add_to_waitlist()`. Now that this `pub
+use` has re-exported the `hosting` module from the root module, external code
+can now use the path `restaurant::hosting::add_to_waitlist()` instead.
 -->
-<p><code>pub use</code>を使うことで、外部のコードが<code>hosting::add_to_waitlist</code>を使って<code>add_to_waitlist</code>関数を呼び出せるようになりました。
-<code>pub use</code>を使っていなければ、<code>eat_at_restaurant</code>関数は<code>hosting::add_to_waitlist</code>を自らのスコープ内で使えるものの、外部のコードはこの新しいパスを利用することはできないでしょう。</p>
+<p>この変更を行う前の状態では、外部のコードはパス<code>restaurant::front_of_house::hosting::add_to_waitlist()</code>を使用して<code>add_to_wishlist</code>関数を呼ばなくてはなりませんでした。
+この<code>pub use</code>によってルートモジュールから<code>hosting</code>モジュールを再公開された今、外部のコードはパス<code>restaurant::hosting::add_to_waitlist()</code>を使用できるようになりました。</p>
 <!--
 Re-exporting is useful when the internal structure of your code is different
 from how programmers calling your code would think about the domain. For
@@ -12096,13 +12360,17 @@ about “front of house” and “back of house.” But customers visiting a res
 probably won’t think about the parts of the restaurant in those terms. With
 `pub use`, we can write our code with one structure but expose a different
 structure. Doing so makes our library well organized for programmers working on
-the library and programmers calling the library.
+the library and programmers calling the library. We’ll look at another example
+of `pub use` and how it affects your crate’s documentation in the [“Exporting a
+Convenient Public API with `pub use`”][ch14-pub-use] section of
+Chapter 14.
 -->
 <p>再公開は、あなたのコードの内部構造と、あなたのコードを呼び出すプログラマーたちのその領域に関しての見方が異なるときに有用です。
 例えば、レストランの比喩では、レストランを経営している人は「接客部門 (front of house)」と「後方部門 (back of house)」のことについて考えるでしょう。
 しかし、レストランを訪れるお客さんは、そのような観点からレストランの部門について考えることはありません。
 <code>pub use</code>を使うことで、ある構造でコードを書きつつも、別の構造で公開するということが可能になります。
-こうすることで、私達のライブラリを、ライブラリを開発するプログラマにとっても、ライブラリを呼び出すプログラマにとっても、よく整理されたものとすることができます。</p>
+こうすることで、私達のライブラリを、ライブラリを開発するプログラマにとっても、ライブラリを呼び出すプログラマにとっても、よく整理されたものとすることができます。
+第14章の<a href="ch14-02-publishing-to-crates-io.html#pub-use%E3%81%A7%E4%BE%BF%E5%88%A9%E3%81%AA%E5%85%AC%E9%96%8Bapi%E3%82%92%E3%82%A8%E3%82%AF%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%88%E3%81%99%E3%82%8B">「<code>pub use</code>で便利な公開APIをエクスポートする」</a>の節で、<code>pub use</code>の別の例と、それがクレートのドキュメンテーションにどう影響するかを見ることにしましょう。</p>
 <!--
 ### Using External Packages
 -->
@@ -12168,13 +12436,13 @@ using `use` to bring items from their crates into scope.
 -->
 <p>Rustコミュニティに所属する人々が<a href="https://crates.io/">crates.io</a>でたくさんのパッケージを利用できるようにしてくれており、上と同じステップを踏めばそれらをあなたのパッケージに取り込むことができます：あなたのパッケージの <em>Cargo.toml</em> ファイルにそれらを書き並べ、<code>use</code>を使って要素をクレートからスコープへと持ち込めばよいのです。</p>
 <!--
-Note that the standard library (`std`) is also a crate that’s external to our
+Note that the standard `std` library is also a crate that’s external to our
 package. Because the standard library is shipped with the Rust language, we
 don’t need to change *Cargo.toml* to include `std`. But we do need to refer to
 it with `use` to bring items from there into our package’s scope. For example,
 with `HashMap` we would use this line:
 -->
-<p>標準ライブラリ (<code>std</code>) も、私達のパッケージの外部にあるクレートだということに注意してください。
+<p>標準<code>std</code>ライブラリも、私達のパッケージの外部にあるクレートだということに注意してください。
 標準ライブラリはRust言語に同梱されているので、 <em>Cargo.toml</em> を <code>std</code>を含むように変更する必要はありません。
 しかし、その要素をそこから私達のパッケージのスコープに持ち込むためには、<code>use</code>を使って参照する必要はあります。
 例えば、<code>HashMap</code>には次の行を使います。</p>
@@ -12198,7 +12466,7 @@ files. For example, these two `use` statements we had in the Guessing Game in
 Listing 2-4 bring items from `std` into scope:
 -->
 <p>同じクレートか同じモジュールで定義された複数の要素を使おうとする時、それぞれの要素を一行一行並べると、縦に大量のスペースを取ってしまいます。
-例えば、Listing 2-4の数当てゲームで使った次の2つの<code>use</code>文が<code>std</code>からスコープへ要素を持ち込みました。</p>
+例えば、リスト2-4の数当てゲームで使った次の2つの<code>use</code>文が<code>std</code>からスコープへ要素を持ち込みました。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -12214,9 +12482,9 @@ use std::io;
 </span><span class="boring">fn main() {
 </span><span class="boring">    println!(&quot;Guess the number!&quot;);
 </span><span class="boring">
-</span><span class="boring">    let secret_number = rand::thread_rng().gen_range(1, 101);
+</span><span class="boring">    let secret_number = rand::thread_rng().gen_range(1..=100);
 </span><span class="boring">
-</span><span class="boring">    println!(&quot;The secret number is: {}&quot;, secret_number);
+</span><span class="boring">    println!(&quot;The secret number is: {secret_number}&quot;);
 </span><span class="boring">
 </span><span class="boring">    println!(&quot;Please input your guess.&quot;);
 </span><span class="boring">
@@ -12226,7 +12494,7 @@ use std::io;
 </span><span class="boring">        .read_line(&amp;mut guess)
 </span><span class="boring">        .expect(&quot;Failed to read line&quot;);
 </span><span class="boring">
-</span><span class="boring">    println!(&quot;You guessed: {}&quot;, guess);
+</span><span class="boring">    println!(&quot;You guessed: {guess}&quot;);
 </span><span class="boring">
 </span><span class="boring">    match guess.cmp(&amp;secret_number) {
 </span><span class="boring">        Ordering::Less =&gt; println!(&quot;Too small!&quot;),
@@ -12241,7 +12509,7 @@ colons, and then curly brackets around a list of the parts of the paths that
 differ, as shown in Listing 7-18.
 -->
 <p>代わりに、ネストしたパスを使うことで、同じ一連の要素を1行でスコープに持ち込めます。
-これをするには、Listing 7-18 に示されるように、パスの共通部分を書き、2つのコロンを続け、そこで波括弧で互いに異なる部分のパスのリストを囲みます。</p>
+これをするには、リスト7-18に示されるように、パスの共通部分を書き、2つのコロンを続け、そこで波括弧で互いに異なる部分のパスのリストを囲みます。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -12256,9 +12524,9 @@ use std::{cmp::Ordering, io};
 </span><span class="boring">fn main() {
 </span><span class="boring">    println!(&quot;Guess the number!&quot;);
 </span><span class="boring">
-</span><span class="boring">    let secret_number = rand::thread_rng().gen_range(1, 101);
+</span><span class="boring">    let secret_number = rand::thread_rng().gen_range(1..=100);
 </span><span class="boring">
-</span><span class="boring">    println!(&quot;The secret number is: {}&quot;, secret_number);
+</span><span class="boring">    println!(&quot;The secret number is: {secret_number}&quot;);
 </span><span class="boring">
 </span><span class="boring">    println!(&quot;Please input your guess.&quot;);
 </span><span class="boring">
@@ -12270,7 +12538,7 @@ use std::{cmp::Ordering, io};
 </span><span class="boring">
 </span><span class="boring">    let guess: u32 = guess.trim().parse().expect(&quot;Please type a number!&quot;);
 </span><span class="boring">
-</span><span class="boring">    println!(&quot;You guessed: {}&quot;, guess);
+</span><span class="boring">    println!(&quot;You guessed: {guess}&quot;);
 </span><span class="boring">
 </span><span class="boring">    match guess.cmp(&amp;secret_number) {
 </span><span class="boring">        Ordering::Less =&gt; println!(&quot;Too small!&quot;),
@@ -12282,7 +12550,7 @@ use std::{cmp::Ordering, io};
 <span class="caption">Listing 7-18: Specifying a nested path to bring multiple
 items with the same prefix into scope</span>
 -->
-<p><span class="caption">Listing 7-18: 同じプレフィックスをもつ複数の要素をスコープに持ち込むためにネストしたパスを指定する</span></p>
+<p><span class="caption">リスト7-18: 同じプレフィックスをもつ複数の要素をスコープに持ち込むためにネストしたパスを指定する</span></p>
 <!--
 In bigger programs, bringing many items into scope from the same crate or
 module using nested paths can reduce the number of separate `use` statements
@@ -12296,40 +12564,34 @@ two `use` statements that share a subpath. For example, Listing 7-19 shows two
 `std::io::Write` into scope.
 -->
 <p>ネストしたパスはパスのどの階層においても使うことができます。これはサブパスを共有する2つの<code>use</code>文を合体させるときに有用です。
-例えば、Listing 7-19 は2つの<code>use</code>文を示しています：1つは<code>std::io</code>をスコープに持ち込み、もう一つは<code>std::io::Write</code>をスコープに持ち込んでいます。</p>
+例えば、リスト7-19は2つの<code>use</code>文を示しています：1つは<code>std::io</code>をスコープに持ち込み、もう一つは<code>std::io::Write</code>をスコープに持ち込んでいます。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::io;
-use std::io::Write;
-<span class="boring">}</span></code></pre></pre>
+<pre><code class="language-rust noplayground">use std::io;
+use std::io::Write;</code></pre>
 <!--
 <span class="caption">Listing 7-19: Two `use` statements where one is a subpath
 of the other</span>
 -->
-<p><span class="caption">Listing 7-19: 片方がもう片方のサブパスである2つの<code>use</code>文</span></p>
+<p><span class="caption">リスト7-19: 片方がもう片方のサブパスである2つの<code>use</code>文</span></p>
 <!--
 The common part of these two paths is `std::io`, and that’s the complete first
 path. To merge these two paths into one `use` statement, we can use `self` in
 the nested path, as shown in Listing 7-20.
 -->
-<p>これらの2つのパスの共通部分は<code>std::io</code>であり、そしてこれは最初のパスにほかなりません。これらの2つのパスを1つの<code>use</code>文へと合体させるには、Listing 7-20 に示されるように、ネストしたパスに<code>self</code>を使いましょう。</p>
+<p>これらの2つのパスの共通部分は<code>std::io</code>であり、そしてこれは最初のパスにほかなりません。これらの2つのパスを1つの<code>use</code>文へと合体させるには、リスト7-20に示されるように、ネストしたパスに<code>self</code>を使いましょう。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::io::{self, Write};
-<span class="boring">}</span></code></pre></pre>
+<pre><code class="language-rust noplayground">use std::io::{self, Write};</code></pre>
 <!--
 <span class="caption">Listing 7-20: Combining the paths in Listing 7-19 into
 one `use` statement</span>
 -->
-<p><span class="caption">Listing 7-20: Listing 7-19 のパスを一つの <code>use</code> 文に合体させる</span></p>
+<p><span class="caption">リスト7-20: リスト7-19のパスを一つの <code>use</code> 文に合体させる</span></p>
 <!--
 This line brings `std::io` and `std::io::Write` into scope.
 -->
@@ -12340,7 +12602,7 @@ This line brings `std::io` and `std::io::Write` into scope.
 <h3 id="glob演算子"><a class="header" href="#glob演算子">glob演算子</a></h3>
 <!--
 If we want to bring *all* public items defined in a path into scope, we can
-specify that path followed by `*`, the glob operator:
+specify that path followed by the `*` glob operator:
 -->
 <p>パスにおいて定義されているすべての公開要素をスコープに持ち込みたいときは、glob演算子 <code>*</code> をそのパスの後ろに続けて書きましょう：</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -12366,6 +12628,11 @@ for more information on that pattern.
 -->
 <p>glob演算子はしばしば、テストの際、テストされるあらゆるものを<code>tests</code>モジュールに持ち込むために使われます。これについては11章<a href="ch11-01-writing-tests.html#%E3%83%86%E3%82%B9%E3%83%88%E3%81%AE%E8%A8%98%E8%BF%B0%E6%B3%95">テストの書き方</a>の節で話します。
 glob演算子はプレリュードパターンの一部としても使われることがあります：そのようなパターンについて、より詳しくは<a href="https://doc.rust-lang.org/std/prelude/index.html#other-preludes">標準ライブラリのドキュメント</a>をご覧ください。</p>
+<!--
+[ch14-pub-use]: ch14-02-publishing-to-crates-io.html#exporting-a-convenient-public-api-with-pub-use
+[rand]: ch02-00-guessing-game-tutorial.html#generating-a-random-number
+[writing-tests]: ch11-01-writing-tests.html#how-to-write-tests
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Separating Modules into Different Files
 -->
@@ -12378,37 +12645,49 @@ file to make the code easier to navigate.
 <p>この章のすべての例において、今までのところ、複数のモジュールを一つのファイルに定義していました。
 モジュールが大きくなる時、コードを読み進めやすくするため、それらの定義を別のファイルへ移動させたくなるかもしれません。</p>
 <!--
-For example, let’s start from the code in Listing 7-17 and move the
-`front_of_house` module to its own file *src/front_of_house.rs* by changing the
-crate root file so it contains the code shown in Listing 7-21. In this case,
-the crate root file is *src/lib.rs*, but this procedure also works with binary
-crates whose crate root file is *src/main.rs*.
+For example, let’s start from the code in Listing 7-17 that had multiple
+restaurant modules. We’ll extract modules into files instead of having all the
+modules defined in the crate root file. In this case, the crate root file is
+*src/lib.rs*, but this procedure also works with binary crates whose crate root
+file is *src/main.rs*.
 -->
-<p>例えば、Listing 7-17 のコードからはじめましょう。クレートルートのファイルをListing 7-21 のコードを持つように変更して、<code>front_of_house</code>モジュールをそれ専用のファイル<code>src/front_of_house.rs</code>に動かしましょう。
+<p>例として、複数のレストランモジュールを持つリスト7-17のコードからはじめましょう。
+すべてのモジュールをクレートルートファイルで定義するのをやめて、複数のファイルにモジュールを抽出することにします。
 今回、クレートルートファイルは<code>src/lib.rs</code>ですが、この手続きはクレートルートファイルが<code>src/main.rs</code>であるバイナリクレートでもうまく行きます。</p>
+<!--
+First, we’ll extract the `front_of_house` module to its own file. Remove the
+code inside the curly brackets for the `front_of_house` module, leaving only
+the `mod front_of_house;` declaration, so that *src/lib.rs* contains the code
+shown in Listing 7-21. Note that this won’t compile until we create the
+*src/front_of_house.rs* file in Listing 7-22.
+-->
+<p>まず、<code>front_of_house</code>モジュールをそれ専用のファイルに抽出しましょう。
+<code>front_of_house</code>モジュールの波かっこの中のコードを削除し、<code>mod front_of_house;</code>宣言だけを残して、 <em>src/lib.rs</em> がリスト7-21に示すコードを含むようにしてください。
+リスト7-22で <em>src/front_of_house.rs</em> ファイルを作成するまで、このコードはコンパイルできないことに注意してください。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><code class="language-rust ignore">mod front_of_house;
+<pre><code class="language-rust ignore does_not_compile">mod front_of_house;
 
 pub use crate::front_of_house::hosting;
 
 pub fn eat_at_restaurant() {
-    hosting::add_to_waitlist();
-    hosting::add_to_waitlist();
     hosting::add_to_waitlist();
 }</code></pre>
 <!--
 <span class="caption">Listing 7-21: Declaring the `front_of_house` module whose
 body will be in *src/front_of_house.rs*</span>
 -->
-<p><span class="caption">Listing 7-21: <code>front_of_house</code>モジュールを宣言する。その中身は<code>src/front_of_house.rs</code>内にある</span></p>
+<p><span class="caption">リスト7-21: <code>front_of_house</code>モジュールを宣言する。その中身は<code>src/front_of_house.rs</code>内にある</span></p>
 <!--
-And *src/front_of_house.rs* gets the definitions from the body of the
-`front_of_house` module, as shown in Listing 7-22.
+Next, place the code that was in the curly brackets into a new file named
+*src/front_of_house.rs*, as shown in Listing 7-22. The compiler knows to look
+in this file because it came across the module declaration in the crate root
+with the name `front_of_house`.
 -->
-<p>そして、 Listing 7-22 のように、<em>src/front_of_house.rs</em> には<code>front_of_house</code> モジュールの中身の定義を与えます。</p>
+<p>次に、リスト7-22に示すように、<em>src/front_of_house.rs</em> という名前の新しいファイルに、波かっこの中にあったコードを配置してください。
+コンパイラは、クレートルートで<code>front_of_house</code>という名前のモジュール宣言を見つけたときは、このファイルを探せばいいということを知っています。</p>
 <!--
 <span class="filename">Filename: src/front_of_house.rs</span>
 -->
@@ -12420,42 +12699,108 @@ And *src/front_of_house.rs* gets the definitions from the body of the
 <span class="caption">Listing 7-22: Definitions inside the `front_of_house`
 module in *src/front_of_house.rs*</span>
 -->
-<p><span class="caption">Listing 7-22: <em>src/front_of_house.rs</em>における、<code>front_of_house</code>モジュール内部の定義</span></p>
+<p><span class="caption">リスト7-22: <em>src/front_of_house.rs</em>における、<code>front_of_house</code>モジュール内部の定義</span></p>
 <!--
-Using a semicolon after `mod front_of_house` rather than using a block tells
-Rust to load the contents of the module from another file with the same name as
-the module. To continue with our example and extract the `hosting` module to
-its own file as well, we change *src/front_of_house.rs* to contain only the
+Note that you only need to load a file using a `mod` declaration *once* in your
+module tree. Once the compiler knows the file is part of the project (and knows
+where in the module tree the code resides because of where you’ve put the `mod`
+statement), other files in your project should refer to the loaded file’s code
+using a path to where it was declared, as covered in the [“Paths for Referring
+to an Item in the Module Tree”][paths] section. In other words,
+`mod` is *not* an “include” operation that you may have seen in other
+programming languages.
+-->
+<p><code>mod</code>宣言を使用したファイルのロードは、モジュールツリー内で<em>一回</em>のみ行う必要があることに注意してください。
+一度コンパイラが、そのファイルがプロジェクトの一部であることを認識したら（そして、<code>mod</code>文を書いた場所に応じてモジュールツリー内のどこにコードがあることになるかを認識したら）、<a href="ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html">「モジュールツリーの要素を示すためのパス」</a>節で扱ったように、プロジェクト内の他のファイルは、モジュールが宣言された場所へのパスを使用してロードされたファイルのコードを参照するべきです。
+別の言い方をすれば、<code>mod</code>は他のプログラミング言語で見られるような“include”操作では<em>ありません</em>。</p>
+<!--
+Next, we’ll extract the `hosting` module to its own file. The process is a bit
+different because `hosting` is a child module of `front_of_house`, not of the
+root module. We’ll place the file for `hosting` in a new directory that will be
+named for its ancestors in the module tree, in this case *src/front_of_house/*.
+-->
+<p>つづけて<code>hosting</code>モジュールをそれ専用のファイルに抽出します。
+<code>hosting</code>はルートモジュールの子ではなく<code>front_of_house</code>の子モジュールなので、このプロセスは少し異なります。
+<code>hosting</code>のためのファイルを、モジュールツリー上での祖先に対応して名付けられた新しいディレクトリ（今回の場合は <em>src/front_of_house/</em>）内に配置しましょう。</p>
+<!--
+To start moving `hosting`, we change *src/front_of_house.rs* to contain only the
 declaration of the `hosting` module:
 -->
-<p><code>mod front_of_house</code>の後にブロックではなくセミコロンを使うと、Rustにモジュールの中身をモジュールと同じ名前をした別のファイルから読み込むように命令します。
-私達の例で、つづけて<code>hosting</code>モジュールをそれ専用のファイルに抽出するには、<code>src/front_of_house.rs</code>が<code>hosting</code>モジュールの宣言のみを含むように変更します：</p>
+<p><code>hosting</code>の移動を開始するために、<code>src/front_of_house.rs</code>が<code>hosting</code>モジュールの宣言のみを含むように変更します：</p>
 <!--
 <span class="filename">Filename: src/front_of_house.rs</span>
 -->
 <p><span class="filename">ファイル名: src/front_of_house.rs</span></p>
 <pre><code class="language-rust ignore">pub mod hosting;</code></pre>
 <!--
-Then we create a *src/front_of_house* directory and a file
-*src/front_of_house/hosting.rs* to contain the definitions made in the
-`hosting` module:
+Then we create a *src/front_of_house* directory and a file *hosting.rs* to
+contain the definitions made in the `hosting` module:
 -->
-<p>さらに<em>src/front_of_house</em> ディレクトリと<em>src/front_of_house/hosting.rs</em> ファイルを作って、<code>hosting</code>モジュール内でなされていた定義を持つようにします。</p>
+<p>さらに<em>src/front_of_house</em> ディレクトリと<em>hosting.rs</em> ファイルを作って、<code>hosting</code>モジュール内でなされていた定義を持つようにします。</p>
 <!--
 <span class="filename">Filename: src/front_of_house/hosting.rs</span>
 -->
 <p><span class="filename">ファイル名: src/front_of_house/hosting.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub fn add_to_waitlist() {}
-<span class="boring">}</span></code></pre></pre>
+<pre><code class="language-rust ignore">pub fn add_to_waitlist() {}</code></pre>
 <!--
-The module tree remains the same, and the function calls in `eat_at_restaurant`
-will work without any modification, even though the definitions live in
-different files. This technique lets you move modules to new files as they grow
-in size.
+If we instead put *hosting.rs* in the *src* directory, the compiler would
+expect the *hosting.rs* code to be in a `hosting` module declared in the crate
+root, and not declared as a child of the `front_of_house` module. The
+compiler’s rules for which files to check for which modules’ code means the
+directories and files more closely match the module tree.
 -->
-<p>定義は別のファイルにあるにもかかわらず、モジュールツリーは同じままであり、<code>eat_at_restaurant</code>内での関数呼び出しもなんの変更もなくうまく行きます。
+<p>もし<em>src</em>ディレクトリ内に<em>hosting.rs</em>を置いた場合は、コンパイラは<em>hosting.rs</em>のコードは<code>front_of_house</code>モジュールの子としてではなく、クレートルート内で宣言された<code>hosting</code>モジュールにあると期待するでしょう。
+コンパイラがどのモジュールのコードのためにどのファイルをチェックするかの規則は、ディレクトリとファイルがモジュールツリーと密接に一致することを意味します。</p>
+<!--
+> ### Alternate File Paths
+>
+> So far we’ve covered the most idiomatic file paths the Rust compiler uses,
+> but Rust also supports an older style of file path. For a module named
+> `front_of_house` declared in the crate root, the compiler will look for the
+> module’s code in:
+>
+> * *src/front_of_house.rs* (what we covered)
+> * *src/front_of_house/mod.rs* (older style, still supported path)
+>
+> For a module named `hosting` that is a submodule of `front_of_house`, the
+> compiler will look for the module’s code in:
+>
+> * *src/front_of_house/hosting.rs* (what we covered)
+> * *src/front_of_house/hosting/mod.rs* (older style, still supported path)
+>
+> If you use both styles for the same module, you’ll get a compiler error. Using
+> a mix of both styles for different modules in the same project is allowed, but
+> might be confusing for people navigating your project.
+>
+> The main downside to the style that uses files named *mod.rs* is that your
+> project can end up with many files named *mod.rs*, which can get confusing
+> when you have them open in your editor at the same time.
+-->
+<blockquote>
+<h3 id="別のファイルパス"><a class="header" href="#別のファイルパス">別のファイルパス</a></h3>
+<p>ここまでRustコンパイラが使用するもっとも慣例的なファイルパスについて扱ってきましたが、Rustは古いスタイルのファイルパスもサポートしています。
+クレートルート内で宣言された<code>front_of_house</code>という名前のモジュールに対して、コンパイラは以下の場所からコードを探します:</p>
+<ul>
+<li><em>src/front_of_house.rs</em> （ここまで扱ってきたもの）</li>
+<li><em>src/front_of_house/mod.rs</em> （古いスタイルの、今もサポートされているパス）</li>
+</ul>
+<p><code>front_of_house</code>のサブモジュールである、<code>hosting</code>という名前のモジュールに対しては、コンパイラは以下の場所からコードを探します:</p>
+<ul>
+<li><em>src/front_of_house/hosting.rs</em> （ここまで扱ってきたもの）</li>
+<li><em>src/front_of_house/hosting/mod.rs</em> （古いスタイルの、今もサポートされているパス）</li>
+</ul>
+<p>同一のモジュールに対して両方のスタイルを使用するとコンパイルエラーになります。
+異なるモジュールに対して両方のスタイルを混ぜて使用することは許可されていますが、プロジェクトを見て回る人たちにとって混乱を招くかもしれません。</p>
+<p><em>mod.rs</em> という名前のファイルを使用するスタイルの主な欠点は、プロジェクト内に <em>mod.rs</em> という名前のファイルが大量にできることになり、エディタで同時に開いたときに混乱を招きやすいことです。</p>
+</blockquote>
+<!--
+We’ve moved each module’s code to a separate file, and the module tree remains
+the same. The function calls in `eat_at_restaurant` will work without any
+modification, even though the definitions live in different files. This
+technique lets you move modules to new files as they grow in size.
+-->
+<p>各モジュールのコードを独立したファイルに移動しましたが、モジュールツリーは同じままです。
+定義が別のファイルにあるにもかかわらず、<code>eat_at_restaurant</code>内での関数呼び出しもなんの変更もなくうまく行きます。
 このテクニックのおかげで、モジュールが大きくなってきた段階で新しいファイルへ動かす、ということができます。</p>
 <!--
 Note that the `pub use crate::front_of_house::hosting` statement in
