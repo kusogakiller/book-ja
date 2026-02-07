@@ -7840,35 +7840,42 @@ Chapter 5 and look at grouping pieces of data together in a `struct`.
 -->
 <h1 id="構造体を使用して関係のあるデータを構造化する"><a class="header" href="#構造体を使用して関係のあるデータを構造化する">構造体を使用して関係のあるデータを構造化する</a></h1>
 <!--
-A *struct*, or *structure*, is a custom data type that lets us name and
-package together multiple related values that make up a meaningful group. If
-you're familiar with an object-oriented language, a *struct* is like an
-object's data attributes. In this chapter, we’ll compare and contrast tuples
-with structs demonstrate how to use structs, and discuss how to define methods
-and associated functions to specify behavior associated with a struct’s data.
-Structs and enums (discussed in Chapter 6) are the building blocks for creating
-new types in your program’s domain to take full advantage of Rust's compile
-time type checking.
+A *struct*, or *structure*, is a custom data type that lets you package
+together and name multiple related values that make up a meaningful group. If
+you’re familiar with an object-oriented language, a *struct* is like an
+object’s data attributes. In this chapter, we’ll compare and contrast tuples
+with structs to build on what you already know and demonstrate when structs are
+a better way to group data.
 -->
 <p><em>struct</em>または、<em>構造体</em>は、意味のあるグループを形成する複数の関連した値をまとめ、名前付けできる独自のデータ型です。
 あなたがオブジェクト指向言語に造詣が深いなら、<em>struct</em>はオブジェクトのデータ属性みたいなものです。
-この章では、タプルと構造体を対照的に比較し、構造体の使用法をデモし、メソッドや関連関数を定義して、
-構造体のデータに紐付く振る舞いを指定する方法について議論します。構造体と<em>enum</em>(第6章で議論します)は、
-自分のプログラム領域で新しい型を定義し、Rustのコンパイル時型精査機能をフル活用する構成要素になります。</p>
+この章では、すでに学習したものに積み重ねる目的でタプルと構造体を対照的に比較し、データをまとめるのに構造体がより良い方法となるのはどういう場合かを示します。</p>
+<!--
+We’ll demonstrate how to define and instantiate structs. We’ll discuss how to
+define associated functions, especially the kind of associated functions called
+*methods*, to specify behavior associated with a struct type. Structs and enums
+(discussed in Chapter 6) are the building blocks for creating new types in your
+program’s domain to take full advantage of Rust’s compile-time type checking.
+-->
+<p>構造体を定義してインスタンス化する方法を実演します。
+関連関数、特に<em>メソッド</em>と呼ばれる種類の関連関数を定義して、構造体型に紐付く振る舞いを指定する方法について議論します。
+構造体と<em>enum</em>(第6章で議論します)は、自分のプログラム領域で新しい型を定義し、Rustのコンパイル時型精査機能をフル活用する構成要素になります。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Defining and Instantiating Structs
 -->
 <h2 id="構造体を定義しインスタンス化する"><a class="header" href="#構造体を定義しインスタンス化する">構造体を定義し、インスタンス化する</a></h2>
 <!--
-Structs are similar to tuples, which were discussed in Chapter 3. Like tuples,
-the pieces of a struct can be different types. Unlike with tuples, you'll name
-each piece of data so it’s clear what the values mean. As a result of these
-names, structs are more flexible than tuples: we don’t have to rely on the
-order of the data to specify or access the values of an instance.
+Structs are similar to tuples, discussed in [“The Tuple Type”][tuples]
+section, in that both hold multiple related values. Like tuples, the
+pieces of a struct can be different types. Unlike with tuples, in a struct
+you’ll name each piece of data so it’s clear what the values mean. Adding these
+names means that structs are more flexible than tuples: you don’t have to rely
+on the order of the data to specify or access the values of an instance.
 -->
-<p>構造体は第3章で議論したタプルと似ています。タプル同様、構造体の一部を異なる型にできます。
-一方タプルとは違って、各データ片には名前をつけるので、値の意味が明確になります。
-この名前のおかげで、構造体はタプルに比して、より柔軟になるわけです: データの順番に頼って、
+<p>構造体は、<a href="ch03-02-data-types.html#%E3%82%BF%E3%83%97%E3%83%AB%E5%9E%8B">「タプル型」</a>の節で議論したタプルと、どちらも関係する複数の値を抱えるという点で似ています。
+タプル同様、構造体の一部を異なる型にできます。
+一方タプルとは違って、構造体では各データ片には名前をつけるので、値の意味が明確になります。
+これらの名前が付いていることで、構造体はタプルに比して、より柔軟になるわけです: データの順番に頼って、
 インスタンスの値を指定したり、アクセスしたりする必要がないのです。</p>
 <!--
 To define a struct, we enter the keyword `struct` and name the entire struct. A
@@ -7881,15 +7888,18 @@ struct that stores information about a user account.
 一つにグループ化されるデータ片の意義を表すものであるべきです。そして、波かっこ内に、
 データ片の名前と型を定義し、これは<em>フィールド</em>と呼ばれます。例えば、リスト5-1では、
 ユーザアカウントに関する情報を保持する構造体を示しています。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct User {
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust">struct User {
+    active: bool,
     username: String,
     email: String,
     sign_in_count: u64,
-    active: bool,
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 5-1: A `User` struct definition</span>
 -->
@@ -7897,8 +7907,8 @@ struct that stores information about a user account.
 <!--
 To use a struct after we’ve defined it, we create an *instance* of that struct
 by specifying concrete values for each of the fields. We create an instance by
-stating the name of the struct, and then add curly brackets containing `key:
-value` pairs, where the keys are the names of the fields and the values are the
+stating the name of the struct and then add curly brackets containing *key:
+value* pairs, where the keys are the names of the fields and the values are the
 data we want to store in those fields. We don’t have to specify the fields in
 the same order in which we declared them in the struct. In other words, the
 struct definition is like a general template for the type, and instances fill
@@ -7906,61 +7916,67 @@ in that template with particular data to create values of the type. For
 example, we can declare a particular user as shown in Listing 5-2.
 -->
 <p>構造体を定義した後に使用するには、各フィールドに対して具体的な値を指定して構造体の<em>インスタンス</em>を生成します。
-インスタンスは、構造体名を記述し、<code>key: value</code>ペアを含む波かっこを付け加えることで生成します。
+インスタンスは、構造体名を記述し、<em>key: value</em>ペアを含む波かっこを付け加えることで生成します。
 ここで、キーはフィールド名、値はそのフィールドに格納したいデータになります。フィールドは、
 構造体で宣言した通りの順番に指定する必要はありません。換言すると、構造体定義とは、
 型に対する一般的な雛形のようなものであり、インスタンスは、その雛形を特定のデータで埋め、その型の値を生成するわけです。
 例えば、リスト5-2で示されたように特定のユーザを宣言することができます。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">struct User {
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">struct User {
+</span><span class="boring">    active: bool,
 </span><span class="boring">    username: String,
 </span><span class="boring">    email: String,
 </span><span class="boring">    sign_in_count: u64,
-</span><span class="boring">    active: bool,
 </span><span class="boring">}
 </span><span class="boring">
-</span>let user1 = User {
-    email: String::from(&quot;someone@example.com&quot;),
-    username: String::from(&quot;someusername123&quot;),
-    active: true,
-    sign_in_count: 1,
-};
-<span class="boring">}</span></code></pre></pre>
+</span>fn main() {
+    let user1 = User {
+        active: true,
+        username: String::from(&quot;someusername123&quot;),
+        email: String::from(&quot;someone@example.com&quot;),
+        sign_in_count: 1,
+    };
+}</code></pre></pre>
 <!--
 <span class="caption">Listing 5-2: Creating an instance of the `User`
 struct</span>
 -->
 <p><span class="caption">リスト5-2: <code>User</code>構造体のインスタンスを生成する</span></p>
 <!--
-To get a specific value from a struct, we can use dot notation. If we wanted
-just this user’s email address, we can use `user1.email` wherever we wanted
-to use this value. If the instance is mutable, we can change a value by using
-the dot notation and assigning into a particular field. Listing 5-3 shows how
-to change the value in the `email` field of a mutable `User` instance.
+To get a specific value from a struct, we use dot notation. For example, to
+access this user’s email address, we use `user1.email`. If the instance is
+mutable, we can change a value by using the dot notation and assigning into a
+particular field. Listing 5-3 shows how to change the value in the `email`
+field of a mutable `User` instance.
 -->
-<p>構造体から特定の値を得るには、ドット記法が使えます。このユーザのEメールアドレスだけが欲しいなら、
-この値を使いたかった場所全部で<code>user1.email</code>が使えます。インスタンスが可変であれば、
-ドット記法を使い特定のフィールドに代入することで値を変更できます。リスト5-3では、
-可変な<code>User</code>インスタンスの<code>email</code>フィールド値を変更する方法を示しています。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">struct User {
+<p>構造体から特定の値を得るには、ドット記法を使います。例えば、
+このユーザのEメールアドレスにアクセスするには、<code>user1.email</code>を使います。
+インスタンスが可変であれば、ドット記法を使い特定のフィールドに代入することで値を変更できます。
+リスト5-3では、可変な<code>User</code>インスタンスの<code>email</code>フィールド値を変更する方法を示しています。</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">struct User {
+</span><span class="boring">    active: bool,
 </span><span class="boring">    username: String,
 </span><span class="boring">    email: String,
 </span><span class="boring">    sign_in_count: u64,
-</span><span class="boring">    active: bool,
 </span><span class="boring">}
 </span><span class="boring">
-</span>let mut user1 = User {
-    email: String::from(&quot;someone@example.com&quot;),
-    username: String::from(&quot;someusername123&quot;),
-    active: true,
-    sign_in_count: 1,
-};
+</span>fn main() {
+    let mut user1 = User {
+        active: true,
+        username: String::from(&quot;someusername123&quot;),
+        email: String::from(&quot;someone@example.com&quot;),
+        sign_in_count: 1,
+    };
 
-user1.email = String::from(&quot;anotheremail@example.com&quot;);
-<span class="boring">}</span></code></pre></pre>
+    user1.email = String::from(&quot;anotheremail@example.com&quot;);
+}</code></pre></pre>
 <!--
 <span class="caption">Listing 5-3: Changing the value in the `email` field of a
 `User` instance</span>
@@ -7982,24 +7998,32 @@ the `sign_in_count` gets a value of `1`.
 -->
 <p>リスト5-4は、与えられたemailとusernameで<code>User</code>インスタンスを生成する<code>build_user</code>関数を示しています。
 <code>active</code>フィールドには<code>true</code>値が入り、<code>sign_in_count</code>には値<code>1</code>が入ります。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">struct User {
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">struct User {
+</span><span class="boring">    active: bool,
 </span><span class="boring">    username: String,
 </span><span class="boring">    email: String,
 </span><span class="boring">    sign_in_count: u64,
-</span><span class="boring">    active: bool,
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn build_user(email: String, username: String) -&gt; User {
     User {
-        email: email,
-        username: username,
         active: true,
+        username: username,
+        email: email,
         sign_in_count: 1,
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let user1 = build_user(
+</span><span class="boring">        String::from(&quot;someone@example.com&quot;),
+</span><span class="boring">        String::from(&quot;someusername123&quot;),
+</span><span class="boring">    );
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 5-4: A `build_user` function that takes an email
 and username and returns a `User` instance</span>
@@ -8009,48 +8033,60 @@ and username and returns a `User` instance</span>
 It makes sense to name the function parameters with the same name as the struct
 fields, but having to repeat the `email` and `username` field names and
 variables is a bit tedious. If the struct had more fields, repeating each name
-would get even more annoying. Luckily, there's a convenient shorthand!
+would get even more annoying. Luckily, there’s a convenient shorthand!
 -->
 <p>構造体のフィールドと同じ名前を関数の引数にもつけることは筋が通っていますが、
 <code>email</code>と<code>username</code>というフィールド名と変数を繰り返さなきゃいけないのは、ちょっと面倒です。
 構造体にもっとフィールドがあれば、名前を繰り返すことはさらに煩わしくなるでしょう。
 幸運なことに、便利な省略記法があります！</p>
+<!-- Old heading. Do not remove or links may break. -->
 <!--
-### Using the Field Init Shorthand when Variables and Fields Have the Same Name
+<a id="using-the-field-init-shorthand-when-variables-and-fields-have-the-same-name"></a>
 -->
-<h3 id="フィールドと変数が同名の時にフィールド初期化省略記法を使う"><a class="header" href="#フィールドと変数が同名の時にフィールド初期化省略記法を使う">フィールドと変数が同名の時にフィールド初期化省略記法を使う</a></h3>
+<!--
+### Using the Field Init Shorthand
+-->
+<h3 id="フィールド初期化省略記法を使う"><a class="header" href="#フィールド初期化省略記法を使う">フィールド初期化省略記法を使う</a></h3>
 <!--
 Because the parameter names and the struct field names are exactly the same in
 Listing 5-4, we can use the *field init shorthand* syntax to rewrite
-`build_user` so that it behaves exactly the same but doesn’t have the
-repetition of `email` and `username`, as shown in Listing 5-5.
+`build_user` so it behaves exactly the same but doesn’t have the repetition of
+`username` and `email`, as shown in Listing 5-5.
 -->
 <p>仮引数名と構造体のフィールド名がリスト5-4では、全く一緒なので、<em>フィールド初期化省略</em>記法を使って<code>build_user</code>を書き換えても、
-振る舞いは全く同じにしつつ、リスト5-5に示したように<code>email</code>と<code>username</code>を繰り返さなくてもよくなります。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">struct User {
+振る舞いは全く同じにしつつ、リスト5-5に示したように<code>username</code>と<code>email</code>を繰り返さなくてもよくなります。</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">struct User {
+</span><span class="boring">    active: bool,
 </span><span class="boring">    username: String,
 </span><span class="boring">    email: String,
 </span><span class="boring">    sign_in_count: u64,
-</span><span class="boring">    active: bool,
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn build_user(email: String, username: String) -&gt; User {
     User {
-        email,
-        username,
         active: true,
+        username,
+        email,
         sign_in_count: 1,
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let user1 = build_user(
+</span><span class="boring">        String::from(&quot;someone@example.com&quot;),
+</span><span class="boring">        String::from(&quot;someusername123&quot;),
+</span><span class="boring">    );
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 5-5: A `build_user` function that uses field init
-shorthand because the `email` and `username` parameters have the same name as
+shorthand because the `username` and `email` parameters have the same name as
 struct fields</span>
 -->
-<p><span class="caption">リスト5-5: <code>email</code>と<code>username</code>引数が構造体のフィールドと同名なので、
+<p><span class="caption">リスト5-5: <code>username</code>と<code>email</code>引数が構造体のフィールドと同名なので、
 フィールド初期化省略法を使用する<code>build_user</code>関数</span></p>
 <!--
 Here, we’re creating a new instance of the `User` struct, which has a field
@@ -8064,267 +8100,388 @@ than `email: email`.
 <code>email</code>フィールドと<code>email</code>引数は同じ名前なので、<code>email: email</code>と書くのではなく、
 <code>email</code>と書くだけで済むのです。</p>
 <!--
-### Creating Instances From Other Instances With Struct Update Syntax
+### Creating Instances from Other Instances with Struct Update Syntax
 -->
 <h3 id="構造体更新記法で他のインスタンスからインスタンスを生成する"><a class="header" href="#構造体更新記法で他のインスタンスからインスタンスを生成する">構造体更新記法で他のインスタンスからインスタンスを生成する</a></h3>
 <!--
-It’s often useful to create a new instance of a struct that uses most of an old
-instance’s values, but changes some. You'll do this using *struct update syntax*.
+It’s often useful to create a new instance of a struct that includes most of
+the values from another instance, but changes some. You can do this using
+*struct update syntax*.
 -->
-<p>多くは前のインスタンスの値を使用しつつ、変更する箇所もある形で新しいインスタンスを生成できるとしばしば有用です。
+<p>他のインスタンスからの値の多くの部分を含みつつ、一部を変更する形で新しいインスタンスを生成できるとしばしば有用です。
 <em>構造体更新記法</em>でそうすることができます。</p>
 <!--
-First, Listing 5-6 shows how we create a new `User` instance in `user2` without
-the update syntax. We set new values for `email` and `username`, but otherwise
-use the same values from `user1` that we created in Listing 5-2.
+First, in Listing 5-6 we show how to create a new `User` instance in `user2`
+regularly, without the update syntax. We set a new value for `email` but
+otherwise use the same values from `user1` that we created in Listing 5-2.
 -->
-<p>まず、リスト5-6では、更新記法なしで<code>user2</code>に新しい<code>User</code>インスタンスを生成する方法を示しています。
-<code>email</code>と<code>username</code>には新しい値をセットしていますが、それ以外にはリスト5-2で生成した<code>user1</code>の値を使用しています。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">struct User {
+<p>まず、リスト5-6では、更新記法なしで普通に<code>user2</code>に新しい<code>User</code>インスタンスを生成する方法を示しています。
+<code>email</code>には新しい値をセットしていますが、それ以外にはリスト5-2で生成した<code>user1</code>の値を使用しています。</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">struct User {
+</span><span class="boring">    active: bool,
 </span><span class="boring">    username: String,
 </span><span class="boring">    email: String,
 </span><span class="boring">    sign_in_count: u64,
-</span><span class="boring">    active: bool,
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">let user1 = User {
-</span><span class="boring">    email: String::from(&quot;someone@example.com&quot;),
-</span><span class="boring">    username: String::from(&quot;someusername123&quot;),
-</span><span class="boring">    active: true,
-</span><span class="boring">    sign_in_count: 1,
-</span><span class="boring">};
-</span><span class="boring">
-</span>let user2 = User {
-    email: String::from(&quot;another@example.com&quot;),
-    username: String::from(&quot;anotherusername567&quot;),
-    active: user1.active,
-    sign_in_count: user1.sign_in_count,
-};
-<span class="boring">}</span></code></pre></pre>
+</span>fn main() {
+    // --snip--
+<span class="boring">
+</span><span class="boring">    let user1 = User {
+</span><span class="boring">        email: String::from(&quot;someone@example.com&quot;),
+</span><span class="boring">        username: String::from(&quot;someusername123&quot;),
+</span><span class="boring">        active: true,
+</span><span class="boring">        sign_in_count: 1,
+</span><span class="boring">    };
+</span>
+    let user2 = User {
+        active: user1.active,
+        username: user1.username,
+        email: String::from(&quot;another@example.com&quot;),
+        sign_in_count: user1.sign_in_count,
+    };
+}</code></pre></pre>
 <!--
-<span class="caption">Listing 5-6: Creating a new `User` instance using some of
+<span class="caption">Listing 5-6: Creating a new `User` instance using one of
 the values from `user1`</span>
 -->
 <p><span class="caption">リスト5-6: <code>user1</code>の一部の値を使用しつつ、新しい<code>User</code>インスタンスを生成する</span></p>
 <!--
-Using struct update syntax, we can achieve the same effect with less code,
+Using struct update syntax, we can achieve the same effect with less code, as
 shown in Listing 5-7. The syntax `..` specifies that the remaining fields not
 explicitly set should have the same value as the fields in the given instance.
 -->
 <p>構造体更新記法を使用すると、リスト5-7に示したように、コード量を減らしつつ、同じ効果を達成できます。<code>..</code>という記法により、
 明示的にセットされていない残りのフィールドが、与えられたインスタンスのフィールドと同じ値になるように指定します。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">struct User {
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">struct User {
+</span><span class="boring">    active: bool,
 </span><span class="boring">    username: String,
 </span><span class="boring">    email: String,
 </span><span class="boring">    sign_in_count: u64,
-</span><span class="boring">    active: bool,
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">let user1 = User {
-</span><span class="boring">    email: String::from(&quot;someone@example.com&quot;),
-</span><span class="boring">    username: String::from(&quot;someusername123&quot;),
-</span><span class="boring">    active: true,
-</span><span class="boring">    sign_in_count: 1,
-</span><span class="boring">};
-</span><span class="boring">
-</span>let user2 = User {
-    email: String::from(&quot;another@example.com&quot;),
-    username: String::from(&quot;anotherusername567&quot;),
-    ..user1
-};
-<span class="boring">}</span></code></pre></pre>
+</span>fn main() {
+    // --snip--
+<span class="boring">
+</span><span class="boring">    let user1 = User {
+</span><span class="boring">        email: String::from(&quot;someone@example.com&quot;),
+</span><span class="boring">        username: String::from(&quot;someusername123&quot;),
+</span><span class="boring">        active: true,
+</span><span class="boring">        sign_in_count: 1,
+</span><span class="boring">    };
+</span>
+    let user2 = User {
+        email: String::from(&quot;another@example.com&quot;),
+        ..user1
+    };
+}</code></pre></pre>
 <!--
-<span class="caption">Listing 5-7: Using struct update syntax to set new
-`email` and `username` values for a `User` instance but use the rest of the
-values from the fields of the instance in the `user1` variable</span>
+<span class="caption">Listing 5-7: Using struct update syntax to set a new
+`email` value for a `User` instance but to use the rest of the values from
+`user1`</span>
 -->
-<p><span class="caption">リスト5-7: 構造体更新記法を使用して、新しい<code>User</code>インスタンス用の値に新しい<code>email</code>と<code>username</code>をセットしつつ、
-残りの値は、<code>user1</code>変数のフィールド値を使う</span></p>
+<p><span class="caption">リスト5-7: 構造体更新記法を使用して、新しい<code>User</code>インスタンス用の値に新しい<code>email</code>をセットしつつ、
+残りの値は<code>user1</code>を使う</span></p>
 <!--
 The code in Listing 5-7 also creates an instance in `user2` that has a
-different value for `email` and `username` but has the same values for the
-`active` and `sign_in_count` fields from `user1`.
+different value for `email` but has the same values for the `username`,
+`active`, and `sign_in_count` fields from `user1`. The `..user1` must come last
+to specify that any remaining fields should get their values from the
+corresponding fields in `user1`, but we can choose to specify values for as
+many fields as we want in any order, regardless of the order of the fields in
+the struct’s definition.
 -->
-<p>リスト5-7のコードも、<code>email</code>と<code>username</code>については異なる値、<code>active</code>と<code>sign_in_count</code>フィールドについては、
-<code>user1</code>と同じ値になるインスタンスを<code>user2</code>に生成します。</p>
+<p>リスト5-7のコードも、<code>email</code>については<code>user1</code>とは異なる値、<code>username</code>、<code>active</code>と<code>sign_in_count</code>フィールドについては、
+<code>user1</code>と同じ値になるインスタンスを<code>user2</code>に生成します。
+<code>..user1</code>は、残りのフィールドについては<code>user1</code>の対応するフィールドから値を取る、ということを示すために最後に来る必要がありますが、
+フィールドについては好きなだけ多く、構造体定義中のフィールドの順序とは無関係に好きな順で、値を指定してかまいません。</p>
 <!--
-### Using Tuple Structs without Named Fields to Create Different Types
+Note that the struct update syntax uses `=` like an assignment; this is because
+it moves the data, just as we saw in the [“Variables and Data Interacting with
+Move”][move] section. In this example, we can no longer use
+`user1` as a whole after creating `user2` because the `String` in the
+`username` field of `user1` was moved into `user2`. If we had given `user2` new
+`String` values for both `email` and `username`, and thus only used the
+`active` and `sign_in_count` values from `user1`, then `user1` would still be
+valid after creating `user2`. Both `active` and `sign_in_count` are types that
+implement the `Copy` trait, so the behavior we discussed in the [“Stack-Only
+Data: Copy”][copy] section would apply.
+-->
+<p>構造体更新記法は代入と同様に<code>=</code>を使います; これは、<a href="ch04-01-what-is-ownership.html#%E3%83%A0%E3%83%BC%E3%83%96%E3%81%AB%E3%82%88%E3%82%8B%E5%A4%89%E6%95%B0%E3%81%A8%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E7%9B%B8%E4%BA%92%E4%BD%9C%E7%94%A8">「ムーブによる変数とデータの相互作用」</a>の節で見たのと同じように、
+データをムーブするからです。この例で言うと、<code>user2</code>を作成した後は、もう<code>user1</code>をそっくりそのまま使うことはできません。
+<code>user1</code>の<code>username</code>フィールド中の<code>String</code>が<code>user2</code>の中にムーブされてしまったからです。
+もし<code>user2</code>に、<code>email</code>と<code>username</code>のために新しい<code>String</code>値を与えていたなら、つまり、
+<code>user1</code>からは<code>active</code>と<code>sign_in_count</code>の値だけを使用していたなら、<code>user2</code>を作成した後も<code>user1</code>はまだ有効だったでしょう。
+<code>active</code>と<code>sign_in_count</code>はどちらも<code>Copy</code>トレイトを実装した型なので、<a href="ch04-01-what-is-ownership.html#%E3%82%B9%E3%82%BF%E3%83%83%E3%82%AF%E3%81%AE%E3%81%BF%E3%81%AE%E3%83%87%E3%83%BC%E3%82%BF-%E3%82%B3%E3%83%94%E3%83%BC">「スタックのみのデータ: コピー」</a>節で議論した振る舞いが適用されるからです。</p>
+<!--
+### Using Tuple Structs Without Named Fields to Create Different Types
 -->
 <h3 id="異なる型を生成する名前付きフィールドのないタプル構造体を使用する"><a class="header" href="#異なる型を生成する名前付きフィールドのないタプル構造体を使用する">異なる型を生成する名前付きフィールドのないタプル構造体を使用する</a></h3>
 <!--
-We can also define structs that look similar to tuples, called *tuple
-structs*. Tuple structs have the added meaning the struct name provides but
-don’t have names associated with their fields; rather, they just have the types
-of the fields. Tuple structs are useful when you want to give the whole tuple a
-name and make the tuple be a different type than other tuples, and naming each
+Rust also supports structs that look similar to tuples, called *tuple structs*.
+Tuple structs have the added meaning the struct name provides but don’t have
+names associated with their fields; rather, they just have the types of the
+fields. Tuple structs are useful when you want to give the whole tuple a name
+and make the tuple a different type from other tuples, and when naming each
 field as in a regular struct would be verbose or redundant.
 -->
-<p>構造体名により追加の意味を含むものの、フィールドに紐づけられた名前がなく、むしろフィールドの型だけの<em>タプル構造体</em>と呼ばれる、
-タプルに似た構造体を定義することもできます。タプル構造体は、構造体名が提供する追加の意味は含むものの、
+<p>Rustは、構造体名により追加の意味を含むものの、フィールドに紐づけられた名前がなく、むしろフィールドの型だけの<em>タプル構造体</em>と呼ばれる、
+タプルに似た構造体もサポートしています。タプル構造体は、構造体名が提供する追加の意味は含むものの、
 フィールドに紐付けられた名前はありません; むしろ、フィールドの型だけが存在します。タプル構造体は、タプル全体に名前をつけ、
-そのタプルを他のタプルとは異なる型にしたい場合に有用ですが、普通の構造体のように各フィールド名を与えるのは、
-冗長、または余計になるでしょう。</p>
+そのタプルを他のタプルとは異なる型にしたいが、普通の構造体のように各フィールド名を与えるのは、
+冗長、または余計という場合に有用です。</p>
 <!--
-To define a tuple struct, you start with the `struct` keyword and the struct name
-followed by the types in the tuple. For example, here are definitions and
-usages of two tuple structs named `Color` and `Point`:
+To define a tuple struct, start with the `struct` keyword and the struct name
+followed by the types in the tuple. For example, here we define and use two
+tuple structs named `Color` and `Point`:
 -->
-<p>タプル構造体を定義するには、<code>struct</code>キーワードの後に構造体名、さらにタプルに含まれる型を続けます。
-例えば、こちらは、<code>Color</code>と<code>Point</code>という2種類のタプル構造体の定義と使用法です:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct Color(i32, i32, i32);
+<p>タプル構造体を定義するには、<code>struct</code>キーワードの後に構造体名、さらにタプルに含まれる型を続けてください。
+例えば、ここでは、<code>Color</code>と<code>Point</code>という2種類のタプル構造体の定義して使用します:</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust">struct Color(i32, i32, i32);
 struct Point(i32, i32, i32);
 
-let black = Color(0, 0, 0);
-let origin = Point(0, 0, 0);
-<span class="boring">}</span></code></pre></pre>
+fn main() {
+    let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
+}</code></pre></pre>
 <!--
-Note that the `black` and `origin` values are different types, because they’re
-instances of different tuple structs. Each struct we define is its own type,
-even though the fields within the struct have the same types. For example, a
-function that takes a parameter of type `Color` cannot take a `Point` as an
-argument, even though both types are made up of three `i32` values. Otherwise,
-tuple struct instances behave like tuples: you destructure them into their
-individual pieces, you can use a `.` followed by the index to access an
-individual value, and so on.
+Note that the `black` and `origin` values are different types because they’re
+instances of different tuple structs. Each struct you define is its own type,
+even though the fields within the struct might have the same types. For
+example, a function that takes a parameter of type `Color` cannot take a
+`Point` as an argument, even though both types are made up of three `i32`
+values. Otherwise, tuple struct instances are similar to tuples in that you can
+destructure them into their individual pieces, and you can use a `.` followed
+by the index to access an individual value.
 -->
 <p><code>black</code>と<code>origin</code>の値は、違う型であることに注目してください。これらは、異なるタプル構造体のインスタンスだからですね。
 定義された各構造体は、構造体内のフィールドが同じ型であっても、それ自身が独自の型になります。
 例えば、<code>Color</code>型を引数に取る関数は、<code>Point</code>を引数に取ることはできません。たとえ、両者の型が、
 3つの<code>i32</code>値からできていてもです。それ以外については、タプル構造体のインスタンスは、
-タプルと同じように振る舞います: 分配して個々の部品にしたり、<code>.</code>と添え字を使用して個々の値にアクセスするなどです。</p>
+分配して個々の部品にしたり、<code>.</code>と添え字を使用して個々の値にアクセスできるという点で、タプルと似ています。</p>
 <!--
-### Unit-Like Structs without Any Fields
+### Unit-Like Structs Without Any Fields
 -->
 <h3 id="フィールドのないユニット様よう構造体"><a class="header" href="#フィールドのないユニット様よう構造体">フィールドのないユニット<ruby>様<rp>(</rp><rt>よう</rt><rp>)</rp></ruby>構造体</a></h3>
 <!--
-We can also define structs that don’t have any fields! These are called
-*unit-like structs* because they behave similarly to `()`, the unit type.
-Unit-like structs can be useful in situations in which you need to implement a
-trait on some type but you don’t have any data that you want to store in the type
-itself. We’ll discuss traits in Chapter 10.
+You can also define structs that don’t have any fields! These are called
+*unit-like structs* because they behave similarly to `()`, the unit type that
+we mentioned in [“The Tuple Type”][tuples] section. Unit-like
+structs can be useful when you need to implement a trait on some type but don’t
+have any data that you want to store in the type itself. We’ll discuss traits
+in Chapter 10. Here’s an example of declaring and instantiating a unit struct
+named `AlwaysEqual`:
 -->
-<p>また、一切フィールドのない構造体を定義することもできます！これらは、<code>()</code>、ユニット型と似たような振る舞いをすることから、
+<p>また、一切フィールドのない構造体を定義することもできます！これらは、<code>()</code>、
+<a href="ch03-02-data-types.html#%E3%82%BF%E3%83%97%E3%83%AB%E5%9E%8B">「タプル型」</a>の節で言及したユニット型と似たような振る舞いをすることから、
 <em>ユニット様構造体</em>と呼ばれます。ユニット様構造体は、ある型にトレイトを実装するけれども、
-型自体に保持させるデータは一切ない場面に有効になります。トレイトについては第10章で議論します。</p>
+型自体に保持させるデータは一切ない場面に有効になります。トレイトについては第10章で議論します。
+以下は、<code>AlwaysEqual</code>という名前のユニット様構造体を宣言し、インスタンス化する例です:</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust">struct AlwaysEqual;
+
+fn main() {
+    let subject = AlwaysEqual;
+}</code></pre></pre>
+<!--
+To define `AlwaysEqual`, we use the `struct` keyword, the name we want, and
+then a semicolon. No need for curly brackets or parentheses! Then we can get an
+instance of `AlwaysEqual` in the `subject` variable in a similar way: using the
+name we defined, without any curly brackets or parentheses. Imagine that later
+we’ll implement behavior for this type such that every instance of
+`AlwaysEqual` is always equal to every instance of any other type, perhaps to
+have a known result for testing purposes. We wouldn’t need any data to
+implement that behavior! You’ll see in Chapter 10 how to define traits and
+implement them on any type, including unit-like structs.
+-->
+<p><code>AlwaysEqual</code>を定義するためには、<code>struct</code>キーワード、付けたい名前、そしてセミコロンを使います。
+波括弧や丸括弧は不要です！
+次に、同じようにして、<code>subject</code>変数に<code>AlwaysEqual</code>のインスタンスを得られます: 波括弧や丸括弧を付けずに、定義した名前を使います。
+後でこの型の振る舞いを、おそらくはテスト目的で既知の結果を得るために、<code>AlwaysEqual</code>のすべてのインスタンスが常に他の任意の型と等価であるように実装することを想像してください。
+この挙動を実装するためにデータはまったく必要ないですね！
+トレイトを定義して、ユニット様構造体も含めた任意の型にそれを実装する方法については10章で触れます。</p>
 <!--
 以下のパラグラフでは、引用されてるブロックの後に、和訳を示します。こうしないと、意図通りのレイアウトにならないようです
 -->
 <!--
-### Ownership of Struct Data
-In the `User` struct definition in Listing 5-1, we used the owned `String`
-type rather than the `&str` string slice type. This is a deliberate choice
-because we want instances of this struct to own all of its data and for that
-data to be valid for as long as the entire struct is valid.
-
-It’s possible for structs to store references to data owned by something else,
-but to do so requires the use of *lifetimes*, a Rust feature that we’ll
-discuss in Chapter 10. Lifetimes ensure that the data referenced by a struct
-is valid for as long as the struct is. Let’s say you try to store a reference
-in a struct without specifying lifetimes, like this, which won't work:
-
-<span class="filename">Filename: src/main.rs</span>
-
-```rust,ignore
-struct User {
-username: &str,
-email: &str,
-sign_in_count: u64,
-active: bool,
-}
-
-fn main() {
-let user1 = User {
-email: "someone@example.com",
-username: "someusername123",
-active: true,
-sign_in_count: 1,
-};
-}
-```
-
-The compiler will complain that it needs lifetime specifiers:
-
-```text
-error[E0106]: missing lifetime specifier
-
-|
-2 |     username: &str,
-|               ^ expected lifetime parameter
-
-error[E0106]: missing lifetime specifier
-
-|
-3 |     email: &str,
-|            ^ expected lifetime parameter
-```
-
-In Chapter 10, we’ll discuss how to fix these errors so you can store
-references in structs, but for now, we’ll fix errors like these using owned
-types like `String` instead of references like `&str`.
+> ### Ownership of Struct Data
+>
+> In the `User` struct definition in Listing 5-1, we used the owned `String`
+> type rather than the `&str` string slice type. This is a deliberate choice
+> because we want each instance of this struct to own all of its data and for
+> that data to be valid for as long as the entire struct is valid.
+>
+> It’s also possible for structs to store references to data owned by something
+> else, but to do so requires the use of *lifetimes*, a Rust feature that we’ll
+> discuss in Chapter 10. Lifetimes ensure that the data referenced by a struct
+> is valid for as long as the struct is. Let’s say you try to store a reference
+> in a struct without specifying lifetimes, like the following; this won’t work:
+>
+> <span class="filename">Filename: src/main.rs</span>
+>
+> <!-- CAN'T EXTRACT SEE https://github.com/rust-lang/mdBook/issues/1127 --
+>
+> ```rust,ignore,does_not_compile
+> struct User {
+>     active: bool,
+>     username: &str,
+>     email: &str,
+>     sign_in_count: u64,
+> }
+>
+> fn main() {
+>     let user1 = User {
+>         active: true,
+>         username: "someusername123",
+>         email: "someone@example.com",
+>         sign_in_count: 1,
+>     };
+> }
+> ```
+>
+> The compiler will complain that it needs lifetime specifiers:
+>
+> ```console
+> $ cargo run
+>    Compiling structs v0.1.0 (file:///projects/structs)
+> error[E0106]: missing lifetime specifier
+>  -- src/main.rs:3:15
+>   |
+> 3 |     username: &str,
+>   |               ^ expected named lifetime parameter
+>   |
+> help: consider introducing a named lifetime parameter
+>   |
+> 1 ~ struct User<'a> {
+> 2 |     active: bool,
+> 3 ~     username: &'a str,
+>   |
+>
+> error[E0106]: missing lifetime specifier
+>  -- src/main.rs:4:12
+>   |
+> 4 |     email: &str,
+>   |            ^ expected named lifetime parameter
+>   |
+> help: consider introducing a named lifetime parameter
+>   |
+> 1 ~ struct User<'a> {
+> 2 |     active: bool,
+> 3 |     username: &str,
+> 4 ~     email: &'a str,
+>   |
+>
+> For more information about this error, try `rustc --explain E0106`.
+> error: could not compile `structs` due to 2 previous errors
+> ```
+>
+> In Chapter 10, we’ll discuss how to fix these errors so you can store
+> references in structs, but for now, we’ll fix errors like these using owned
+> types like `String` instead of references like `&str`.
 -->
 <blockquote>
 <h3 id="構造体データの所有権"><a class="header" href="#構造体データの所有権">構造体データの所有権</a></h3>
 <p>リスト5-1の<code>User</code>構造体定義において、<code>&amp;str</code>文字列スライス型ではなく、所有権のある<code>String</code>型を使用しました。
-これは意図的な選択です。というのも、この構造体のインスタンスには全データを所有してもらう必要があり、
+これは意図的な選択です。というのも、この構造体の各インスタンスには自身の全データを所有してもらう必要があり、
 このデータは、構造体全体が有効な間はずっと有効である必要があるのです。</p>
 <p>構造体に、他の何かに所有されたデータへの参照を保持させることもできますが、
 そうするには<em>ライフタイム</em>という第10章で議論するRustの機能を使用しなければなりません。
 ライフタイムのおかげで構造体に参照されたデータが、構造体自体が有効な間、ずっと有効であることを保証してくれるのです。
-ライフタイムを指定せずに構造体に参照を保持させようとしたとしましょう。以下の通りですが、これは動きません:</p>
+次のように、ライフタイムを指定せずに構造体に参照を保持させようとしたとしましょう。これは動きません:</p>
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">struct User {
+<pre><code class="language-rust ignore does_not_compile">struct User {
+    active: bool,
     username: &amp;str,
     email: &amp;str,
     sign_in_count: u64,
-    active: bool,
 }
 
 fn main() {
     let user1 = User {
-        email: &quot;someone@example.com&quot;,
-        username: &quot;someusername123&quot;,
         active: true,
+        username: &quot;someusername123&quot;,
+        email: &quot;someone@example.com&quot;,
         sign_in_count: 1,
     };
 }</code></pre>
 <p>コンパイラは、ライフタイム指定子が必要だと怒るでしょう:</p>
-<pre><code class="language-text">error[E0106]: missing lifetime specifier
+<pre><code class="language-console">$ cargo run
+   Compiling structs v0.1.0 (file:///projects/structs)
+error[E0106]: missing lifetime specifier
 (エラー: ライフタイム指定子がありません)
- --&gt;
-  | 
-2 |     username: &amp;str,
-  |               ^ expected lifetime parameter
-                   (ライフタイム引数を予期しました)
+ --&gt; src/main.rs:3:15
+  |
+3 |     username: &amp;str,
+  |               ^ expected named lifetime parameter
+  |                (ライフタイム引数を予期しました)
+  |
+help: consider introducing a named lifetime parameter
+  |
+1 ~ struct User&lt;'a&gt; {
+2 |     active: bool,
+3 ~     username: &amp;'a str,
+  |
 
 error[E0106]: missing lifetime specifier
- --&gt;
-  | 
-3 |     email: &amp;str,
-  |            ^ expected lifetime parameter
+ --&gt; src/main.rs:4:12
+  |
+4 |     email: &amp;str,
+  |            ^ expected named lifetime parameter
+  |
+help: consider introducing a named lifetime parameter
+  |
+1 ~ struct User&lt;'a&gt; {
+2 |     active: bool,
+3 |     username: &amp;str,
+4 ~     email: &amp;'a str,
+  |
+
+For more information about this error, try `rustc --explain E0106`.
+error: could not compile `structs` (bin &quot;structs&quot;) due to 2 previous errors
 </code></pre>
 <p>第10章で、これらのエラーを解消して構造体に参照を保持する方法について議論しますが、
 当面、今回のようなエラーは、<code>&amp;str</code>のような参照の代わりに、<code>String</code>のような所有された型を使うことで修正します。</p>
 </blockquote>
+<!-- manual-regeneration
+for the error above
+after running update-rustc.sh:
+pbcopy < listings/ch05-using-structs-to-structure-related-data/no-listing-02-reference-in-struct/output.txt
+paste above
+add `> ` before every line -->
+<!--
+[tuples]: ch03-02-data-types.html#the-tuple-type
+[move]: ch04-01-what-is-ownership.html#variables-and-data-interacting-with-move
+[copy]: ch04-01-what-is-ownership.html#stack-only-data-copy
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## An Example Program Using Structs
 -->
 <h2 id="構造体を使ったプログラム例"><a class="header" href="#構造体を使ったプログラム例">構造体を使ったプログラム例</a></h2>
 <!--
 To understand when we might want to use structs, let’s write a program that
-calculates the area of a rectangle. We’ll start with single variables, and then
-refactor the program until we’re using structs instead.
+calculates the area of a rectangle. We’ll start by using single variables, and
+then refactor the program until we’re using structs instead.
 -->
 <p>構造体を使用したくなる可能性のあるケースを理解するために、長方形の面積を求めるプログラムを書きましょう。
 単一の変数から始め、代わりに構造体を使うようにプログラムをリファクタリングします。</p>
 <!--
 Let’s make a new binary project with Cargo called *rectangles* that will take
-the width and height of a rectangle specified in pixels and will calculate the area
+the width and height of a rectangle specified in pixels and calculate the area
 of the rectangle. Listing 5-8 shows a short program with one way of doing
 exactly that in our project’s *src/main.rs*.
 -->
@@ -8358,41 +8515,54 @@ specified by separate width and height variables</span>
 Now, run this program using `cargo run`:
 -->
 <p>では、<code>cargo run</code>でこのプログラムを走らせてください:</p>
-<pre><code class="language-text">The area of the rectangle is 1500 square pixels.
+<pre><code class="language-console">$ cargo run
+   Compiling rectangles v0.1.0 (file:///projects/rectangles)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.42s
+     Running `target/debug/rectangles`
+The area of the rectangle is 1500 square pixels.
 (長方形の面積は、1500平方ピクセルです)
 </code></pre>
 <!--
-### Refactoring with Tuples
+This code succeeds in figuring out the area of the rectangle by calling the
+`area` function with each dimension, but we can do more to make this code clear
+and readable.
 -->
-<h3 id="タプルでリファクタリングする"><a class="header" href="#タプルでリファクタリングする">タプルでリファクタリングする</a></h3>
-<!--
-Even though Listing 5-8 works and figures out the area of the rectangle by
-calling the `area` function with each dimension, we can do better. The width
-and the height are related to each other because together they describe one
-rectangle.
--->
-<p>リスト5-8のコードはうまく動き、各寸法を与えて<code>area</code>関数を呼び出すことで長方形の面積を割り出しますが、
-改善点があります。幅と高さは、組み合わせると一つの長方形を表すので、相互に関係があるわけです。</p>
+<p>このコードは、各寸法を与えて<code>area</code>関数を呼び出すことで長方形の面積を割り出すことができますが、
+このコードはもっと簡潔で読みやすくすることができます。</p>
 <!--
 The issue with this code is evident in the signature of `area`:
 -->
 <p>このコードの問題点は、<code>area</code>のシグニチャから明らかです:</p>
-<pre><code class="language-rust ignore">fn area(width: u32, height: u32) -&gt; u32 {</code></pre>
+<pre><code class="language-rust ignore"><span class="boring">fn main() {
+</span><span class="boring">    let width1 = 30;
+</span><span class="boring">    let height1 = 50;
+</span><span class="boring">
+</span><span class="boring">    println!(
+</span><span class="boring">        // 長方形の面積は、{}平方ピクセルです
+</span><span class="boring">        &quot;The area of the rectangle is {} square pixels.&quot;,
+</span><span class="boring">        area(width1, height1)
+</span><span class="boring">    );
+</span><span class="boring">}
+</span><span class="boring">
+</span>fn area(width: u32, height: u32) -&gt; u32 {
+<span class="boring">    width * height
+</span><span class="boring">}</span></code></pre>
 <!--
 The `area` function is supposed to calculate the area of one rectangle, but the
-function we wrote has two parameters. The parameters are related, but that’s
-not expressed anywhere in our program. It would be more readable and more
+function we wrote has two parameters, and it’s not clear anywhere in our
+program that the parameters are related. It would be more readable and more
 manageable to group width and height together. We’ve already discussed one way
-we might do that in the "The Tuple Type" section of Chapter 3: by using tuples.
+we might do that in [“The Tuple Type”][the-tuple-type] section
+of Chapter 3: by using tuples.
 -->
-<p><code>area</code>関数は、1長方形の面積を求めるものと考えられますが、今書いた関数には、引数が2つあります。
-引数は関連性があるのに、このプログラム内のどこにもそのことは表現されていません。
+<p><code>area</code>関数は、1長方形の面積を求めるものと考えられますが、今書いた関数には引数が2つあり、
+そしてこのプログラム内のどこを見ても、これらの引数に関連性があることが明確になっていません。
 幅と高さを一緒にグループ化する方が、より読みやすく、扱いやすくなるでしょう。
-それをする一つの方法については、第3章の「タプル型」節ですでに議論しました: タプルを使うのです。</p>
+それをする一つの方法については、第3章の<a href="ch03-02-data-types.html#%E3%82%BF%E3%83%97%E3%83%AB%E5%9E%8B">「タプル型」</a>節ですでに議論しました: タプルを使うのです。</p>
 <!--
 ### Refactoring with Tuples
 -->
-<h3 id="タプルでリファクタリングする-1"><a class="header" href="#タプルでリファクタリングする-1">タプルでリファクタリングする</a></h3>
+<h3 id="タプルでリファクタリングする"><a class="header" href="#タプルでリファクタリングする">タプルでリファクタリングする</a></h3>
 <!--
 Listing 5-9 shows another version of our program that uses tuples.
 -->
@@ -8421,36 +8591,34 @@ rectangle with a tuple</span>
 <!--
 In one way, this program is better. Tuples let us add a bit of structure, and
 we’re now passing just one argument. But in another way, this version is less
-clear: tuples don’t name their elements, so our calculation has become more
-confusing because we have to index into the parts of the tuple.
+clear: tuples don’t name their elements, so we have to index into the parts of
+the tuple, making our calculation less obvious.
 -->
 <p>ある意味では、このプログラムはマシです。タプルのおかげで少し構造的になり、一引数を渡すだけになりました。
 しかし別の意味では、このバージョンは明確性を失っています: タプルは要素に名前を付けないので、
-計算が不明瞭になったのです。なぜなら、タプルの一部に添え字アクセスする必要があるからです。</p>
+タプルの要素に添え字でアクセスする必要があり、計算が不明瞭になったのです。</p>
 <!--
-It doesn’t matter if we mix up width and height for the area calculation, but
-if we want to draw the rectangle on the screen, it would matter! We would have
-to keep in mind that `width` is the tuple index `0` and `height` is the tuple
-index `1`. If someone else worked on this code, they would have to figure this
-out and keep it in mind as well. It would be easy to forget or mix up these
-values and cause errors, because we haven’t conveyed the meaning of our data in
-our code.
+Mixing up the width and height wouldn’t matter for the area calculation, but if
+we want to draw the rectangle on the screen, it would matter! We would have to
+keep in mind that `width` is the tuple index `0` and `height` is the tuple
+index `1`. This would be even harder for someone else to figure out and keep in
+mind if they were to use our code. Because we haven’t conveyed the meaning of
+our data in our code, it’s now easier to introduce errors.
 -->
-<p>面積計算で幅と高さを混在させるのなら問題はないのですが、長方形を画面に描画したいとなると、問題になるのです！
+<p>面積計算では幅と高さを混同しても問題ないですが、長方形を画面に描画したいとなると、これは問題になります！
 タプルの添え字<code>0</code>が<code>幅</code>で、添え字<code>1</code>が<code>高さ</code>であることを肝に銘じておかなければなりません。
-他人がこのコードをいじることになったら、このことを割り出し、同様に肝に銘じなければならないでしょう。
-容易く、このことを忘れたり、これらの値を混ぜこぜにしたりしてエラーを発生させてしまうでしょう。
-データの意味をコードに載せていないからです。</p>
+もし他人がこのコードを使用することになったら、彼らがこのことを見つけ出して肝に銘じておくのはより難しくなるでしょう。
+データの意味をコードに載せていないことで、エラーを招きやすくなってしまいました。</p>
 <!--
 ### Refactoring with Structs: Adding More Meaning
 -->
 <h3 id="構造体でリファクタリングする-より意味付けする"><a class="header" href="#構造体でリファクタリングする-より意味付けする">構造体でリファクタリングする: より意味付けする</a></h3>
 <!--
 We use structs to add meaning by labeling the data. We can transform the tuple
-we’re using into a data type with a name for the whole as well as names for the
+we’re using into a struct with a name for the whole as well as names for the
 parts, as shown in Listing 5-10.
 -->
-<p>データのラベル付けで意味を付与するために構造体を使います。現在使用しているタプルを全体と一部に名前のあるデータ型に、
+<p>データのラベル付けで意味を付与するために構造体を使います。現在使用しているタプルを全体と一部に名前のある構造体に、
 変形することができます。そう、リスト5-10に示したように。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
@@ -8462,7 +8630,10 @@ parts, as shown in Listing 5-10.
 }
 
 fn main() {
-    let rect1 = Rectangle { width: 30, height: 50 };
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
 
     println!(
         &quot;The area of the rectangle is {} square pixels.&quot;,
@@ -8480,12 +8651,12 @@ fn area(rectangle: &amp;Rectangle) -&gt; u32 {
 <!--
 Here we’ve defined a struct and named it `Rectangle`. Inside the curly
 brackets, we defined the fields as `width` and `height`, both of which have
-type `u32`. Then in `main`, we create a particular instance of a `Rectangle`
-that has a width of 30 and a height of 50.
+type `u32`. Then, in `main`, we created a particular instance of `Rectangle`
+that has a width of `30` and a height of `50`.
 -->
 <p>ここでは、構造体を定義し、<code>Rectangle</code>という名前にしています。波括弧の中で<code>width</code>と<code>height</code>というフィールドを定義し、
 <code>u32</code>という型にしました。それから<code>main</code>内で<code>Rectangle</code>の特定のインスタンスを生成し、
-幅を30、高さを50にしました。</p>
+幅を<code>30</code>、高さを<code>50</code>にしました。</p>
 <!--
 Our `area` function is now defined with one parameter, which we’ve named
 `rectangle`, whose type is an immutable borrow of a struct `Rectangle`
@@ -8499,13 +8670,17 @@ where we call the function.
 <code>rect1</code>を使用し続けることができ、そのために関数シグニチャと関数呼び出し時に<code>&amp;</code>を使っているわけです。</p>
 <!--
 The `area` function accesses the `width` and `height` fields of the `Rectangle`
-instance. Our function signature for `area` now indicates exactly what we mean:
-calculate the area of a `Rectangle`, using its `width` and `height` fields. This
-conveys that the width and height are related to each other, and it gives
-descriptive names to the values rather than using the tuple index values of `0`
-and `1`. This is a win for clarity.
+instance (note that accessing fields of a borrowed struct instance does not
+move the field values, which is why you often see borrows of structs). Our
+function signature for `area` now says exactly what we mean: calculate the area
+of `Rectangle`, using its `width` and `height` fields. This conveys that the
+width and height are related to each other, and it gives descriptive names to
+the values rather than using the tuple index values of `0` and `1`. This is a
+win for clarity.
 -->
 <p><code>area</code>関数は、<code>Rectangle</code>インスタンスの<code>width</code>と<code>height</code>フィールドにアクセスしています。
+（借用された構造体インスタンスのフィールドにアクセスしても、そのフィールドの値はムーブされないことに注意してください。
+構造体の借用をよく使うのはこのためです）
 これで、<code>area</code>の関数シグニチャは、我々の意図をズバリ示すようになりました: <code>width</code>と<code>height</code>フィールドを使って、
 <code>Rectangle</code>の面積を計算します。これにより、幅と高さが相互に関係していることが伝わり、
 タプルの<code>0</code>や<code>1</code>という添え字を使うよりも、これらの値に説明的な名前を与えられるのです。プログラムの意図が明瞭になりました。</p>
@@ -8514,24 +8689,28 @@ and `1`. This is a win for clarity.
 -->
 <h3 id="トレイトの導出で有用な機能を追加する"><a class="header" href="#トレイトの導出で有用な機能を追加する">トレイトの導出で有用な機能を追加する</a></h3>
 <!--
-It’d be nice to be able to print an instance of `Rectangle` while we’re
+It’d be useful to be able to print an instance of `Rectangle` while we’re
 debugging our program and see the values for all its fields. Listing 5-11 tries
-using the `println!` macro as we have used it in previous chapters. This won't
-work, however.
+using the [`println!` macro][println] as we have used in
+previous chapters. This won’t work, however.
 -->
-<p>プログラムのデバッグをしている間に、<code>Rectangle</code>のインスタンスを出力し、フィールドの値を確認できると、
-素晴らしいわけです。リスト5-11では、以前の章のように、<code>println!</code>マクロを試しに使用しようとしていますが、動きません。</p>
+<p>プログラムのデバッグをしている間に、<code>Rectangle</code>のインスタンスを出力し、フィールドの値を確認できると便利でしょう。
+リスト5-11では、以前の章のように、<a href="https://doc.rust-lang.org/std/macro.println.html"><code>println!</code>マクロ</a>を試しに使用しようとしています。
+ですが、これは動きません。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">struct Rectangle {
+<pre><code class="language-rust ignore does_not_compile">struct Rectangle {
     width: u32,
     height: u32,
 }
 
 fn main() {
-    let rect1 = Rectangle { width: 30, height: 50 };
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
 
     // rect1は{}です
     println!(&quot;rect1 is {}&quot;, rect1);
@@ -8542,38 +8721,40 @@ instance</span>
 -->
 <p><span class="caption">リスト5-11: <code>Rectangle</code>のインスタンスを出力しようとする</span></p>
 <!--
-When we run this code, we get an error with this core message:
+When we compile this code, we get an error with this core message:
 -->
-<p>このコードを走らせると、こんな感じのエラーが出ます:</p>
-<pre><code class="language-text">error[E0277]: the trait bound `Rectangle: std::fmt::Display` is not satisfied
-(エラー: トレイト境界`Rectangle: std::fmt::Display`が満たされていません)
+<p>このコードをコンパイルすると、こんな感じのエラーが出ます:</p>
+<!-- output.txtに日本語訳の行があるので行番号が原文からずれています -->
+<pre><code class="language-text">error[E0277]: `Rectangle` doesn't implement `std::fmt::Display`
+(エラー: `Rectangle`は`std::fmt::Display`を実装していません)
 </code></pre>
 <!--
 The `println!` macro can do many kinds of formatting, and by default, the curly
 brackets tell `println!` to use formatting known as `Display`: output intended
 for direct end user consumption. The primitive types we’ve seen so far
-implement `Display` by default, because there’s only one way you’d want to show
+implement `Display` by default because there’s only one way you’d want to show
 a `1` or any other primitive type to a user. But with structs, the way
 `println!` should format the output is less clear because there are more
-display possibilities: do you want commas or not? Do you want to print the
+display possibilities: Do you want commas or not? Do you want to print the
 curly brackets? Should all the fields be shown? Due to this ambiguity, Rust
-doesn't try to guess what we want, and structs don’t have a provided
-implementation of `Display`.
+doesn’t try to guess what we want, and structs don’t have a provided
+implementation of `Display` to use with `println!` and the `{}` placeholder.
 -->
 <p><code>println!</code>マクロには、様々な整形があり、標準では、波括弧は<code>Display</code>として知られる整形をするよう、
 <code>println!</code>に指示するのです: 直接エンドユーザ向けの出力です。これまでに見てきた基本型は、
 標準で<code>Display</code>を実装しています。というのも、<code>1</code>や他の基本型をユーザに見せる方法は一つしかないからです。
 しかし構造体では、<code>println!</code>が出力を整形する方法は自明ではなくなります。出力方法がいくつもあるからです:
 カンマは必要なの？波かっこを出力する必要はある？全フィールドが見えるべき？この曖昧性のため、
-Rustは必要なものを推測しようとせず、構造体には<code>Display</code>実装が提供されないのです。</p>
+Rustは必要なものを推測しようとせず、構造体は<code>println!</code>と<code>{}</code>プレースホルダで使用される<code>Display</code>実装を提供しないのです。</p>
 <!--
 If we continue reading the errors, we’ll find this helpful note:
 -->
 <p>エラーを読み下すと、こんな有益な注意書きがあります:</p>
-<pre><code class="language-text">`Rectangle` cannot be formatted with the default formatter; try using
-`:?` instead if you are using a format string
-(注釈: `Rectangle`は、デフォルト整形機では、整形できません; フォーマット文字列を使うのなら
-代わりに`:?`を試してみてください)
+<!-- output.txtに日本語訳の行があるので行番号が原文からずれています -->
+<pre><code class="language-text">   = help: the trait `std::fmt::Display` is not implemented for `Rectangle`
+   = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
+   (ヘルプ: `std::fmt::Display`は`Rectangle`に対して実装されていません)
+   (注釈: フォーマット文字列では代わりに`{:?}`(またはpretty-printするためには{:#?})が使用できるかもしれません)
 </code></pre>
 <!--
 Let’s try it! The `println!` macro call will now look like `println!("rect1 is
@@ -8587,29 +8768,31 @@ see its value while we’re debugging our code.
 <code>Debug</code>トレイトは、開発者にとって有用な方法で構造体を出力させてくれるので、
 コードをデバッグしている最中に、値を確認することができます。</p>
 <!--
-Run the code with this change. Drat! We still get an error:
+Compile the code with this change. Drat! We still get an error:
 -->
-<p>変更してコードを走らせてください。なに！まだエラーが出ます:</p>
-<pre><code class="language-text">error[E0277]: the trait bound `Rectangle: std::fmt::Debug` is not satisfied
-(エラー: トレイト境界`Rectangle: std::fmt::Debug`が満たされていません)
+<p>変更してコードをコンパイルしてください。なに！まだエラーが出ます:</p>
+<!-- output.txtに日本語訳の行があるので行番号が原文からずれています -->
+<pre><code class="language-text">error[E0277]: `Rectangle` doesn't implement `Debug`
+(エラー: `Rectangle`は`Debug`を実装していません)
 </code></pre>
 <!--
 But again, the compiler gives us a helpful note:
 -->
 <p>しかし今回も、コンパイラは有益な注意書きを残してくれています:</p>
-<pre><code class="language-text">`Rectangle` cannot be formatted using `:?`; if it is defined in your
-crate, add `#[derive(Debug)]` or manually implement it
-(注釈: `Rectangle`は`:?`を使って整形できません; 自分のクレートで定義しているのなら
-`#[derive(Debug)]`を追加するか、手動で実装してください)
+<!-- output.txtに日本語訳の行があるので行番号が原文からずれています -->
+<pre><code class="language-text">   = help: the trait `Debug` is not implemented for `Rectangle`
+   = note: add `#[derive(Debug)]` to `Rectangle` or manually `impl Debug for Rectangle`
+   (ヘルプ: トレイト`Debug`は`Rectangle`に対して実装されていません)
+   (注釈: `Rectangle`に`#[derive(Debug)]`を追加するか、手動で`impl Debug for Rectangle`してください)
 </code></pre>
 <!--
 Rust *does* include functionality to print out debugging information, but we
 have to explicitly opt in to make that functionality available for our struct.
-To do that, we add the annotation `#[derive(Debug)]` just before the struct
-definition, as shown in Listing 5-12.
+To do that, we add the outer attribute `#[derive(Debug)]` just before the
+struct definition, as shown in Listing 5-12.
 -->
 <p><em>確かに</em>Rustにはデバッグ用の情報を出力する機能が備わっていますが、この機能を構造体で使えるようにするには、
-明示的な選択をしなければならないのです。そうするには、構造体定義の直前に<code>#[derive(Debug)]</code>という注釈を追加します。
+明示的な選択をしなければならないのです。そうするには、構造体定義の直前に<code>#[derive(Debug)]</code>という外部属性を追加します。
 そう、リスト5-12で示されている通りです。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
@@ -8622,76 +8805,176 @@ struct Rectangle {
 }
 
 fn main() {
-    let rect1 = Rectangle { width: 30, height: 50 };
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
 
     println!(&quot;rect1 is {:?}&quot;, rect1);
 }</code></pre></pre>
 <!--
-<span class="caption">Listing 5-12: Adding the annotation to derive the `Debug`
+<span class="caption">Listing 5-12: Adding the attribute to derive the `Debug`
 trait and printing the `Rectangle` instance using debug formatting</span>
 -->
-<p><span class="caption">リスト5-12: <code>Debug</code>トレイトを導出する注釈を追加し、
+<p><span class="caption">リスト5-12: <code>Debug</code>トレイトを導出する属性を追加し、
 <code>Rectangle</code>インスタンスをデバッグ用整形機で出力する</span></p>
 <!--
 Now when we run the program, we won’t get any errors, and we’ll see the
 following output:
 -->
 <p>これでプログラムを実行すれば、エラーは出ず、以下のような出力が得られるでしょう:</p>
-<pre><code class="language-text">rect1 is Rectangle { width: 30, height: 50 }
+<pre><code class="language-console">$ cargo run
+   Compiling rectangles v0.1.0 (file:///projects/rectangles)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.48s
+     Running `target/debug/rectangles`
+rect1 is Rectangle { width: 30, height: 50 }
 </code></pre>
 <!--
 Nice! It’s not the prettiest output, but it shows the values of all the fields
 for this instance, which would definitely help during debugging. When we have
 larger structs, it’s useful to have output that’s a bit easier to read; in
-those cases, we can use `{:#?}` instead of `{:?}` in the `println!` string.
-When we use the `{:#?}` style in the example, the output will look like this:
+those cases, we can use `{:#?}` instead of `{:?}` in the `println!` string. In
+this example, using the `{:#?}` style will output the following:
 -->
 <p>素晴らしい！最善の出力ではないものの、このインスタンスの全フィールドの値を出力しているので、
 デバッグ中には間違いなく役に立つでしょう。より大きな構造体があるなら、もう少し読みやすい出力の方が有用です;
 そのような場合には、<code>println!</code>文字列中の<code>{:?}</code>の代わりに<code>{:#?}</code>を使うことができます。
 この例で<code>{:#?}</code>というスタイルを使用したら、出力は以下のようになるでしょう:</p>
-<pre><code class="language-text">rect1 is Rectangle {
+<pre><code class="language-console">$ cargo run
+   Compiling rectangles v0.1.0 (file:///projects/rectangles)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.48s
+     Running `target/debug/rectangles`
+rect1 is Rectangle {
     width: 30,
-    height: 50
+    height: 50,
 }
 </code></pre>
 <!--
-Rust has provided a number of traits for us to use with the `derive` annotation
-that can add useful behavior to our custom types. Those traits and their
-behaviors are listed in Appendix C. We’ll cover how to implement these traits
-with custom behavior as well as how to create your own traits in Chapter 10.
+Another way to print out a value using the `Debug` format is to use the [`dbg!`
+macro][dbg], which takes ownership of an expression (as opposed
+to `println!`, which takes a reference), prints the file and line number of
+where that `dbg!` macro call occurs in your code along with the resultant value
+of that expression, and returns ownership of the value.
 -->
-<p>Rustには、<code>derive</code>注釈で使えるトレイトが多く提供されており、独自の型に有用な振る舞いを追加することができます。
+<p><code>Debug</code>整形を使用して値を出力するためのもう一つの方法は、<a href="https://doc.rust-lang.org/std/macro.dbg.html"><code>dbg!</code>マクロ</a>を使用することです。
+<code>dbg!</code>マクロは式の所有権を奪い（参照を取る<code>println!</code>とは対照的です）、その呼び出しが発生したコード内のファイル名と行番号とともに式を評価した結果を出力して、
+その値の所有権を返します。</p>
+<!--
+> Note: Calling the `dbg!` macro prints to the standard error console stream
+> (`stderr`), as opposed to `println!`, which prints to the standard output
+> console stream (`stdout`). We’ll talk more about `stderr` and `stdout` in the
+> [“Writing Error Messages to Standard Error Instead of Standard Output”
+> section in Chapter 12][err].
+-->
+<blockquote>
+<p>注釈: 標準出力コンソールストリーム（<code>stdout</code>）に出力する<code>println!</code>とは異なり、<code>dbg!</code>マクロの呼び出しは標準エラーコンソールストリーム（<code>stderr</code>）に出力します。
+<code>stderr</code>と<code>stdout</code>については<a href="ch12-06-writing-to-stderr-instead-of-stdout.html">12章の「標準出力ではなく標準エラーにエラーメッセージを書き込む」節</a>でより詳しく触れます。</p>
+</blockquote>
+<!--
+Here’s an example where we’re interested in the value that gets assigned to the
+`width` field, as well as the value of the whole struct in `rect1`:
+-->
+<p>以下は、<code>width</code>フィールドに代入される値と、<code>rect1</code>の構造体全体の値に関心がある場合の例です:</p>
+<pre><pre class="playground"><code class="language-rust">#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let scale = 2;
+    let rect1 = Rectangle {
+        width: dbg!(30 * scale),
+        height: 50,
+    };
+
+    dbg!(&amp;rect1);
+}</code></pre></pre>
+<!--
+We can put `dbg!` around the expression `30 * scale` and, because `dbg!`
+returns ownership of the expression’s value, the `width` field will get the
+same value as if we didn’t have the `dbg!` call there. We don’t want `dbg!` to
+take ownership of `rect1`, so we use a reference to `rect1` in the next call.
+Here’s what the output of this example looks like:
+-->
+<p><code>dbg!</code>は式が評価された値の所有権を返すため、式<code>30 * scale</code>を囲うように<code>dbg!</code>を書くことで、<code>width</code>フィールドはここで<code>dbg!</code>の呼び出しをしなかった場合とまったく同じ値になります。
+<code>rect1</code>の所有権は奪ってほしくないので、次の<code>dbg!</code>呼び出しでは<code>rect1</code>への参照を使用しています。
+この例の出力は以下のようになります:</p>
+<pre><code class="language-console">$ cargo run
+   Compiling rectangles v0.1.0 (file:///projects/rectangles)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.61s
+     Running `target/debug/rectangles`
+[src/main.rs:10:16] 30 * scale = 60
+[src/main.rs:14:5] &amp;rect1 = Rectangle {
+    width: 60,
+    height: 50,
+}
+</code></pre>
+<!--
+We can see the first bit of output came from *src/main.rs* line 10 where we’re
+debugging the expression `30 * scale`, and its resultant value is `60` (the
+`Debug` formatting implemented for integers is to print only their value). The
+`dbg!` call on line 14 of *src/main.rs* outputs the value of `&rect1`, which is
+the `Rectangle` struct. This output uses the pretty `Debug` formatting of the
+`Rectangle` type. The `dbg!` macro can be really helpful when you’re trying to
+figure out what your code is doing!
+-->
+<p>出力の前半は<em>src/main.rs</em>の10行目からの出力です。
+ここでは式<code>30 * scale</code>をデバッグ出力していて、その結果の値は<code>60</code>です（整数に実装されている<code>Debug</code>整形を使用して出力されています）。
+<em>src/main.rs</em>の14行目の<code>dbg!</code>呼び出しは<code>&amp;rect1</code>の値を出力し、これは<code>Rectangle</code>構造体です。
+この出力は <code>Rectangle</code>型の pretty <code>Debug</code>整形を使用します。
+<code>dbg!</code>マクロは、コードが何をしているのか理解しようとするときには非常に有用です！</p>
+<!--
+In addition to the `Debug` trait, Rust has provided a number of traits for us
+to use with the `derive` attribute that can add useful behavior to our custom
+types. Those traits and their behaviors are listed in [Appendix C][app-c]
+. We’ll cover how to implement these traits with custom behavior as
+well as how to create your own traits in Chapter 10. There are also many
+attributes other than `derive`; for more information, see [the “Attributes”
+section of the Rust Reference][attributes].
+-->
+<p><code>Debug</code>トレイトの他にも、Rustでは<code>derive</code>属性で使えるトレイトが多く提供されており、独自の型に有用な振る舞いを追加することができます。
 そのようなトレイトとその振る舞いは、付録Cで一覧になっています。
-これらのトレイトを独自の動作とともに実装する方法だけでなく、独自のトレイトを生成する方法については、第10章で解説します。</p>
+これらのトレイトを独自の動作とともに実装する方法だけでなく、独自のトレイトを生成する方法については、第10章で解説します。
+また、<code>derive</code>の他にも多数の属性が存在します; さらなる情報については<a href="https://doc.rust-lang.org/reference/attributes.html">Rust Referenceの“Attributes”節</a>を参照してください。</p>
 <!--
 Our `area` function is very specific: it only computes the area of rectangles.
-It would be helpful to tie this behavior more closely to our `Rectangle`
-struct, because it won’t work with any other type. Let’s look at how we can
-continue to refactor this code by turning the `area` function into an `area`
-*method* defined on our `Rectangle` type.
+It would be helpful to tie this behavior more closely to our `Rectangle` struct
+because it won’t work with any other type. Let’s look at how we can continue to
+refactor this code by turning the `area` function into an `area` *method*
+defined on our `Rectangle` type.
 -->
 <p><code>area</code>関数は、非常に特殊です: 長方形の面積を算出するだけです。<code>Rectangle</code>構造体とこの動作をより緊密に結び付けられると、
 役に立つでしょう。なぜなら、他のどんな型でもうまく動作しなくなるからです。
 <code>area</code>関数を<code>Rectangle</code>型に定義された<code>area</code><em>メソッド</em>に変形することで、
 このコードをリファクタリングし続けられる方法について見ていきましょう。</p>
+<!--
+[the-tuple-type]: ch03-02-data-types.html#the-tuple-type
+[app-c]: appendix-03-derivable-traits.md
+[println]: ../std/macro.println.html
+[dbg]: ../std/macro.dbg.html
+[err]: ch12-06-writing-to-stderr-instead-of-stdout.html
+[attributes]: ../reference/attributes.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Method Syntax
 -->
 <h2 id="メソッド記法"><a class="header" href="#メソッド記法">メソッド記法</a></h2>
 <!--
-*Methods* are similar to functions: they’re declared with the `fn` keyword and
-their name, they can have parameters and a return value, and they contain some
-code that is run when they’re called from somewhere else. However, methods are
-different from functions in that they’re defined within the context of a struct
-(or an enum or a trait object, which we cover in Chapters 6 and 17,
-respectively), and their first parameter is always `self`, which represents the
-instance of the struct the method is being called on.
+
+*Methods* are similar to functions: we declare them with the `fn` keyword and a
+name, they can have parameters and a return value, and they contain some code
+that’s run when the method is called from somewhere else. Unlike functions,
+methods are defined within the context of a struct (or an enum or a trait
+object, which we cover in [Chapter 6][enums] and [Chapter
+17][trait-objects], respectively), and their first parameter is
+always `self`, which represents the instance of the struct the method is being
+called on.
 -->
-<p><em>メソッド</em>は関数に似ています: <code>fn</code>キーワードと名前で宣言されるし、引数と返り値があるし、
-どこか別の場所で呼び出された時に実行されるコードを含みます。ところが、
-メソッドは構造体の文脈(あるいはenumかトレイトオブジェクトの。これらについては各々第6章と17章で解説します)で定義されるという点で、
-関数とは異なり、最初の引数は必ず<code>self</code>になり、これはメソッドが呼び出されている構造体インスタンスを表します。</p>
+<p><em>メソッド</em>は関数に似ています: <code>fn</code>キーワードと名前を使って宣言され、引数と戻り値を持つことができ、
+メソッドがどこか別の場所で呼び出された時に実行されるコードを含みます。
+関数とは異なり、メソッドは構造体の文脈の中で定義されます（enumの文脈やトレイトオブジェクトの文脈の中でも定義されますが、これらについてはそれぞれ<a href="ch06-00-enums.html">6章</a>と<a href="ch17-02-trait-objects.html">17章</a>で解説します）。
+最初の引数は必ず<code>self</code>になり、これはメソッドが呼び出されている構造体インスタンスを表します。</p>
 <!--
 ### Defining Methods
 -->
@@ -8720,9 +9003,13 @@ impl Rectangle {
 }
 
 fn main() {
-    let rect1 = Rectangle { width: 30, height: 50 };
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
 
     println!(
+        // 長方形の面積は{}平方ピクセルです。
         &quot;The area of the rectangle is {} square pixels.&quot;,
         rect1.area()
     );
@@ -8734,42 +9021,51 @@ fn main() {
 <p><span class="caption">リスト5-13: <code>Rectangle</code>構造体上に<code>area</code>メソッドを定義する</span></p>
 <!--
 To define the function within the context of `Rectangle`, we start an `impl`
-(implementation) block. Then we move the `area` function within the `impl`
-curly brackets and change the first (and in this case, only) parameter to be
-`self` in the signature and everywhere within the body. In `main`, where we
-called the `area` function and passed `rect1` as an argument, we can instead
-use *method syntax* to call the `area` method on our `Rectangle` instance.
-The method syntax goes after an instance: we add a dot followed by the method
-name, parentheses, and any arguments.
+(implementation) block for `Rectangle`. Everything within this `impl` block
+will be associated with the `Rectangle` type. Then we move the `area` function
+within the `impl` curly brackets and change the first (and in this case, only)
+parameter to be `self` in the signature and everywhere within the body. In
+`main`, where we called the `area` function and passed `rect1` as an argument,
+we can instead use *method syntax* to call the `area` method on our `Rectangle`
+instance. The method syntax goes after an instance: we add a dot followed by
+the method name, parentheses, and any arguments.
 -->
-<p><code>Rectangle</code>の文脈内で関数を定義するには、<code>impl</code>(implementation; 実装)ブロックを始めます。
+<p><code>Rectangle</code>の文脈内で関数を定義するには、<code>Rectangle</code>のための<code>impl</code>(implementation; 実装)ブロックを始めます。
+この<code>impl</code>ブロック内のあらゆる定義は<code>Rectangle</code>に関連付けられたものとなるでしょう。
 それから<code>area</code>関数を<code>impl</code>の波かっこ内に移動させ、最初の(今回は唯一の)引数をシグニチャ内と本体内全てで<code>self</code>に変えます。
 <code>area</code>関数を呼び出し、<code>rect1</code>を引数として渡す<code>main</code>では、代替としてメソッド記法を使用して、
 <code>Rectangle</code>インスタンスの<code>area</code>メソッドを呼び出せます。メソッド記法は、インスタンスの後に続きます:
 ドット、メソッド名、かっこ、そして引数と続くわけです。</p>
 <!--
-In the signature for `area`, we use `&self` instead of `rectangle: &Rectangle`
-because Rust knows the type of `self` is `Rectangle` due to this method being
-inside the `impl Rectangle` context. Note that we still need to use the `&`
-before `self`, just like we did in `&Rectangle`. Methods can take ownership of
-`self`, borrow `self` immutably as we’ve done here, or borrow `self` mutably,
-just as they can any other parameter.
+In the signature for `area`, we use `&self` instead of `rectangle: &Rectangle`.
+The `&self` is actually short for `self: &Self`. Within an `impl` block, the
+type `Self` is an alias for the type that the `impl` block is for. Methods must
+have a parameter named `self` of type `Self` for their first parameter, so Rust
+lets you abbreviate this with only the name `self` in the first parameter spot.
+Note that we still need to use the `&` in front of the `self` shorthand to
+indicate that this method borrows the `Self` instance, just as we did in
+`rectangle: &Rectangle`. Methods can take ownership of `self`, borrow `self`
+immutably, as we’ve done here, or borrow `self` mutably, just as they can any
+other parameter.
 -->
 <p><code>area</code>のシグニチャでは、<code>rectangle: &amp;Rectangle</code>の代わりに<code>&amp;self</code>を使用しています。
-というのも、コンパイラは、このメソッドが<code>impl Rectangle</code>という文脈内に存在するために、
-<code>self</code>の型が<code>Rectangle</code>であると把握しているからです。<code>&amp;Rectangle</code>と同様に、
-<code>self</code>の直前に<code>&amp;</code>を使用していることに注意してください。メソッドは、<code>self</code>の所有権を奪ったり、
-ここでしているように不変で<code>self</code>を借用したり、可変で<code>self</code>を借用したりできるのです。
+<code>&amp;self</code>は実際のところ<code>self: &amp;Self</code>の省略記法です。
+<code>impl</code>ブロック内では、型<code>Self</code>はその<code>impl</code>ブロックの対象である型に対するエイリアスとして使えます。
+メソッドはその第1引数として<code>self</code>という名前の<code>Self</code>型引数を持たなくてはならないので、
+Rust処理系は第1引数の位置では<code>self</code>という名前のみに省略することを許可しているのです。
+ただし、<code>self</code>省略記法の前の<code>&amp;</code>は依然として必要であることに注意してください。
+これは、<code>rectangle: &amp;Rectangle</code>と書いたときと同様に、このメソッドが<code>Self</code>のインスタンスを借用することを示しています。
+メソッドは、<code>self</code>の所有権を奪ったり、ここでしているように不変で<code>self</code>を借用したり、可変で<code>self</code>を借用したりできるのです。
 他の引数と全く同じですね。</p>
 <!--
-We’ve chosen `&self` here for the same reason we used `&Rectangle` in the
-function version: we don’t want to take ownership, and we just want to read the
-data in the struct, not write to it. If we wanted to change the instance that
-we’ve called the method on as part of what the method does, we’d use `&mut
-self` as the first parameter. Having a method that takes ownership of the
-instance by using just `self` as the first parameter is rare; this technique is
-usually used when the method transforms `self` into something else and we want
-to prevent the caller from using the original instance after the transformation.
+We chose `&self` here for the same reason we used `&Rectangle` in the function
+version: we don’t want to take ownership, and we just want to read the data in
+the struct, not write to it. If we wanted to change the instance that we’ve
+called the method on as part of what the method does, we’d use `&mut self` as
+the first parameter. Having a method that takes ownership of the instance by
+using just `self` as the first parameter is rare; this technique is usually
+used when the method transforms `self` into something else and you want to
+prevent the caller from using the original instance after the transformation.
 -->
 <p>ここで<code>&amp;self</code>を選んでいるのは、関数バージョンで<code>&amp;Rectangle</code>を使用していたのと同様の理由です:
 所有権はいらず、構造体のデータを読み込みたいだけで、書き込む必要はないわけです。
@@ -8777,63 +9073,126 @@ to prevent the caller from using the original instance after the transformation.
 <code>self</code>だけを第1引数にしてインスタンスの所有権を奪うメソッドを定義することは稀です; このテクニックは通常、
 メソッドが<code>self</code>を何か別のものに変形し、変形後に呼び出し元が元のインスタンスを使用できないようにしたい場合に使用されます。</p>
 <!--
-The main benefit of using methods instead of functions, in addition to using
-method syntax and not having to repeat the type of `self` in every method’s
-signature, is for organization. We’ve put all the things we can do with an
-instance of a type in one `impl` block rather than making future users of our
-code search for capabilities of `Rectangle` in various places in the library we
-provide.
+The main reason for using methods instead of functions, in addition to
+providing method syntax and not having to repeat the type of `self` in every
+method’s signature, is for organization. We’ve put all the things we can do
+with an instance of a type in one `impl` block rather than making future users
+of our code search for capabilities of `Rectangle` in various places in the
+library we provide.
 -->
-<p>関数の代替としてメソッドを使う主な利点は、メソッド記法を使用して全メソッドのシグニチャで<code>self</code>の型を繰り返す必要がなくなる以外だと、
-体系化です。コードの将来的な利用者に<code>Rectangle</code>の機能を提供しているライブラリ内の各所でその機能を探させるのではなく、
+<p>関数の代替としてメソッドを使う主な理由は、メソッド記法を使用できるようにすることと、
+すべてのメソッドのシグニチャでいちいち<code>self</code>の型を繰り返す必要がなくなることに加えて、体系化のためです。
+コードの将来的な利用者に、私たちが提供するライブラリ内のあらゆる箇所から<code>Rectangle</code>の機能を探させるのではなく、
 この型のインスタンスでできることを一つの<code>impl</code>ブロックにまとめあげています。</p>
+<!--
+Note that we can choose to give a method the same name as one of the struct’s
+fields. For example, we can define a method on `Rectangle` that is also named
+`width`:
+-->
+<p>メソッドには、構造体のフィールドと同じ名前を与えることもできることに注意してください。
+例えば、<code>Rectangle</code>に<code>width</code>という名前のメソッドを定義することができます:</p>
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#[derive(Debug)]
+</span><span class="boring">struct Rectangle {
+</span><span class="boring">    width: u32,
+</span><span class="boring">    height: u32,
+</span><span class="boring">}
+</span><span class="boring">
+</span>impl Rectangle {
+    fn width(&amp;self) -&gt; bool {
+        self.width &gt; 0
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    if rect1.width() {
+        // 長方形は非ゼロの幅を持っています; それは{}です
+        println!(&quot;The rectangle has a nonzero width; it is {}&quot;, rect1.width);
+    }
+}</code></pre></pre>
+<!--
+Here, we’re choosing to make the `width` method return `true` if the value in
+the instance’s `width` field is greater than `0` and `false` if the value is
+`0`: we can use a field within a method of the same name for any purpose. In
+`main`, when we follow `rect1.width` with parentheses, Rust knows we mean the
+method `width`. When we don’t use parentheses, Rust knows we mean the field
+`width`.
+-->
+<p>ここで<code>width</code>メソッドは、インスタンスの<code>width</code>フィールドの値が<code>0</code>より大きい場合に<code>true</code>を返し、値が<code>0</code>の場合は<code>false</code>を返すようにしています:
+同名のメソッド内でも、フィールドをあらゆる目的のために使用することができます。
+<code>main</code>では<code>rect1.width</code>の後に丸かっこを続けているので、処理系はメソッドの<code>width</code>を意図したものと認識します。
+丸かっこを使わなければ、処理系はフィールドの<code>width</code>を意図したものと認識します。</p>
+<!--
+Often, but not always, when we give a method the same name as a field we want
+it to only return the value in the field and do nothing else. Methods like this
+are called *getters*, and Rust does not implement them automatically for struct
+fields as some other languages do. Getters are useful because you can make the
+field private but the method public, and thus enable read-only access to that
+field as part of the type’s public API. We will discuss what public and private
+are and how to designate a field or method as public or private in [Chapter
+7][public].
+-->
+<p>フィールドの値を返すだけで他に何もしないメソッドに、フィールドと同じ名前を与えることが、常にではありませんが、よくあります。
+このようなメソッドは<em>ゲッター</em>と呼ばれます。
+他のいくつかの言語で行われているような自動的なゲッターの実装を、Rustが構造体フィールドに対して行うことはありません。
+フィールドを非公開にしながらメソッドは公開するということができ、そうすることで、型の公開APIの一部としてフィールドへの読み込み専用アクセスを提供できるので、ゲッターは有用です。
+公開と非公開とはなにか、そしてフィールドやメソッドを公開または非公開として指定する方法については、<a href="ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#%E3%83%91%E3%82%B9%E3%82%92pub%E3%82%AD%E3%83%BC%E3%83%AF%E3%83%BC%E3%83%89%E3%81%A7%E5%85%AC%E9%96%8B%E3%81%99%E3%82%8B">7章</a>で議論します。</p>
 <!--
 例によって、以下の節では、引用ブロックの後に和訳を示します
 -->
 <!--
-### Where’s the `->` Operator?
-
-In C and C++, two different operators are used for calling methods: you use
-`.` if you’re calling a method on the object directly and `->` if you're
-calling the method on a pointer to the object and need to dereference the
-pointer first. In other words, if `object` is a pointer,
-`object->something()` is similar to `(*object).something()`.
-
-Rust doesn’t have an equivalent to the `->` operator; instead, Rust has a
-feature called *automatic referencing and dereferencing*. Calling methods is
-one of the few places in Rust that has this behavior.
-
-Here’s how it works: when you call a method with `object.something()`, Rust
-automatically adds in `&`, `&mut`, or `*` so `object` matches the signature of
-the method. In other words, the following are the same:
-
-```rust
-# #[derive(Debug,Copy,Clone)]
-# struct Point {
-#     x: f64,
-#     y: f64,
-# }
-#
-# impl Point {
-#    fn distance(&self, other: &Point) -> f64 {
-#        let x_squared = f64::powi(other.x - self.x, 2);
-#        let y_squared = f64::powi(other.y - self.y, 2);
-#
-#        f64::sqrt(x_squared + y_squared)
-#    }
-# }
-# let p1 = Point { x: 0.0, y: 0.0 };
-# let p2 = Point { x: 5.0, y: 6.5 };
-p1.distance(&p2);
-(&p1).distance(&p2);
-```
-
-The first one looks much cleaner. This automatic referencing behavior works
-because methods have a clear receiver—the type of `self`. Given the receiver
-and name of a method, Rust can figure out definitively whether the method is
-reading (`&self`), mutating (`&mut self`), or consuming (`self`). The fact
-that Rust makes borrowing implicit for method receivers is a big part of
-making ownership ergonomic in practice.
+> ### Where’s the `->` Operator?
+>
+> In C and C++, two different operators are used for calling methods: you use
+> `.` if you’re calling a method on the object directly and `->` if you’re
+> calling the method on a pointer to the object and need to dereference the
+> pointer first. In other words, if `object` is a pointer,
+> `object->something()` is similar to `(*object).something()`.
+>
+> Rust doesn’t have an equivalent to the `->` operator; instead, Rust has a
+> feature called *automatic referencing and dereferencing*. Calling methods is
+> one of the few places in Rust that has this behavior.
+>
+> Here’s how it works: when you call a method with `object.something()`, Rust
+> automatically adds in `&`, `&mut`, or `*` so `object` matches the signature of
+> the method. In other words, the following are the same:
+>
+> <!-- CAN'T EXTRACT SEE BUG https://github.com/rust-lang/mdBook/issues/1127 --
+> ```rust
+> # #[derive(Debug,Copy,Clone)]
+> # struct Point {
+> #     x: f64,
+> #     y: f64,
+> # }
+> #
+> # impl Point {
+> #    fn distance(&self, other: &Point) -> f64 {
+> #        let x_squared = f64::powi(other.x - self.x, 2);
+> #        let y_squared = f64::powi(other.y - self.y, 2);
+> #
+> #        f64::sqrt(x_squared + y_squared)
+> #    }
+> # }
+> # let p1 = Point { x: 0.0, y: 0.0 };
+> # let p2 = Point { x: 5.0, y: 6.5 };
+> p1.distance(&p2);
+> (&p1).distance(&p2);
+> ```
+>
+> The first one looks much cleaner. This automatic referencing behavior works
+> because methods have a clear receiver—the type of `self`. Given the receiver
+> and name of a method, Rust can figure out definitively whether the method is
+> reading (`&self`), mutating (`&mut self`), or consuming (`self`). The fact
+> that Rust makes borrowing implicit for method receivers is a big part of
+> making ownership ergonomic in practice.
 -->
 <blockquote>
 <h3 id="-演算子はどこに行ったの"><a class="header" href="#-演算子はどこに行ったの"><code>-&gt;</code>演算子はどこに行ったの？</a></h3>
@@ -8847,6 +9206,7 @@ making ownership ergonomic in practice.
 <p>動作方法はこうです: <code>object.something()</code>とメソッドを呼び出すと、
 コンパイラは<code>object</code>がメソッドのシグニチャと合致するように、自動で<code>&amp;</code>か<code>&amp;mut</code>、<code>*</code>を付与するのです。
 要するに、以下のコードは同じものです:</p>
+<!-- CAN'T EXTRACT SEE BUG https://github.com/rust-lang/mdBook/issues/1127 -->
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">#[derive(Debug,Copy,Clone)]
@@ -8879,26 +9239,33 @@ making ownership ergonomic in practice.
 <h3 id="より引数の多いメソッド"><a class="header" href="#より引数の多いメソッド">より引数の多いメソッド</a></h3>
 <!--
 Let’s practice using methods by implementing a second method on the `Rectangle`
-struct. This time, we want an instance of `Rectangle` to take another instance
+struct. This time we want an instance of `Rectangle` to take another instance
 of `Rectangle` and return `true` if the second `Rectangle` can fit completely
-within `self`; otherwise it should return `false`. That is, we want to be able
-to write the program shown in Listing 5-14, once we’ve defined the `can_hold`
-method.
+within `self` (the first `Rectangle`); otherwise, it should return `false`.
+That is, once we’ve defined the `can_hold` method, we want to be able to write
+the program shown in Listing 5-14.
 -->
-<p><code>Rectangle</code>構造体に2番目のメソッドを実装して、メソッドを使う鍛錬をしましょう。今回は、<code>Rectangle</code>のインスタンスに、
-別の<code>Rectangle</code>のインスタンスを取らせ、2番目の<code>Rectangle</code>が<code>self</code>に完全にはめ込まれたら、<code>true</code>を返すようにしたいのです;
-そうでなければ、<code>false</code>を返すべきです。つまり、一旦<code>can_hold</code>メソッドを定義したら、
-リスト5-14のようなプログラムを書けるようになりたいのです。</p>
+<p><code>Rectangle</code>構造体に2番目のメソッドを実装して、メソッドを使う練習をしましょう。
+今回は<code>Rectangle</code>のインスタンスに別の<code>Rectangle</code>のインスタンスを受け取らせ、2番目の<code>Rectangle</code>が<code>self</code>（1番目の<code>Rectangle</code>）に完全に収まるなら、<code>true</code>を返すようにしたいとしましょう;
+そうでなければ、<code>false</code>を返すべきです。つまり、一旦<code>can_hold</code>メソッドを定義したら、リスト5-14のようなプログラムを書けるようにしたいのです。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><code class="language-rust ignore">fn main() {
-    let rect1 = Rectangle { width: 30, height: 50 };
-    let rect2 = Rectangle { width: 10, height: 40 };
-    let rect3 = Rectangle { width: 60, height: 45 };
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+    let rect2 = Rectangle {
+        width: 10,
+        height: 40,
+    };
+    let rect3 = Rectangle {
+        width: 60,
+        height: 45,
+    };
 
-    // rect1にrect2ははまり込む？
     println!(&quot;Can rect1 hold rect2? {}&quot;, rect1.can_hold(&amp;rect2));
     println!(&quot;Can rect1 hold rect3? {}&quot;, rect1.can_hold(&amp;rect3));
 }</code></pre>
@@ -8908,11 +9275,11 @@ method</span>
 -->
 <p><span class="caption">リスト5-14: まだ書いていない<code>can_hold</code>メソッドを使用する</span></p>
 <!--
-And the expected output would look like the following, because both dimensions
-of `rect2` are smaller than the dimensions of `rect1` but `rect3` is wider than
+The expected output would look like the following because both dimensions of
+`rect2` are smaller than the dimensions of `rect1`, but `rect3` is wider than
 `rect1`:
 -->
-<p>そして、予期される出力は以下のようになります。なぜなら、<code>rect2</code>の各寸法は<code>rect1</code>よりも小さいものの、
+<p>予期される出力は以下のようになります。なぜなら、<code>rect2</code>の各寸法は<code>rect1</code>よりも小さいものの、
 <code>rect3</code>は<code>rect1</code>より幅が広いからです:</p>
 <pre><code class="language-text">Can rect1 hold rect2? true
 Can rect1 hold rect3? false
@@ -8928,7 +9295,7 @@ read `rect2` (rather than write, which would mean we’d need a mutable borrow),
 and we want `main` to retain ownership of `rect2` so we can use it again after
 calling the `can_hold` method. The return value of `can_hold` will be a
 Boolean, and the implementation will check whether the width and height of
-`self` are both greater than the width and height of the other `Rectangle`,
+`self` are greater than the width and height of the other `Rectangle`,
 respectively. Let’s add the new `can_hold` method to the `impl` block from
 Listing 5-13, shown in Listing 5-15.
 -->
@@ -8945,9 +9312,7 @@ Listing 5-13, shown in Listing 5-15.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">#[derive(Debug)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#[derive(Debug)]
 </span><span class="boring">struct Rectangle {
 </span><span class="boring">    width: u32,
 </span><span class="boring">    height: u32,
@@ -8962,7 +9327,24 @@ Listing 5-13, shown in Listing 5-15.
         self.width &gt; other.width &amp;&amp; self.height &gt; other.height
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let rect1 = Rectangle {
+</span><span class="boring">        width: 30,
+</span><span class="boring">        height: 50,
+</span><span class="boring">    };
+</span><span class="boring">    let rect2 = Rectangle {
+</span><span class="boring">        width: 10,
+</span><span class="boring">        height: 40,
+</span><span class="boring">    };
+</span><span class="boring">    let rect3 = Rectangle {
+</span><span class="boring">        width: 60,
+</span><span class="boring">        height: 45,
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    println!(&quot;Can rect1 hold rect2? {}&quot;, rect1.can_hold(&amp;rect2));
+</span><span class="boring">    println!(&quot;Can rect1 hold rect3? {}&quot;, rect1.can_hold(&amp;rect3));
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 5-15: Implementing the `can_hold` method on
 `Rectangle` that takes another `Rectangle` instance as a parameter</span>
@@ -8983,67 +9365,79 @@ parameters in functions.
 -->
 <h3 id="関連関数"><a class="header" href="#関連関数">関連関数</a></h3>
 <!--
-Another useful feature of `impl` blocks is that we’re allowed to define
-functions within `impl` blocks that *don’t* take `self` as a parameter. These
-are called *associated functions* because they’re associated with the struct.
-They’re still functions, not methods, because they don’t have an instance of
-the struct to work with. You’ve already used the `String::from` associated
-function.
+All functions defined within an `impl` block are called *associated functions*
+because they’re associated with the type named after the `impl`. We can define
+associated functions that don’t have `self` as their first parameter (and thus
+are not methods) because they don’t need an instance of the type to work with.
+We’ve already used one function like this: the `String::from` function that’s
+defined on the `String` type.
 -->
-<p><code>impl</code>ブロックの別の有益な機能は、<code>impl</code>ブロック内に<code>self</code>を引数に取ら<em>ない</em>関数を定義できることです。
-これは、構造体に関連付けられているので、<em>関連関数</em>と呼ばれます。それでも、関連関数は関数であり、メソッドではありません。
-というのも、対象となる構造体のインスタンスが存在しないからです。もう<code>String::from</code>という関連関数を使用したことがありますね。</p>
+<p><code>impl</code>ブロック内で定義されたすべての関数は、<code>impl</code>の後に書かれた型に関連付けられているので、<em>関連関数</em>と呼ばれます。
+対象の型のインスタンスを必要としないために、<code>self</code>を第1引数として持たない（つまりメソッドではない）関連関数を定義することもできます。
+このような関数は、すでにひとつ使用しています: <code>String::from</code>関数は<code>String</code>型の上に定義された関数です。</p>
 <!--
-Associated functions are often used for constructors that will return a new
-instance of the struct. For example, we could provide an associated function
-that would have one dimension parameter and use that as both width and height,
-thus making it easier to create a square `Rectangle` rather than having to
-specify the same value twice:
+Associated functions that aren’t methods are often used for constructors that
+will return a new instance of the struct. These are often called `new`, but
+`new` isn’t a special name and isn’t built into the language. For example, we
+could choose to provide an associated function named `square` that would have
+one dimension parameter and use that as both width and height, thus making it
+easier to create a square `Rectangle` rather than having to specify the same
+value twice:
 -->
-<p>関連関数は、構造体の新規インスタンスを返すコンストラクタによく使用されます。例えば、一つの寸法を引数に取り、
-長さと幅両方に使用する関連関数を提供することができ、その結果、同じ値を2回指定する必要なく、
-正方形の<code>Rectangle</code>を生成しやすくすることができます。</p>
+<p>メソッドでない関連関数は、構造体の新規インスタンスを返すコンストラクタによく使用されます。
+これらにはしばしば<code>new</code>という名前が付けられますが、<code>new</code>は特別な名前ではなく、言語に組み込まれたものでもありません。
+例えば、一つの寸法を引数に取り、それを高さと幅の両方として使用する関連関数<code>square</code>を提供してもよいでしょう。
+そうすれば同じ値を2回指定する必要なく、正方形の<code>Rectangle</code>を生成しやすくすることができます。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">#[derive(Debug)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#[derive(Debug)]
 </span><span class="boring">struct Rectangle {
 </span><span class="boring">    width: u32,
 </span><span class="boring">    height: u32,
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Rectangle {
-    fn square(size: u32) -&gt; Rectangle {
-        Rectangle { width: size, height: size }
+    fn square(size: u32) -&gt; Self {
+        Self {
+            width: size,
+            height: size,
+        }
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let sq = Rectangle::square(3);
+</span><span class="boring">}</span></code></pre></pre>
+<!--
+The `Self` keywords in the return type and in the body of the function are
+aliases for the type that appears after the `impl` keyword, which in this case
+is `Rectangle`.
+-->
+<p>戻り値型と関数本体内のの<code>Self</code> キーワードは<code>impl</code> キーワードの後に現れる型に対するエイリアスで、今回の場合は<code>Rectangle</code>です。</p>
 <!--
 To call this associated function, we use the `::` syntax with the struct name;
 `let sq = Rectangle::square(3);` is an example. This function is namespaced by
 the struct: the `::` syntax is used for both associated functions and
-namespaces created by modules. We’ll discuss modules in Chapter 7.
+namespaces created by modules. We’ll discuss modules in [Chapter
+7][modules].
 -->
 <p>この関連関数を呼び出すために、構造体名と一緒に<code>::</code>記法を使用します; 一例は<code>let sq = Rectangle::square(3);</code>です。
 この関数は、構造体によって名前空間分けされています: <code>::</code>という記法は、関連関数とモジュールによって作り出される名前空間両方に使用されます。
-モジュールについては第7章で議論します。</p>
+モジュールについては<a href="ch07-02-defining-modules-to-control-scope-and-privacy.html">第7章</a>で議論します。</p>
 <!--
 ### Multiple `impl` Blocks
 -->
 <h3 id="複数のimplブロック"><a class="header" href="#複数のimplブロック">複数の<code>impl</code>ブロック</a></h3>
 <!--
 Each struct is allowed to have multiple `impl` blocks. For example, Listing
-5-15 is equivalent to the code shown in Listing 5-16, which has each method
-in its own `impl` block.
+5-15 is equivalent to the code shown in Listing 5-16, which has each method in
+its own `impl` block.
 -->
 <p>各構造体には、複数の<code>impl</code>ブロックを存在させることができます。例えば、リスト5-15はリスト5-16に示したコードと等価で、
 リスト5-16では、各メソッドごとに<code>impl</code>ブロックを用意しています。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">#[derive(Debug)]
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#[derive(Debug)]
 </span><span class="boring">struct Rectangle {
 </span><span class="boring">    width: u32,
 </span><span class="boring">    height: u32,
@@ -9060,7 +9454,24 @@ impl Rectangle {
         self.width &gt; other.width &amp;&amp; self.height &gt; other.height
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let rect1 = Rectangle {
+</span><span class="boring">        width: 30,
+</span><span class="boring">        height: 50,
+</span><span class="boring">    };
+</span><span class="boring">    let rect2 = Rectangle {
+</span><span class="boring">        width: 10,
+</span><span class="boring">        height: 40,
+</span><span class="boring">    };
+</span><span class="boring">    let rect3 = Rectangle {
+</span><span class="boring">        width: 60,
+</span><span class="boring">        height: 45,
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    println!(&quot;Can rect1 hold rect2? {}&quot;, rect1.can_hold(&amp;rect2));
+</span><span class="boring">    println!(&quot;Can rect1 hold rect3? {}&quot;, rect1.can_hold(&amp;rect3));
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 5-16: Rewriting Listing 5-15 using multiple `impl`
 blocks</span>
@@ -9068,7 +9479,7 @@ blocks</span>
 <p><span class="caption">リスト5-16: 複数の<code>impl</code>ブロックを使用してリスト5-15を書き直す</span></p>
 <!--
 There’s no reason to separate these methods into multiple `impl` blocks here,
-but this is valid syntax. We'll see a case in which multiple `impl` blocks are
+but this is valid syntax. We’ll see a case in which multiple `impl` blocks are
 useful in Chapter 10, where we discuss generic types and traits.
 -->
 <p>ここでこれらのメソッドを個々の<code>impl</code>ブロックに分ける理由はないのですが、合法な書き方です。
@@ -9078,23 +9489,28 @@ useful in Chapter 10, where we discuss generic types and traits.
 -->
 <h2 id="まとめ-4"><a class="header" href="#まとめ-4">まとめ</a></h2>
 <!--
-Structs let us create custom types that are meaningful for your domain. By
-using structs, we can keep associated pieces of data connected to each other
-and name each piece to make our code clear. Methods let us specify the
-behavior that instances of our structs have, and associated functions let you
-namespace functionality that is particular to our struct without having an
-instance available.
+Structs let you create custom types that are meaningful for your domain. By
+using structs, you can keep associated pieces of data connected to each other
+and name each piece to make your code clear. In `impl` blocks, you can define
+functions that are associated with your type, and methods are a kind of
+associated function that let you specify the behavior that instances of your
+structs have.
 -->
-<p>構造体により、自分の領域で意味のある独自の型を作成することができます。構造体を使用することで、
+<p>構造体により、ドメインにとって意味のある独自の型を作成することができます。構造体を使用することで、
 関連のあるデータ片を相互に結合させたままにし、各部品に名前を付け、コードを明確にすることができます。
-メソッドにより、構造体のインスタンスが行う動作を指定することができ、関連関数により、
-構造体に特有の機能をインスタンスを利用することなく、名前空間分けすることができます。</p>
+<code>impl</code>ブロック内では型に関連付けられた関数を定義することができ、メソッドは構造体のインスタンスが持つ振る舞いを規定することができる関連関数の一種です。</p>
 <!--
-But structs aren’t the only way we can create custom types: let’s turn to
-Rust’s enum feature to add another tool to our toolbox.
+But structs aren’t the only way you can create custom types: let’s turn to
+Rust’s enum feature to add another tool to your toolbox.
 -->
 <p>しかし、構造体だけが独自の型を作成する手段ではありません: Rustのenum機能に目を向けて、
 別の道具を道具箱に追加しましょう。</p>
+<!--
+[enums]: ch06-00-enums.html
+[trait-objects]: ch17-02-trait-objects.md
+[public]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#exposing-paths-with-the-pub-keyword
+[modules]: ch07-02-defining-modules-to-control-scope-and-privacy.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Enums and Pattern Matching
 -->
