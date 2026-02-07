@@ -12854,11 +12854,11 @@ collections that are used very often in Rust programs:
 自分の現在の状況に最適なものを選び取るスキルは、時間とともに育っていきます。この章では、
 Rustのプログラムにおいて、非常に頻繁に使用される3つのコレクションについて議論しましょう。</p>
 <!--
-* A *vector* allows us to store a variable number of values next to each other.
+* A *vector* allows you to store a variable number of values next to each other.
 * A *string* is a collection of characters. We’ve mentioned the `String` type
-previously, but in this chapter we’ll talk about it in depth.
-* A *hash map* allows us to associate a value with a particular key. It’s a
-particular implementation of the more general data structure called a *map*.
+  previously, but in this chapter we’ll talk about it in depth.
+* A *hash map* allows you to associate a value with a particular key. It’s a
+  particular implementation of the more general data structure called a *map*.
 -->
 <ul>
 <li><em>ベクタ型</em>は、可変長の値を並べて保持できる。</li>
@@ -12889,20 +12889,19 @@ puts all the values next to each other in memory. Vectors can only store values
 of the same type. They are useful when you have a list of items, such as the
 lines of text in a file or the prices of items in a shopping cart.
 -->
-<p>最初に見るコレクション型は<code>Vec&lt;T&gt;</code>であり、これは<em>ベクタ</em>としても知られています。
-ベクタは単体のデータ構造でありながら複数の値を保持でき、それらの値をメモリ上に隣り合わせに並べます。
-ベクタには同じ型の値しか保持できません。
-要素のリストがある場合にベクタは有用です。
-例えば、テキストファイルの各行とか、ショッピングカートのアイテムの価格などです。</p>
+<p>最初に見るコレクション型は<code>Vec&lt;T&gt;</code>です。<em>ベクタ</em>とも呼ばれます。
+ベクタを使用することで、複数の値をメモリ上で互いに隣り合うように単一のデータ構造に保持することができます。
+ベクタは同じ型の値のみ保持することができます。
+テキストファイルの各行や、ショッピングカートのアイテムの価格などのような、要素のリストがある場合にベクタは有用です。</p>
 <!--
 ### Creating a New Vector
 -->
 <h3 id="新しいベクタを生成する"><a class="header" href="#新しいベクタを生成する">新しいベクタを生成する</a></h3>
 <!--
-To create a new, empty vector, we can call the `Vec::new` function, as shown in
+To create a new empty vector, we call the `Vec::new` function, as shown in
 Listing 8-1.
 -->
-<p>空のベクタを新たに作るには、リスト8-1に示すように<code>Vec::new</code>関数を呼びます。</p>
+<p>空のベクタを新たに作成するには、リスト8-1に示すように<code>Vec::new</code>関数を呼びます。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
 </span>    let v: Vec&lt;i32&gt; = Vec::new();
 <span class="boring">}</span></code></pre></pre>
@@ -12910,40 +12909,38 @@ Listing 8-1.
 <span class="caption">Listing 8-1: Creating a new, empty vector to hold values
 of type `i32`</span>
 -->
-<p><span class="caption">リスト8-1：新しい空のベクタを生成して<code>i32</code>型の値を保持する</span></p>
+<p><span class="caption">リスト8-1：<code>i32</code>型の値を保持する新しい空のベクタを作成する</span></p>
 <!--
 Note that we added a type annotation here. Because we aren’t inserting any
 values into this vector, Rust doesn’t know what kind of elements we intend to
 store. This is an important point. Vectors are implemented using generics;
 we’ll cover how to use generics with your own types in Chapter 10. For now,
-know that the `Vec<T>` type provided by the standard library can hold any type,
-and when a specific vector holds a specific type, the type is specified within
+know that the `Vec<T>` type provided by the standard library can hold any type.
+When we create a vector to hold a specific type, we can specify the type within
 angle brackets. In Listing 8-1, we’ve told Rust that the `Vec<T>` in `v` will
 hold elements of the `i32` type.
 -->
-<p>ここで、型注釈を付けていることに注目してください。
-なぜなら、このベクタに対して何も値を挿入していないので、コンパイラには私たちがどんなデータを保持させるつもりか推測できないからです。
+<p>ここで型注釈を付けていることに注目してください。
+このベクタには何も値を挿入していないので、コンパイラには私たちがどんなデータを保持させるつもりか分かりません。
 これは重要な点です。
-ベクタはジェネリクスを使用して実装されています。
-あなた自身の型でどうジェネリクスを使用するかついては第10章で解説します。
-現時点では標準ライブラリで提供される<code>Vec&lt;T&gt;</code>型は、どんな型でも保持でき、ある特定のベクタがある型を保持するとき、その型は山かっこ内に指定されることを知っておいてください。
-リスト8-1では、コンパイラに<code>v</code>の<code>Vec&lt;T&gt;</code>は<code>i32</code>型の要素を保持すると指示しました。</p>
+ベクタはジェネリクスを使用して実装されています; ジェネリクスを使用する自身の型をどう使用するかついては第10章で解説します。
+今のところは、標準ライブラリで提供される<code>Vec&lt;T&gt;</code>型は、どんな型でも保持できると理解しておいてください。
+特定の型を保持するベクタを作成するときには、その型を山かっこ内に指定すればよいです。
+リスト8-1では、コンパイラに<code>v</code>の<code>Vec&lt;T&gt;</code>は<code>i32</code>型の要素を保持すると指示していたのです。</p>
 <!--
-In more realistic code, Rust can often infer the type of value you want to
-store once you insert values, so you rarely need to do this type annotation.
-It’s more common to create a `Vec<T>` that has initial values, and Rust
-provides the `vec!` macro for convenience. The macro will create a new vector
-that holds the values you give it. Listing 8-2 creates a new `Vec<i32>` that
-holds the values `1`, `2`, and `3`. The integer type is `i32` because that’s
-the default integer type, as we discussed in the [“Data Types”][data-types]
-section of Chapter 3.
+More often, you’ll create a `Vec<T>` with initial values and Rust will infer
+the type of value you want to store, so you rarely need to do this type
+annotation. Rust conveniently provides the `vec!` macro, which will create a
+new vector that holds the values you give it. Listing 8-2 creates a new
+`Vec<i32>` that holds the values `1`, `2`, and `3`. The integer type is `i32`
+because that’s the default integer type, as we discussed in the [“Data
+Types”][data-types] section of Chapter 3.
 -->
-<p>いったん値を挿入すると、多くの場合、コンパイラは保持させたい値の型を推論できるようになります。
-ですから、より現実的なコードでは、型注釈を付ける必要はあまりないでしょう。
-また、初期値を持つ<code>Vec&lt;T&gt;</code>を生成する方が一般的ですし、Rustには<code>vec!</code>という便利なマクロも用意されています。
-このマクロは与えた値を保持する新しいベクタを生成します。
-リスト8-2では、<code>1</code>、<code>2</code>、<code>3</code>という値を持つ新しい<code>Vec&lt;i32&gt;</code>を生成しています。
-整数型を<code>i32</code>にしているのは、3章の<a href="ch03-02-data-types.html#%E3%83%87%E3%83%BC%E3%82%BF%E5%9E%8B">「データ型」</a>節で学んだように、これが標準の整数型だからです。</p>
+<p><code>Vec&lt;T&gt;</code>を作成する場合は初期値を持たせることのほうが多いでしょう。
+その場合コンパイラは保持したい値の型を推論するでしょうから、このように型注釈を付ける必要はほとんどありません。
+Rustには<code>vec!</code>という便利なマクロが用意されていて、これは与えた値を保持する新しいベクタを作成します。
+リスト8-2では、<code>1</code>、<code>2</code>、<code>3</code>という値を持つ新しい<code>Vec&lt;i32&gt;</code>を作成しています。
+整数の型が<code>i32</code>になっているのは、3章の<a href="ch03-02-data-types.html#%E3%83%87%E3%83%BC%E3%82%BF%E5%9E%8B">「データ型」</a>節で学んだように、これがデフォルトの整数型だからです。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
 </span>    let v = vec![1, 2, 3];
 <span class="boring">}</span></code></pre></pre>
@@ -12951,7 +12948,7 @@ section of Chapter 3.
 <span class="caption">Listing 8-2: Creating a new vector containing
 values</span>
 -->
-<p><span class="caption">リスト8-2: 値を含む新しいベクタを生成する</span></p>
+<p><span class="caption">リスト8-2: 値を含む新しいベクタを作成する</span></p>
 <!--
 Because we’ve given initial `i32` values, Rust can infer that the type of `v`
 is `Vec<i32>`, and the type annotation isn’t necessary. Next, we’ll look at how
@@ -12967,7 +12964,7 @@ to modify a vector.
 To create a vector and then add elements to it, we can use the `push` method,
 as shown in Listing 8-3.
 -->
-<p>ベクタを生成し、それから要素を追加するには、リスト8-3に示すように<code>push</code>メソッドを使います。</p>
+<p>ベクタを作成し、それから要素を追加するには、リスト8-3に示すように<code>push</code>メソッドを使います。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
 </span>    let mut v = Vec::new();
 
@@ -12990,94 +12987,62 @@ we don’t need the `Vec<i32>` annotation.
 <p>第3章で説明したとおり、どんな変数でも、その値を変更したかったら<code>mut</code>キーワードで可変にする必要があります。
 中に配置する数値は全て<code>i32</code>型であり、Rustはこのことをデータから推論するので、<code>Vec&lt;i32&gt;</code>という注釈は不要です。</p>
 <!--
-### Dropping a Vector Drops Its Elements
--->
-<h3 id="ベクタをドロップすれば要素もドロップする"><a class="header" href="#ベクタをドロップすれば要素もドロップする">ベクタをドロップすれば、要素もドロップする</a></h3>
-<!--
-Like any other `struct`, a vector is freed when it goes out of scope, as
-annotated in Listing 8-4.
--->
-<p>他のあらゆる<code>struct</code>（構造体）と同様に、ベクタもスコープを抜ければ解放されます。
-その様子をリスト8-4に示します。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
-</span>    {
-        let v = vec![1, 2, 3, 4];
-
-        // vで作業をする
-    } // &lt;- vはここでスコープを抜け、解放される
-<span class="boring">}</span></code></pre></pre>
-<!--
-<span class="caption">Listing 8-4: Showing where the vector and its elements
-are dropped</span>
--->
-<p><span class="caption">リスト8-4：ベクタとその要素がドロップされる箇所を示す</span></p>
-<!--
-When the vector gets dropped, all of its contents are also dropped, meaning
-those integers it holds will be cleaned up. This may seem like a
-straightforward point but can get a bit more complicated when you start to
-introduce references to the elements of the vector. Let’s tackle that next!
--->
-<p>ベクタがドロップされると、その中身もドロップされます。
-つまり、保持されていた整数値が片付けられるということです。
-これは一見単純そうですが、ベクタの要素に対する参照を使い始めると少し複雑になり得ます。
-次はそれに挑戦しましょう！</p>
-<!--
 ### Reading Elements of Vectors
 -->
 <h3 id="ベクタの要素を読む"><a class="header" href="#ベクタの要素を読む">ベクタの要素を読む</a></h3>
 <!--
-Now that you know how to create, update, and destroy vectors, knowing how to
-read their contents is a good next step. There are two ways to reference a
-value stored in a vector. In the examples, we’ve annotated the types of the
-values that are returned from these functions for extra clarity.
+There are two ways to reference a value stored in a vector: via indexing or
+using the `get` method. In the following examples, we’ve annotated the types of
+the values that are returned from these functions for extra clarity.
 -->
-<p>ベクタを生成し、更新し、破棄する方法がわかったので、次のステップでは中身を読む方法について学ぶのが良いでしょう。
-ベクタに保持された値を参照する方法は2つあります。
+<p>ベクタに保持された値を参照する方法は2つあります: 添え字を使用する方法と、<code>get</code>メソッドを使用する方法です。
 これから示す例では、理解を助けるために、それらの関数からの戻り値型を注釈しています。</p>
 <!--
-Listing 8-5 shows both methods of accessing a value in a vector, either with
-indexing syntax or the `get` method.
+Listing 8-4 shows both methods of accessing a value in a vector, with indexing
+syntax and the `get` method.
 -->
-<p>リスト8-5はベクタの値にアクセスする両方の方法として、添え字記法と<code>get</code>メソッドが示されています。</p>
+<p>リスト8-4はベクタの値にアクセスする両方の方法として、添え字記法と<code>get</code>メソッドが示されています。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
 </span>    let v = vec![1, 2, 3, 4, 5];
 
     let third: &amp;i32 = &amp;v[2];
-    println!(&quot;The third element is {}&quot;, third);
+    //       &quot;3つ目の要素は{third}です&quot;
+    println!(&quot;The third element is {third}&quot;);
 
-    match v.get(2) {
-        //                      &quot;3つ目の要素は{}です&quot;
-        Some(third) =&gt; println!(&quot;The third element is {}&quot;, third),
+    let third: Option&lt;&amp;i32&gt; = v.get(2);
+    match third {
+        //                      &quot;3つ目の要素は{third}です&quot;
+        Some(third) =&gt; println!(&quot;The third element is {third}&quot;),
         //               &quot;3つ目の要素はありません。&quot;
         None =&gt; println!(&quot;There is no third element.&quot;),
     }
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-5: Using indexing syntax or the `get` method to
+<span class="caption">Listing 8-4: Using indexing syntax or the `get` method to
 access an item in a vector</span>
 -->
-<p><span class="caption">リスト8-5：添え字記法か<code>get</code>メソッドを使用してベクタの要素にアクセスする</span></p>
+<p><span class="caption">リスト8-4：添え字記法か<code>get</code>メソッドを使用してベクタの要素にアクセスする</span></p>
 <!--
-Note two details here. First, we use the index value of `2` to get the third
-element: vectors are indexed by number, starting at zero. Second, the two ways
-to get the third element are by using `&` and `[]`, which gives us a reference,
-or by using the `get` method with the index passed as an argument, which gives
-us an `Option<&T>`.
+Note a few details here. We use the index value of `2` to get the third element
+because vectors are indexed by number, starting at zero. Using `&` and `[]`
+gives us a reference to the element at the index value. When we use the `get`
+method with the index passed as an argument, we get an `Option<&T>` that we can
+use with `match`.
 -->
-<p>ここでは2つのことに注目してください。
-1つ目は、3番目の要素を得るのに<code>2</code>という添え字の値を使用していることです。
-ベクタは番号で索引化されますが、その番号は0から始まります。
-2つ目は、3番目の要素を得る2つの方法とは、<code>&amp;</code>と<code>[]</code>を使用して参照を得るものと、<code>get</code>メソッドに引数として添え字を渡して<code>Option&lt;&amp;T&gt;</code>を得るものだということです。</p>
+<p>ここでいくつか注意があります。
+ベクタは0から始まる番号で添え字アクセスされるので、3番目の要素を得るのに<code>2</code>という添え字の値を使用しています。
+<code>&amp;</code>と<code>[]</code>を使用することで、その添え字の値にある要素への参照が得られます。
+<code>get</code>メソッドに引数として添え字を渡して使用すると、<code>Option&lt;&amp;T&gt;</code>が得られ、これは<code>match</code>で使用することができます。</p>
 <!--
-Rust has two ways to reference an element so you can choose how the program
-behaves when you try to use an index value that the vector doesn’t have an
-element for. As an example, let’s see what a program will do if it has a vector
-that holds five elements and then tries to access an element at index 100, as
-shown in Listing 8-6.
+The reason Rust provides these two ways to reference an element is so you can
+choose how the program behaves when you try to use an index value outside the
+range of existing elements. As an example, let’s see what happens when we have
+a vector of five elements and then we try to access an element at index 100
+with each technique, as shown in Listing 8-5.
 -->
-<p>Rustのベクタには要素を参照する方法が2通りあるので、ベクタに含まれない要素の添え字を使おうとしたときのプログラムの振る舞いを選択できます。
-例として、ベクタに5つ要素があるとして、添え字100の要素にアクセスを試みた場合、プログラムがどうなるのか確認しましょう。
-リスト8-6に示します。</p>
+<p>Rustが要素を参照するためにこれらの2通りの方法を提供している理由は、存在する要素の範囲外の添え字の値を使おうとしたときのプログラムの振る舞いを選択できるようにするためです。
+例として、5要素のベクタがあるとして、それぞれの手法で添え字100の要素にアクセスを試みた場合、何が起こるのか確認しましょう。
+リスト8-5に示します。</p>
 <pre><pre class="playground"><code class="language-rust should_panic panics"><span class="boring">fn main() {
 </span>    let v = vec![1, 2, 3, 4, 5];
 
@@ -13085,10 +13050,10 @@ shown in Listing 8-6.
     let does_not_exist = v.get(100);
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-6: Attempting to access the element at index
+<span class="caption">Listing 8-5: Attempting to access the element at index
 100 in a vector containing five elements</span>
 -->
-<p><span class="caption">リスト8-6：5つの要素を含むベクタの添え字100の要素にアクセスしようとする</span></p>
+<p><span class="caption">リスト8-5：5つの要素を含むベクタの添え字100の要素にアクセスしようとする</span></p>
 <!--
 When we run this code, the first `[]` method will cause the program to panic
 because it references a nonexistent element. This method is best used when you
@@ -13101,13 +13066,14 @@ end of the vector.
 <!--
 When the `get` method is passed an index that is outside the vector, it returns
 `None` without panicking. You would use this method if accessing an element
-beyond the range of the vector happens occasionally under normal circumstances.
-Your code will then have logic to handle having either `Some(&element)` or
-`None`, as discussed in Chapter 6. For example, the index could be coming from
-a person entering a number. If they accidentally enter a number that’s too
-large and the program gets a `None` value, you could tell the user how many
-items are in the current vector and give them another chance to enter a valid
-value. That would be more user-friendly than crashing the program due to a typo!
+beyond the range of the vector may happen occasionally under normal
+circumstances. Your code will then have logic to handle having either
+`Some(&element)` or `None`, as discussed in Chapter 6. For example, the index
+could be coming from a person entering a number. If they accidentally enter a
+number that’s too large and the program gets a `None` value, you could tell the
+user how many items are in the current vector and give them another chance to
+enter a valid value. That would be more user-friendly than crashing the program
+due to a typo!
 -->
 <p><code>get</code>メソッドにベクタ外の添え字を渡すと、パニックすることなく<code>None</code>を返します。
 普通の状況でもベクタの範囲外にアクセスする可能性があるなら、このメソッドを使用することになるでしょう。
@@ -13120,15 +13086,16 @@ When the program has a valid reference, the borrow checker enforces the
 ownership and borrowing rules (covered in Chapter 4) to ensure this reference
 and any other references to the contents of the vector remain valid. Recall the
 rule that states you can’t have mutable and immutable references in the same
-scope. That rule applies in Listing 8-7, where we hold an immutable reference to
-the first element in a vector and try to add an element to the end, which won’t
-work if we also try to refer to that element later in the function:
+scope. That rule applies in Listing 8-6, where we hold an immutable reference
+to the first element in a vector and try to add an element to the end. This
+program won’t work if we also try to refer to that element later in the
+function:
 -->
 <p>プログラムに有効な参照がある場合、借用チェッカー (borrow checker) は、（第4章で解説しましたが）所有権と借用規則を強制し、ベクタの中身へのこの参照や他のいかなる参照も有効であり続けることを保証してくれます。
 同一スコープ上では、可変と不変な参照を同時には存在させられないというルールを思い出してください。
-このルールはリスト8-7でも適用されています。
-リスト8-7ではベクタの最初の要素への不変参照を保持しつつ、終端に要素を追加しようとしています。
-関数内のここ以降で、この要素（訳注：<code>first</code>のこと）を参照しようとすると失敗します。</p>
+このルールはリスト8-6でも適用されています。
+リスト8-6ではベクタの最初の要素への不変参照を保持しつつ、終端に要素を追加しようとしています。
+このプログラムは、関数内のここ以降で、この要素（訳注：<code>first</code>のこと）を参照しようとすると失敗します。</p>
 <pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
 </span>    let mut v = vec![1, 2, 3, 4, 5];
 
@@ -13136,13 +13103,14 @@ work if we also try to refer to that element later in the function:
 
     v.push(6);
 
-    println!(&quot;The first element is: {}&quot;, first);
+    //       &quot;最初の要素は: {first}&quot;
+    println!(&quot;The first element is: {first}&quot;);
 <span class="boring">}</span></code></pre>
 <!--
-<span class="caption">Listing 8-7: Attempting to add an element to a vector
+<span class="caption">Listing 8-6: Attempting to add an element to a vector
 while holding a reference to an item</span>
 -->
-<p><span class="caption">リスト8-7：要素への参照を保持しつつ、ベクタに要素を追加しようとする</span></p>
+<p><span class="caption">リスト8-6：要素への参照を保持しつつ、ベクタに要素を追加しようとする</span></p>
 <!--
 Compiling this code will result in this error:
 -->
@@ -13156,36 +13124,33 @@ error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immuta
 4 |     let first = &amp;v[0];
   |                  - immutable borrow occurs here
   |                   (不変借用はここで発生しています)
-5 | 
+5 |
 6 |     v.push(6);
   |     ^^^^^^^^^ mutable borrow occurs here
   |              (可変借用はここで発生しています)
-7 | 
-8 |     println!(&quot;The first element is: {}&quot;, first);
-  |                                          ----- immutable borrow later used here
-  |                                               (その後、不変借用はここで使われています)
-
-error: aborting due to previous error
+7 |
+8 |     println!(&quot;The first element is: {first}&quot;);
+  |                                     ------- immutable borrow later used here
+  |                                            (その後、不変借用はここで使われています)
 
 For more information about this error, try `rustc --explain E0502`.
-error: could not compile `collections`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `collections` (bin &quot;collections&quot;) due to 1 previous error
 </code></pre>
 <!--
-The code in Listing 8-7 might look like it should work: why should a reference
-to the first element care about what changes at the end of the vector? This
-error is due to the way vectors work: adding a new element onto the end of the
-vector might require allocating new memory and copying the old elements to the
-new space, if there isn’t enough room to put all the elements next to each
-other where the vector currently is. In that case, the reference to the first
-element would be pointing to deallocated memory. The borrowing rules prevent
-programs from ending up in that situation.
+The code in Listing 8-6 might look like it should work: why should a reference
+to the first element care about changes at the end of the vector? This error is
+due to the way vectors work: because vectors put the values next to each other
+in memory, adding a new element onto the end of the vector might require
+allocating new memory and copying the old elements to the new space, if there
+isn’t enough room to put all the elements next to each other where the vector
+is currently stored. In that case, the reference to the first element would be
+pointing to deallocated memory. The borrowing rules prevent programs from
+ending up in that situation.
 -->
-<p>リスト8-7のコードは、一見動きそうに見えるかもしれません。
+<p>リスト8-6のコードは、一見動きそうに見えるかもしれません。
 なぜ最初の要素への参照が、ベクタの終端への変更を気にかける必要があるのでしょうか？
-このエラーはベクタが動作するしくみによるものです。
-新たな要素をベクタの終端に追加するとき、いまベクタのある場所に全要素を隣り合わせに配置するだけのスペースがないなら、新しいメモリを割り当て、古い要素を新しいスペースにコピーする必要があります。
+このエラーはベクタが動作するしくみによるものです: 
+ベクタはメモリ上に値同士を隣り合うように配置するため、新たな要素をベクタの終端に追加するとき、いまベクタが置かれている場所に全要素を隣り合わせに配置するだけのスペースがないなら、新しいメモリを割り当て、古い要素を新しいスペースにコピーする必要があります。
 その場合、最初の要素を指す参照は、解放されたメモリを指すことになるでしょう。
 借用規則がそのような状況に陥らないよう防いでくれるのです。</p>
 <!--
@@ -13193,34 +13158,34 @@ programs from ending up in that situation.
 > Rustonomicon”][nomicon].
 -->
 <blockquote>
-<p>注釈: <code>Vec&lt;T&gt;</code>の実装に関する詳細については、<a href="../nomicon/vec.html">“The Rustonomicon”</a>を参照してください （訳注：日本語版は<a href="https://doc.rust-jp.rs/rust-nomicon-ja/vec.html">こちら</a>です）。</p>
+<p>注釈: <code>Vec&lt;T&gt;</code>の実装に関する詳細については、<a href="https://doc.rust-lang.org/nomicon/vec/vec.html">“The Rustonomicon”</a>を参照してください （訳注：日本語版は<a href="https://doc.rust-jp.rs/rust-nomicon-ja/vec.html">こちら</a>です）。</p>
 </blockquote>
 <!--
 ### Iterating over the Values in a Vector
 -->
 <h3 id="ベクタ内の値を順に処理する"><a class="header" href="#ベクタ内の値を順に処理する">ベクタ内の値を順に処理する</a></h3>
 <!--
-If we want to access each element in a vector in turn, we can iterate through
-all of the elements rather than use indices to access one at a time. Listing
-8-8 shows how to use a `for` loop to get immutable references to each element
-in a vector of `i32` values and print them.
+To access each element in a vector in turn, we would iterate through all of the
+elements rather than use indices to access one at a time. Listing 8-7 shows how
+to use a `for` loop to get immutable references to each element in a vector of
+`i32` values and print them.
 -->
-<p>ベクタの要素に順番にアクセスしたいなら、添え字で1要素ごとにアクセスするのではなく、全要素を走査することができます。
-リスト8-8で<code>for</code>ループを使い、<code>i32</code>のベクタの各要素に対する不変な参照を得て、それらを表示する方法を示します。</p>
+<p>ベクタの要素に順番にアクセスするには、添え字で1要素ごとにアクセスするのではなく、全要素を走査することになるでしょう。
+リスト8-7で<code>for</code>ループを使い、<code>i32</code>のベクタの各要素に対する不変な参照を得て、それらを表示する方法を示します。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
 </span>    let v = vec![100, 32, 57];
     for i in &amp;v {
-        println!(&quot;{}&quot;, i);
+        println!(&quot;{i}&quot;);
     }
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-8: Printing each element in a vector by
+<span class="caption">Listing 8-7: Printing each element in a vector by
 iterating over the elements using a `for` loop</span>
 -->
-<p><span class="caption">リスト8-8：<code>for</code>ループで要素を走査し、ベクタの各要素を表示する</span></p>
+<p><span class="caption">リスト8-7：<code>for</code>ループで要素を走査し、ベクタの各要素を表示する</span></p>
 <!--
 We can also iterate over mutable references to each element in a mutable vector
-in order to make changes to all the elements. The `for` loop in Listing 8-9
+in order to make changes to all the elements. The `for` loop in Listing 8-8
 will add `50` to each element.
 -->
 <p>また、全要素に変更を加えるために、可変なベクタの各要素への可変な参照を走査することもできます。
@@ -13232,48 +13197,58 @@ will add `50` to each element.
     }
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-9: Iterating over mutable references to
+<span class="caption">Listing 8-8: Iterating over mutable references to
 elements in a vector</span>
 -->
-<p><span class="caption">リスト8-9：ベクタの要素への可変な参照を走査する</span></p>
+<p><span class="caption">リスト8-8：ベクタの要素への可変な参照を走査する</span></p>
 <!--
 To change the value that the mutable reference refers to, we have to use the
-dereference operator (`*`) to get to the value in `i` before we can use the
-`+=` operator. We’ll talk more about the dereference operator in the
-[“Following the Pointer to the Value with the Dereference Operator”][deref]
+`*` dereference operator to get to the value in `i` before we can use the `+=`
+operator. We’ll talk more about the dereference operator in the [“Following the
+Pointer to the Value with the Dereference Operator”][deref]
 section of Chapter 15.
 -->
-<p>可変参照が参照している値を変更するには、<code>+=</code>演算子を使用する前に、参照外し演算子(<code>*</code>)を使用して<code>i</code>の値にたどり着かないといけません。
+<p>可変参照が参照している値を変更するには、<code>+=</code>演算子を使用する前に、<code>*</code>参照外し演算子を使用して<code>i</code>の値にたどり着かないといけません。
 参照外し演算子については、第15章の<a href="ch15-02-deref.html#%E5%8F%82%E7%85%A7%E5%A4%96%E3%81%97%E6%BC%94%E7%AE%97%E5%AD%90%E3%81%A7%E5%80%A4%E3%81%BE%E3%81%A7%E3%83%9D%E3%82%A4%E3%83%B3%E3%82%BF%E3%82%92%E8%BF%BD%E3%81%84%E3%81%8B%E3%81%91%E3%82%8B">「参照外し演算子で値までポインタを追いかける」</a>節でより詳しく扱います。</p>
+<!--
+Iterating over a vector, whether immutably or mutably, is safe because of the
+borrow checker's rules. If we attempted to insert or remove items in the `for`
+loop bodies in Listing 8-7 and Listing 8-8, we would get a compiler error
+similar to the one we got with the code in Listing 8-6. The reference to the
+vector that the `for` loop holds prevents simultaneous modification of the
+whole vector.
+-->
+<p>借用チェッカーの規則のおかげで、ベクタを走査するのは不変であっても可変であっても安全です。
+もしリスト8-7やリスト8-8の<code>for</code>ループ本体の中で要素を挿入または削除しようとすると、リスト8-6のコードで発生したのと同じようなコンパイルエラーになるでしょう。
+<code>for</code>ループがベクタへの参照をつかんでいるために、それと同時にベクタ全体の変更が起こらないようになっています。</p>
 <!--
 ### Using an Enum to Store Multiple Types
 -->
 <h3 id="enumを使って複数の型を保持する"><a class="header" href="#enumを使って複数の型を保持する">Enumを使って複数の型を保持する</a></h3>
 <!--
-At the beginning of this chapter, we said that vectors can only store values
-that are the same type. This can be inconvenient; there are definitely use
-cases for needing to store a list of items of different types. Fortunately, the
-variants of an enum are defined under the same enum type, so when we need to
-store elements of a different type in a vector, we can define and use an enum!
+Vectors can only store values that are the same type. This can be inconvenient;
+there are definitely use cases for needing to store a list of items of
+different types. Fortunately, the variants of an enum are defined under the
+same enum type, so when we need one type to represent elements of different
+types, we can define and use an enum!
 -->
-<p>この章の冒頭で、ベクタは同じ型の値しか保持できないと述べました。
-これは不便なこともあります。
+<p>ベクタは同じ型の値しか保持できません。これは不便なこともあります。
 異なる型の要素を保持する必要のあるユースケースは必ず存在します。
-幸運なことに、enumの列挙子は同じenumの型の中に定義されるので、ベクタに異なる型の要素を保持する必要が出たら、enumを定義して使用すればよいのです！</p>
+幸運なことに、enumの列挙子は同じenumの型の中に定義されるので、異なる型の要素を表現する単一の型が必要になったら、enumを定義して使用すればよいのです！</p>
 <!--
 For example, say we want to get values from a row in a spreadsheet in which
 some of the columns in the row contain integers, some floating-point numbers,
 and some strings. We can define an enum whose variants will hold the different
-value types, and then all the enum variants will be considered the same type:
-that of the enum. Then we can create a vector that holds that enum and so,
-ultimately, holds different types. We’ve demonstrated this in Listing 8-10.
+value types, and all the enum variants will be considered the same type: that
+of the enum. Then we can create a vector to hold that enum and so, ultimately,
+holds different types. We’ve demonstrated this in Listing 8-9.
 -->
 <p>例えば、スプレッドシートのある行から値を得ることを考えます。
 ここで、その行の中の列には、整数を含むもの、浮動小数点数を含むもの、文字列を含むものがあるとします。
 列挙子ごとに異なる値の型を保持するenumが定義できます。
 そして、このenumの列挙子は全て同じ型、つまりenumの型、と考えられるわけです。
-ですから、そのenumを保持するベクタを作成でき、結果的に異なる型を保持できるようになるわけです。
-リスト8-10でこれを実演しています。</p>
+ですから、そのenumを保持するためのベクタを作成でき、結果的に異なる型を保持できるようになるわけです。
+リスト8-9でこれを実演しています。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
 </span>    enum SpreadsheetCell {
         Int(i32),
@@ -13288,46 +13263,78 @@ ultimately, holds different types. We’ve demonstrated this in Listing 8-10.
     ];
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-10: Defining an `enum` to store values of
+<span class="caption">Listing 8-9: Defining an `enum` to store values of
 different types in one vector</span>
 -->
-<p><span class="caption">リスト8-10：<code>enum</code>を定義して、一つのベクタに異なる型の値を保持する</span></p>
+<p><span class="caption">リスト8-9：<code>enum</code>を定義して、一つのベクタに異なる型の値を保持する</span></p>
 <!--
 Rust needs to know what types will be in the vector at compile time so it knows
-exactly how much memory on the heap will be needed to store each element. A
-secondary advantage is that we can be explicit about what types are allowed in
-this vector. If Rust allowed a vector to hold any type, there would be a chance
-that one or more of the types would cause errors with the operations performed
-on the elements of the vector. Using an enum plus a `match` expression means
-that Rust will ensure at compile time that every possible case is handled, as
-discussed in Chapter 6.
+exactly how much memory on the heap will be needed to store each element. We
+must also be explicit about what types are allowed in this vector. If Rust
+allowed a vector to hold any type, there would be a chance that one or more of
+the types would cause errors with the operations performed on the elements of
+the vector. Using an enum plus a `match` expression means that Rust will ensure
+at compile time that every possible case is handled, as discussed in Chapter 6.
 -->
 <p>個々の要素を格納するのにヒープ上で必要となるメモリの量を正確に把握するめに、Rustコンパイラはコンパイル時にベクタに入る型を知る必要があります。
-また、このベクタではどんな型が許容されるのか明示できるという副次的な利点があります。
+また、このベクタではどんな型が許容されるのか明示しなくてはなりません。
 もしRustが、ベクタにどんな型でも保持できることを許していたら、ベクタの要素に対して行われる処理に対して、いくつかの型がエラーを引き起こすかもしれません。
 enumに加えて<code>match</code>式を使うことで、第6章で説明したとおり、あらゆるケースが処理できることを、Rustがコンパイル時に保証することになります。</p>
 <!--
-When you’re writing a program, if you don’t know the exhaustive set of types
-the program will get at runtime to store in a vector, the enum technique won’t
-work. Instead, you can use a trait object, which we’ll cover in Chapter 17.
+If you don’t know the exhaustive set of types a program will get at runtime to
+store in a vector, the enum technique won’t work. Instead, you can use a trait
+object, which we’ll cover in Chapter 17.
 -->
-<p>プログラムを書いている時点で、プログラムが実行時に取得し、ベクタに格納し得る全ての型を網羅できない場合には、このenumを使ったテクニックはうまくいかないでしょう。
+<p>プログラムが実行時に取得し、ベクタに格納し得る全ての型を網羅できない場合には、このenumを使ったテクニックはうまくいかないでしょう。
 代わりにトレイトオブジェクトを使用できます。
 こちらは第17章で取り上げます。</p>
 <!--
 Now that we’ve discussed some of the most common ways to use vectors, be sure
-to review [the API documentation][vec-api] for all the many useful methods defined on
-`Vec<T>` by the standard library. For example, in addition to `push`, a `pop`
-method removes and returns the last element. Let’s move on to the next
-collection type: `String`!
+to review [the API documentation][vec-api] for all the many
+useful methods defined on `Vec<T>` by the standard library. For example, in
+addition to `push`, a `pop` method removes and returns the last element.
 -->
 <p>これまでにベクタの代表的な使い方をいくつか紹介しました。
-標準ライブラリで<code>Vec&lt;T&gt;</code>に定義されている多くの有益なメソッドについて、<a href="../std/vec/struct.Vec.html">APIドキュメント</a>を必ず確認するようにしてください。
-例えば、<code>push</code>に加えて、<code>pop</code>というメソッドがあり、これは最後の要素を削除して返します。
-それでは次のコレクション型である<code>String</code>に移りましょう！</p>
+標準ライブラリで<code>Vec&lt;T&gt;</code>に定義されている多くの有益なメソッドについて、<a href="https://doc.rust-lang.org/std/vec/struct.Vec.html">APIドキュメント</a>を必ず確認するようにしてください。
+例えば、<code>push</code>に加えて、<code>pop</code>というメソッドがあり、これは最後の要素を削除して返します。</p>
+<!--
+### Dropping a Vector Drops Its Elements
+-->
+<h3 id="ベクタをドロップすれば要素もドロップする"><a class="header" href="#ベクタをドロップすれば要素もドロップする">ベクタをドロップすれば、要素もドロップする</a></h3>
+<!--
+Like any other `struct`, a vector is freed when it goes out of scope, as
+annotated in Listing 8-10.
+-->
+<p>他のあらゆる<code>struct</code>（構造体）と同様に、ベクタもスコープを抜ければ解放されます。
+その様子をリスト8-10に示します。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    {
+        let v = vec![1, 2, 3, 4];
+
+        // vで作業をする
+    } // &lt;- vはここでスコープを抜け、解放される
+<span class="boring">}</span></code></pre></pre>
+<!--
+<span class="caption">Listing 8-10: Showing where the vector and its elements
+are dropped</span>
+-->
+<p><span class="caption">リスト8-10：ベクタとその要素がドロップされる箇所を示す</span></p>
+<!--
+When the vector gets dropped, all of its contents are also dropped, meaning the
+integers it holds will be cleaned up. The borrow checker ensures that any
+references to contents of a vector are only used while the vector itself is
+valid.
+-->
+<p>ベクタがドロップされると、その中身もドロップされます。
+つまり、保持されていた整数値が片付けられるということです。
+借用チェッカーは、ベクタの内容へのいかなる参照も、ベクタ自体が有効な間のみ使用されることを保証します。</p>
+<!--
+Let’s move on to the next collection type: `String`!
+-->
+<p>それでは次のコレクション型である<code>String</code>に移りましょう！</p>
 <!--
 [data-types]: ch03-02-data-types.html#data-types
-[nomicon]: ../nomicon/vec.html
+[nomicon]: ../nomicon/vec/vec.html
 [vec-api]: ../std/vec/struct.Vec.html
 [deref]: ch15-02-deref.html#following-the-pointer-to-the-value-with-the-dereference-operator
 -->
@@ -13338,18 +13345,18 @@ collection type: `String`!
 <!--
 We talked about strings in Chapter 4, but we’ll look at them in more depth now.
 New Rustaceans commonly get stuck on strings for a combination of three
-concepts: Rust’s propensity for exposing possible errors, strings being a more
+reasons: Rust’s propensity for exposing possible errors, strings being a more
 complicated data structure than many programmers give them credit for, and
 UTF-8. These factors combine in a way that can seem difficult when you’re
 coming from other programming languages.
 -->
 <p>第4章で文字列について語りましたが、今度はより掘り下げていきましょう。新参者のRustaceanは、
-3つの概念の組み合わせにより、文字列でよく行き詰まります: Rustのありうるエラーを晒す性質、
+3つの理由の組み合わせにより、文字列でよく行き詰まります: Rustのありうるエラーを晒す性質、
 多くのプログラマが思っている以上に文字列が複雑なデータ構造であること、そしてUTF-8です。
 これらの要因が、他のプログラミング言語から移ってきた場合、一見困難に見えるように絡み合うわけです。</p>
 <!--
-It's useful to discuss strings in the context of collections because strings
-are implemented as a collection of bytes, plus some methods to provide useful
+We discuss strings in the context of collections because strings are
+implemented as a collection of bytes, plus some methods to provide useful
 functionality when those bytes are interpreted as text. In this section, we’ll
 talk about the operations on `String` that every collection type has, such as
 creating, updating, and reading. We’ll also discuss the ways in which `String`
@@ -13357,8 +13364,8 @@ is different from the other collections, namely how indexing into a `String` is
 complicated by the differences between how people and computers interpret
 `String` data.
 -->
-<p>コレクションの文脈で文字列を議論することは、有用なことです。なぜなら、文字列はテキストとして解釈された時に有用になる機能を提供するメソッドと、
-バイトのコレクションで実装されているからです。この節では、生成、更新、読み込みのような全コレクションが持つ<code>String</code>の処理について語ります。
+<p>文字列は、バイトのコレクションに、そのバイトをテキストとして解釈するときに便利な機能を提供するメソッドを足したものとして実装されているため、コレクションの文脈で文字列を議論していきます。
+この節では、生成、更新、読み込みのような全コレクションが持つ<code>String</code>の処理について語ります。
 また、<code>String</code>が他のコレクションと異なる点についても議論します。具体的には、人間とコンピュータが<code>String</code>データを解釈する方法の差異により、
 <code>String</code>に添え字アクセスする方法がどう複雑なのかということです。</p>
 <!--
@@ -13370,56 +13377,42 @@ We’ll first define what we mean by the term *string*. Rust has only one string
 type in the core language, which is the string slice `str` that is usually seen
 in its borrowed form `&str`. In Chapter 4, we talked about *string slices*,
 which are references to some UTF-8 encoded string data stored elsewhere. String
-literals, for example, are stored in the binary output of the program and are
-therefore string slices.
+literals, for example, are stored in the program’s binary and are therefore
+string slices.
 -->
 <p>まずは、<em>文字列</em>という用語の意味を定義しましょう。Rustには、言語の核として1種類しか文字列型が存在しません。
 文字列スライスの<code>str</code>で、通常借用された形態<code>&amp;str</code>で見かけます。第4章で、<em>文字列スライス</em>について語りました。
 これは、別の場所に格納されたUTF-8エンコードされた文字列データへの参照です。例えば、文字列リテラルは、
-プログラムのバイナリ出力に格納されるので、文字列スライスになります。</p>
+プログラムのバイナリに格納されるので、文字列スライスになります。</p>
 <!--
-The `String` type, which is provided in Rust’s standard library rather than
+The `String` type, which is provided by Rust’s standard library rather than
 coded into the core language, is a growable, mutable, owned, UTF-8 encoded
-string type. When Rustaceans refer to “strings” in Rust, they usually mean the
-`String` and the string slice `&str` types, not just one of those types.
-Although this section is largely about `String`, both types are used heavily in
-Rust's standard library, and both `String` and string slices are UTF-8 encoded.
+string type. When Rustaceans refer to “strings” in Rust, they might be
+referring to either the `String` or the string slice `&str` types, not just one
+of those types. Although this section is largely about `String`, both types are
+used heavily in Rust’s standard library, and both `String` and string slices
+are UTF-8 encoded.
 -->
-<p><code>String</code>型は、言語の核として組み込まれるのではなく、Rustの標準ライブラリで提供されますが、伸長可能、
-可変、所有権のあるUTF-8エンコードされた文字列型です。RustaceanがRustにおいて「文字列」を指したら、
-どちらかではなく、<code>String</code>と文字列スライスの<code>&amp;str</code>のことを通常意味します。この節は、大方、
+<p><code>String</code>型は、言語の核として組み込まれるのではなく、Rustの標準ライブラリによって提供されますが、伸長可能、
+可変、所有権のあるUTF-8エンコードされた文字列型です。RustaceanがRustにおいて「文字列」と言うとき、<code>String</code>型または文字列スライスの<code>&amp;str</code>型のいずれかを指しているかもしれません。この節は、大方、
 <code>String</code>についてですが、どちらの型もRustの標準ライブラリで重宝されており、
 どちらもUTF-8エンコードされています。</p>
-<!--
-Rust’s standard library also includes a number of other string types, such as
-`OsString`, `OsStr`, `CString`, and `CStr`. Library crates can provide even
-more options for storing string data. See how those names all end in `String`
-or `Str`? They refer to owned and borrowed variant, just like the `String` and
-`str` types you've seen previously. These string types can store text in
-different encodings or be represented in memory in a different way, for
-example. We won’t discuss these other string types in this chapter; see their
-API documentation for more about how to use them and when each is appropriate.
--->
-<p>また、Rustの標準ライブラリには、他の文字列型も含まれています。<code>OsString</code>、<code>OsStr</code>、<code>CString</code>、<code>CStr</code>などです。
-ライブラリクレートにより、文字列データを格納する選択肢はさらに増えます。
-それらの名前が全て<code>String</code>か<code>Str</code>で終わっているのがわかりますか？所有権ありと借用されたバージョンを指しているのです。
-ちょうど以前見かけた<code>String</code>と<code>&amp;str</code>のようですね。例えば、これらの文字列型は、異なるエンコード方法でテキストを格納していたり、
-メモリ上の表現が異なったりします。この章では、これらの他の種類の文字列については議論しません;
-使用方法やどれが最適かについては、APIドキュメントを参照してください。</p>
 <!--
 ### Creating a New String
 -->
 <h3 id="新規文字列を生成する"><a class="header" href="#新規文字列を生成する">新規文字列を生成する</a></h3>
 <!--
 Many of the same operations available with `Vec<T>` are available with `String`
-as well, starting with the `new` function to create a string, shown in Listing
-8-11.
+as well, because `String` is actually implemented as a wrapper around a vector
+of bytes with some extra guarantees, restrictions, and capabilities. An example
+of a function that works the same way with `Vec<T>` and `String` is the `new`
+function to create an instance, shown in Listing 8-11.
 -->
-<p><code>Vec&lt;T&gt;</code>で使用可能な処理の多くが<code>String</code>でも使用できます。文字列を生成する<code>new</code>関数から始めましょうか。
+<p><code>String</code>は実際のところ、いくつか追加の保障と制限と機能を持つバイトのベクタのラッパーとして実装されているので、<code>Vec&lt;T&gt;</code>で使用可能な操作の多くが<code>String</code>でも使用できます。
+<code>Vec&lt;T&gt;</code>と<code>String</code>で同様に機能する関数の例としては、それぞれのインスタンスを作成する<code>new</code>関数があります。
 リスト8-11に示したようにですね。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut s = String::new();
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let mut s = String::new();
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-11: Creating a new, empty `String`</span>
@@ -13436,14 +13429,13 @@ two examples.
 だいたい、文字列の初期値を決めるデータがあるでしょう。そのために、<code>to_string</code>メソッドを使用します。
 このメソッドは、文字列リテラルのように、<code>Display</code>トレイトを実装する型ならなんでも使用できます。
 リスト8-12に2例、示しています。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let data = &quot;initial contents&quot;;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let data = &quot;initial contents&quot;;
 
-let s = data.to_string();
+    let s = data.to_string();
 
-// the method also works on a literal directly:
-let s = &quot;initial contents&quot;.to_string();
+    // the method also works on a literal directly:
+    let s = &quot;initial contents&quot;.to_string();
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-12: Using the `to_string` method to create a
@@ -13461,9 +13453,8 @@ that uses `to_string`.
 -->
 <p>さらに、<code>String::from</code>関数を使っても、文字列リテラルから<code>String</code>を生成することができます。
 リスト8-13のコードは、<code>to_string</code>を使用するリスト8-12のコードと等価です。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let s = String::from(&quot;initial contents&quot;);
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let s = String::from(&quot;initial contents&quot;);
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-13: Using the `String::from` function to create
@@ -13474,30 +13465,30 @@ a `String` from a string literal</span>
 Because strings are used for so many things, we can use many different generic
 APIs for strings, providing us with a lot of options. Some of them can seem
 redundant, but they all have their place! In this case, `String::from` and
-`to_string` do the same thing, so which you choose is a matter of style.
+`to_string` do the same thing, so which you choose is a matter of style and
+readability.
 -->
 <p>文字列は、非常に多くのものに使用されるので、多くの異なる一般的なAPIを使用でき、たくさんの選択肢があるわけです。
 冗長に思われるものもありますが、適材適所です！今回の場合、<code>String::from</code>と<code>to_string</code>は全く同じことをします。
-従って、どちらを選ぶかは、スタイル次第です。</p>
+従って、どちらを選ぶかは、スタイルと可読性次第です。</p>
 <!--
 Remember that strings are UTF-8 encoded, so we can include any properly encoded
 data in them, as shown in Listing 8-14.
 -->
 <p>文字列はUTF-8エンコードされていることを覚えていますか？要するに文字列には、適切にエンコードされていればどんなものでも含めます。
 リスト8-14に示したように。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let hello = String::from(&quot;السلام عليكم&quot;);
-let hello = String::from(&quot;Dobrý den&quot;);
-let hello = String::from(&quot;Hello&quot;);
-let hello = String::from(&quot;שָׁלוֹם&quot;);
-let hello = String::from(&quot;नमस्ते&quot;);
-let hello = String::from(&quot;こんにちは&quot;);
-let hello = String::from(&quot;안녕하세요&quot;);
-let hello = String::from(&quot;你好&quot;);
-let hello = String::from(&quot;Olá&quot;);
-let hello = String::from(&quot;Здравствуйте&quot;);
-let hello = String::from(&quot;Hola&quot;);
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let hello = String::from(&quot;السلام عليكم&quot;);
+    let hello = String::from(&quot;Dobrý den&quot;);
+    let hello = String::from(&quot;Hello&quot;);
+    let hello = String::from(&quot;שָׁלוֹם&quot;);
+    let hello = String::from(&quot;नमस्ते&quot;);
+    let hello = String::from(&quot;こんにちは&quot;);
+    let hello = String::from(&quot;안녕하세요&quot;);
+    let hello = String::from(&quot;你好&quot;);
+    let hello = String::from(&quot;Olá&quot;);
+    let hello = String::from(&quot;Здравствуйте&quot;);
+    let hello = String::from(&quot;Hola&quot;);
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-14: Storing greetings in different languages in
@@ -13514,7 +13505,7 @@ All of these are valid `String` values.
 <h3 id="文字列を更新する"><a class="header" href="#文字列を更新する">文字列を更新する</a></h3>
 <!--
 A `String` can grow in size and its contents can change, just like the contents
-of a `Vec<T>`, if you push more data into it. In addition, we can conveniently
+of a `Vec<T>`, if you push more data into it. In addition, you can conveniently
 use the `+` operator or the `format!` macro to concatenate `String` values.
 -->
 <p><code>String</code>は、サイズを伸ばすことができ、<code>Vec&lt;T&gt;</code>の中身のように、追加のデータをプッシュすれば、中身も変化します。
@@ -13529,10 +13520,9 @@ as shown in Listing 8-15.
 -->
 <p><code>push_str</code>メソッドで文字列スライスを追記することで、<code>String</code>を伸ばすことができます。
 リスト8-15の通りです。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut s = String::from(&quot;foo&quot;);
-s.push_str(&quot;bar&quot;);
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let mut s = String::from(&quot;foo&quot;);
+    s.push_str(&quot;bar&quot;);
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-15: Appending a string slice to a `String`
@@ -13542,18 +13532,16 @@ using the `push_str` method</span>
 <!--
 After these two lines, `s` will contain `foobar`. The `push_str` method takes a
 string slice because we don’t necessarily want to take ownership of the
-parameter. For example, the code in Listing 8-16 shows that it would be
-unfortunate if we weren’t able to use `s2` after appending its contents to `s1`.
+parameter. For example, in the code in Listing 8-16, we want to be able to use
+`s2` after appending its contents to `s1`.
 -->
 <p>この2行の後、<code>s</code>は<code>foobar</code>を含むことになります。<code>push_str</code>メソッドは、必ずしも引数の所有権を得なくていいので、
-文字列スライスを取ります。例えば、リスト8-16のコードは、中身を<code>s1</code>に追加した後、
-<code>s2</code>を使えなかったら残念だということを示しています。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut s1 = String::from(&quot;foo&quot;);
-let s2 = &quot;bar&quot;;
-s1.push_str(s2);
-println!(&quot;s2 is {}&quot;, s2);
+文字列スライスを取ります。例えば、リスト8-16のコードで、中身を<code>s1</code>に追加した後も<code>s2</code>を使いたいとします。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let mut s1 = String::from(&quot;foo&quot;);
+    let s2 = &quot;bar&quot;;
+    s1.push_str(s2);
+    println!(&quot;s2 is {s2}&quot;);
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-16: Using a string slice after appending its
@@ -13568,15 +13556,14 @@ its value on the last line. However, this code works as we’d expect!
 ところが、このコードは予想通りに動きます！</p>
 <!--
 The `push` method takes a single character as a parameter and adds it to the
-`String`. Listing 8-17 shows code that adds the letter *l* to a `String` using
-the `push` method.
+`String`. Listing 8-17 adds the letter “l” to a `String` using the `push`
+method.
 -->
 <p><code>push</code>メソッドは、1文字を引数として取り、<code>String</code>に追加します。リスト8-15は、
-<code>push</code>メソッドで<em>l</em>を<code>String</code>に追加するコードを呈示しています。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut s = String::from(&quot;lo&quot;);
-s.push('l');
+<code>push</code>メソッドで“l”を<code>String</code>に追加しています。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let mut s = String::from(&quot;lo&quot;);
+    s.push('l');
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-17: Adding one character to a `String` value
@@ -13584,9 +13571,9 @@ using `push`</span>
 -->
 <p><span class="caption">リスト8-17: <code>push</code>で<code>String</code>値に1文字を追加する</span></p>
 <!--
-As a result of this code, `s` will contain `lol`.
+As a result, `s` will contain `lol`.
 -->
-<p>このコードの結果、<code>s</code>は<code>lol</code>を含むことになるでしょう。</p>
+<p>この結果、<code>s</code>は<code>lol</code>を含むことになるでしょう。</p>
 <blockquote>
 <p>編者注: <code>lol</code>は<code>laughing out loud</code>(大笑いする)の頭文字からできたスラングです。
 日本語の<code>www</code>みたいなものですね。</p>
@@ -13596,23 +13583,15 @@ As a result of this code, `s` will contain `lol`.
 -->
 <h4 id="演算子またはformatマクロで連結"><a class="header" href="#演算子またはformatマクロで連結"><code>+</code>演算子、または<code>format!</code>マクロで連結</a></h4>
 <!--
-Often, you’ll want to combine two existing strings. One way is to use the `+`
-operator, as shown in Listing 8-18.
+Often, you’ll want to combine two existing strings. One way to do so is to use
+the `+` operator, as shown in Listing 8-18.
 -->
-<p>2つのすでにある文字列を組み合わせたくなることがよくあります。リスト8-18に示したように、
-一つ目の方法は、<code>+</code>演算子を使用することです。</p>
-<!--
-```rust
-let s1 = String::from("Hello, ");
-let s2 = String::from("world!");
-let s3 = s1 + &s2; // note that s1 has been moved here and can no longer be used
-```
--->
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let s1 = String::from(&quot;Hello, &quot;);
-let s2 = String::from(&quot;world!&quot;);
-let s3 = s1 + &amp;s2; // s1はムーブされ、もう使用できないことに注意
+<p>2つのすでにある文字列を組み合わせたくなることがよくあります。
+これを行うための方法の一つは、リスト8-18に示したように、<code>+</code>演算子を使用することです。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;Hello, &quot;);
+    let s2 = String::from(&quot;world!&quot;);
+    let s3 = s1 + &amp;s2; // s1はムーブされ、もう使用できないことに注意
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-18: Using the `+` operator to combine two
@@ -13620,37 +13599,37 @@ let s3 = s1 + &amp;s2; // s1はムーブされ、もう使用できないこと�
 -->
 <p><span class="caption">リスト8-18: <code>+</code>演算子を使用して二つの<code>String</code>値を新しい<code>String</code>値にする</span></p>
 <!--
-The string `s3` will contain `Hello, world!` as a result of this code. The
-reason `s1` is no longer valid after the addition and the reason we used a
-reference to `s2` has to do with the signature of the method that gets called
-when we use the `+` operator. The `+` operator uses the `add` method, whose
-signature looks something like this:
+The string `s3` will contain `Hello, world!`. The reason `s1` is no longer
+valid after the addition, and the reason we used a reference to `s2`, has to do
+with the signature of the method that’s called when we use the `+` operator.
+The `+` operator uses the `add` method, whose signature looks something like
+this:
 -->
-<p>このコードの結果、<code>s3</code>という文字列は、<code>Hello, world!</code>を含むことになるでしょう。
+<p><code>s3</code>という文字列は、<code>Hello, world!</code>を含むことになるでしょう。
 追記の後、<code>s1</code>がもう有効でなくなった理由と、<code>s2</code>への参照を使用した理由は、
 <code>+</code>演算子を使用した時に呼ばれるメソッドのシグニチャと関係があります。<code>+</code>演算子は、<code>add</code>メソッドを使用し、
 そのシグニチャは以下のような感じです:</p>
 <pre><code class="language-rust ignore">fn add(self, s: &amp;str) -&gt; String {</code></pre>
 <!--
-This isn’t the exact signature that’s in the standard library: in the standard
-library, `add` is defined using generics. Here, we’re looking at the signature
-of `add` with concrete types substituted for the generic ones, which is what
-happens when we call this method with `String` values. We’ll discuss generics
-in Chapter 10. This signature gives us the clues we need to understand the
-tricky bits of the `+` operator.
+In the standard library, you'll see `add` defined using generics and associated
+types. Here, we’ve substituted in concrete types, which is what happens when we
+call this method with `String` values. We’ll discuss generics in Chapter 10.
+This signature gives us the clues we need to understand the tricky bits of the
+`+` operator.
 -->
-<p>これは、標準ライブラリにあるシグニチャそのものではありません: 標準ライブラリでは、<code>add</code>はジェネリクスで定義されています。
-ここでは、ジェネリックな型を具体的な型に置き換えた<code>add</code>のシグニチャを見ており、これは、
-このメソッドを<code>String</code>値とともに呼び出した時に起こることです。ジェネリクスについては、第10章で議論します。
+<p>標準ライブラリでは、<code>add</code>はジェネリクスと関連型を使用して定義されているのがわかるでしょう。
+ここでは具体的な型で置き換えていますが、これはこのメソッドを<code>String</code>値とともに呼び出した時に起こることです。
+ジェネリクスについては、第10章で議論します。
 このシグニチャが、<code>+</code>演算子の巧妙な部分を理解するのに必要な手がかりになるのです。</p>
 <!--
 First, `s2` has an `&`, meaning that we’re adding a *reference* of the second
-string to the first string because of the `s` parameter in the `add` function:
-we can only add a `&str` to a `String`; we can’t add two `String` values
-together. But wait-the type of `&s2` is `&String`, not `&str`, as specified in
-the second parameter to `add`. So why does Listing 8-18 compile?
+string to the first string. This is because of the `s` parameter in the `add`
+function: we can only add a `&str` to a `String`; we can’t add two `String`
+values together. But wait—the type of `&s2` is `&String`, not `&str`, as
+specified in the second parameter to `add`. So why does Listing 8-18 compile?
 -->
-<p>まず、<code>s2</code>には<code>&amp;</code>がついてます。つまり、<code>add</code>関数の<code>s</code>引数のために最初の文字列に2番目の文字列の参照を追加するということです:
+<p>まず、<code>s2</code>には<code>&amp;</code>がついてます。つまり、最初の文字列に2番目の文字列の参照を追加するということです。
+これは<code>add</code>関数の<code>s</code>引数のためのものです:
 <code>String</code>には<code>&amp;str</code>を追加することしかできません。要するに2つの<code>String</code>値を追加することはできないのです。
 でも待ってください。<code>add</code>の第2引数で指定されているように、<code>&amp;s2</code>の型は、<code>&amp;str</code>ではなく、
 <code>&amp;String</code>ではないですか。では、なぜ、リスト8-18は、コンパイルできるのでしょうか？</p>
@@ -13669,12 +13648,12 @@ after this operation.
 <!--
 Second, we can see in the signature that `add` takes ownership of `self`,
 because `self` does *not* have an `&`. This means `s1` in Listing 8-18 will be
-moved into the `add` call and no longer be valid after that. So although `let
-s3 = s1 + &s2;` looks like it will copy both strings and create a new one, this
-statement actually takes ownership of `s1`, appends a copy of the contents of
-`s2`, and then returns ownership of the result. In other words, it looks like
-it’s making a lot of copies but isn’t; the implementation is more efficient
-than copying.
+moved into the `add` call and will no longer be valid after that. So although
+`let s3 = s1 + &s2;` looks like it will copy both strings and create a new one,
+this statement actually takes ownership of `s1`, appends a copy of the contents
+of `s2`, and then returns ownership of the result. In other words, it looks
+like it’s making a lot of copies but isn’t; the implementation is more
+efficient than copying.
 -->
 <p>2番目に、シグニチャから<code>add</code>は<code>self</code>の所有権をもらうことがわかります。<code>self</code>には<code>&amp;</code>がついてい<em>ない</em>からです。
 これはつまり、リスト8-18において<code>s1</code>は<code>add</code>呼び出しにムーブされ、その後は有効ではなくなるということです。
@@ -13682,42 +13661,40 @@ than copying.
 この文は実際には<code>s1</code>の所有権を奪い、<code>s2</code>の中身のコピーを追記し、結果の所有権を返すのです。言い換えると、
 たくさんのコピーをしているように見えますが、違います; 実装は、コピーよりも効率的です。</p>
 <!--
-If we need to concatenate multiple strings, the behavior of `+` operator
+If we need to concatenate multiple strings, the behavior of the `+` operator
 gets unwieldy:
 -->
 <p>複数の文字列を連結する必要が出ると、<code>+</code>演算子の振る舞いは扱いにくくなります:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let s1 = String::from(&quot;tic&quot;);
-let s2 = String::from(&quot;tac&quot;);
-let s3 = String::from(&quot;toe&quot;);
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;tic&quot;);
+    let s2 = String::from(&quot;tac&quot;);
+    let s3 = String::from(&quot;toe&quot;);
 
-let s = s1 + &quot;-&quot; + &amp;s2 + &quot;-&quot; + &amp;s3;
+    let s = s1 + &quot;-&quot; + &amp;s2 + &quot;-&quot; + &amp;s3;
 <span class="boring">}</span></code></pre></pre>
 <!--
 At this point, `s` will be `tic-tac-toe`. With all of the `+` and `"`
 characters, it’s difficult to see what’s going on. For more complicated string
-combining, we can use the `format!` macro:
+combining, we can instead use the `format!` macro:
 -->
 <p>ここで、<code>s</code>は<code>tic-tac-toe</code>になるでしょう。<code>+</code>と<code>&quot;</code>文字のせいで何が起きているのかわかりにくいです。
-もっと複雑な文字列の連結には、<code>format!</code>マクロを使用することができます:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let s1 = String::from(&quot;tic&quot;);
-let s2 = String::from(&quot;tac&quot;);
-let s3 = String::from(&quot;toe&quot;);
+もっと複雑な文字列の連結には、代わりに<code>format!</code>マクロを使用することができます:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;tic&quot;);
+    let s2 = String::from(&quot;tac&quot;);
+    let s3 = String::from(&quot;toe&quot;);
 
-let s = format!(&quot;{}-{}-{}&quot;, s1, s2, s3);
+    let s = format!(&quot;{s1}-{s2}-{s3}&quot;);
 <span class="boring">}</span></code></pre></pre>
 <!--
-This code also sets `s` to `tic-tac-toe`. The `format!` macro works in the same
-way as `println!`, but instead of printing the output to the screen, it returns
-a `String` with the contents. The version of the code using `format!` is much
-easier to read and doesn’t take ownership of any of its parameters.
+This code also sets `s` to `tic-tac-toe`. The `format!` macro works like
+`println!`, but instead of printing the output to the screen, it returns a
+`String` with the contents. The version of the code using `format!` is much
+easier to read, and the code generated by the `format!` macro uses references
+so that this call doesn’t take ownership of any of its parameters.
 -->
-<p>このコードでも、<code>s</code>は<code>tic-tac-toe</code>になります。<code>format!</code>マクロは、<code>println!</code>と同様の動作をしますが、
-出力をスクリーンに行う代わりに、中身を<code>String</code>で返すのです。<code>format!</code>を使用したコードの方がはるかに読みやすく、
-引数の所有権を奪いません。</p>
+<p>このコードでも、<code>s</code>は<code>tic-tac-toe</code>になります。<code>format!</code>マクロは、<code>println!</code>と似た動作をしますが、
+出力をスクリーンに行う代わりに、中身を<code>String</code>で返すのです。<code>format!</code>を使用したコードの方がはるかに読みやすく、<code>format!</code> マクロによって生成されたコードはは参照を使用するので、この呼び出しは引数の所有権を奪いません。</p>
 <!--
 ### Indexing into Strings
 -->
@@ -13731,8 +13708,10 @@ get an error. Consider the invalid code in Listing 8-19.
 <p>他の多くのプログラミング言語では、文字列中の文字に、添え字で参照してアクセスすることは、有効なコードであり、
 一般的な処理です。しかしながら、Rustにおいて、添え字記法で<code>String</code>の一部にアクセスしようとすると、
 エラーが発生するでしょう。リスト8-19の非合法なコードを考えてください。</p>
-<pre><code class="language-rust ignore">let s1 = String::from(&quot;hello&quot;);
-let h = s1[0];</code></pre>
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
+</span>    let s1 = String::from(&quot;hello&quot;);
+    let h = s1[0];
+<span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 8-19: Attempting to use indexing syntax with a
 String</span>
@@ -13742,14 +13721,29 @@ String</span>
 This code will result in the following error:
 -->
 <p>このコードは、以下のようなエラーに落ち着きます:</p>
-<pre><code class="language-text">error[E0277]: the trait bound `std::string::String: std::ops::Index&lt;{Integer}&gt;` is not satisfied
-(エラー: トレイト境界`std::string::String: std::ops::Index&lt;{Integer}&gt;`が満たされていません)
-  |&gt;
-3 |&gt;     let h = s1[0];
-  |&gt;             ^^^^^ the type `std::string::String` cannot be indexed by `{Integer}`
-  |&gt;                   (型`std::string::String`は`{Integer}`で添え字アクセスできません)
-  = help: the trait `std::ops::Index&lt;{Integer}&gt;` is not implemented for `std::string::String`
-  (ヘルプ: `std::ops::Index&lt;{Integer}&gt;`というトレイトが`std::string::String`に対して実装されていません)
+<pre><code class="language-console">$ cargo run
+   Compiling collections v0.1.0 (file:///projects/collections)
+error[E0277]: the type `String` cannot be indexed by `{integer}`
+(エラー: 型`String`は`{Integer}`で添え字アクセスできません)
+ --&gt; src/main.rs:3:16
+  |
+3 |     let h = s1[0];
+  |                ^ `String` cannot be indexed by `{integer}`
+  |                 (`String`は`{Integer}`で添え字アクセスできません)
+  |
+  = help: the trait `Index&lt;{integer}&gt;` is not implemented for `String`
+    (ヘルプ: `Index&lt;{Integer}&gt;`というトレイトが`String`に対して実装されていません)
+  = help: the following other types implement trait `Index&lt;Idx&gt;`:
+    (ヘルプ: 以下の型であればトレイト`Index&lt;Idx&gt;`を実装しています:)
+            &lt;String as Index&lt;RangeFull&gt;&gt;
+            &lt;String as Index&lt;std::ops::Range&lt;usize&gt;&gt;&gt;
+            &lt;String as Index&lt;RangeFrom&lt;usize&gt;&gt;&gt;
+            &lt;String as Index&lt;RangeTo&lt;usize&gt;&gt;&gt;
+            &lt;String as Index&lt;RangeInclusive&lt;usize&gt;&gt;&gt;
+            &lt;String as Index&lt;RangeToInclusive&lt;usize&gt;&gt;&gt;
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `collections` (bin &quot;collections&quot;) due to 1 previous error
 </code></pre>
 <!--
 The error and the note tell the story: Rust strings don’t support indexing. But
@@ -13768,56 +13762,76 @@ encoded UTF-8 example strings from Listing 8-14. First, this one:
 -->
 <p><code>String</code>は<code>Vec&lt;u8&gt;</code>のラッパです。リスト8-14から適切にUTF-8でエンコードされた文字列の例をご覧ください。
 まずは、これ:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let len = String::from(&quot;Hola&quot;).len();
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span><span class="boring">    let hello = String::from(&quot;السلام عليكم&quot;);
+</span><span class="boring">    let hello = String::from(&quot;Dobrý den&quot;);
+</span><span class="boring">    let hello = String::from(&quot;Hello&quot;);
+</span><span class="boring">    let hello = String::from(&quot;שָׁלוֹם&quot;);
+</span><span class="boring">    let hello = String::from(&quot;नमस्ते&quot;);
+</span><span class="boring">    let hello = String::from(&quot;こんにちは&quot;);
+</span><span class="boring">    let hello = String::from(&quot;안녕하세요&quot;);
+</span><span class="boring">    let hello = String::from(&quot;你好&quot;);
+</span><span class="boring">    let hello = String::from(&quot;Olá&quot;);
+</span><span class="boring">    let hello = String::from(&quot;Здравствуйте&quot;);
+</span>    let hello = String::from(&quot;Hola&quot;);
 <span class="boring">}</span></code></pre></pre>
 <!--
 In this case, `len` will be 4, which means the vector storing the string “Hola”
-is 4 bytes long. Each of these letters takes 1 byte when encoded in UTF-8. But
-what about the following line? (Note that this string begins with the capital
-Cyrillic letter Ze, not the Arabic number 3.)
+is 4 bytes long. Each of these letters takes 1 byte when encoded in UTF-8. The
+following line, however, may surprise you. (Note that this string begins with
+the capital Cyrillic letter Ze, not the number 3.)
 -->
 <p>この場合、<code>len</code>は4になり、これは、文字列&quot;Hola&quot;を保持するベクタの長さが4バイトであることを意味します。
-これらの各文字は、UTF-8でエンコードすると、1バイトになるのです。しかし、以下の行ではどうでしょうか？
-(この文字列は大文字のキリル文字Zeで始まり、アラビア数字の3では始まっていないことに注意してください)</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let len = String::from(&quot;Здравствуйте&quot;).len();
-<span class="boring">}</span></code></pre></pre>
+これらの各文字は、UTF-8でエンコードすると、1バイトになるのです。しかし、次の行にはびっくりするかもしれません。
+(この文字列は大文字のキリル文字ゼーで始まり、数字の3では始まっていないことに注意してください)</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span><span class="boring">    let hello = String::from(&quot;السلام عليكم&quot;);
+</span><span class="boring">    let hello = String::from(&quot;Dobrý den&quot;);
+</span><span class="boring">    let hello = String::from(&quot;Hello&quot;);
+</span><span class="boring">    let hello = String::from(&quot;שָׁלוֹם&quot;);
+</span><span class="boring">    let hello = String::from(&quot;नमस्ते&quot;);
+</span><span class="boring">    let hello = String::from(&quot;こんにちは&quot;);
+</span><span class="boring">    let hello = String::from(&quot;안녕하세요&quot;);
+</span><span class="boring">    let hello = String::from(&quot;你好&quot;);
+</span><span class="boring">    let hello = String::from(&quot;Olá&quot;);
+</span>    let hello = String::from(&quot;Здравствуйте&quot;);
+<span class="boring">    let hello = String::from(&quot;Hola&quot;);
+</span><span class="boring">}</span></code></pre></pre>
 <!--
-Asked how long the string is, you might say 12. However, Rust’s answer is 24:
+Asked how long the string is, you might say 12. In fact, Rust’s answer is 24:
 that’s the number of bytes it takes to encode “Здравствуйте” in UTF-8, because
-each Unicode scalar value takes two bytes of storage. Therefore, an index into
-the string’s bytes will not always correlate to a valid Unicode scalar value.
-To demonstrate, consider this invalid Rust code:
+each Unicode scalar value in that string takes 2 bytes of storage. Therefore,
+an index into the string’s bytes will not always correlate to a valid Unicode
+scalar value. To demonstrate, consider this invalid Rust code:
 -->
-<p>文字列の長さはと問われたら、あなたは12と答えるかもしれません。ところが、Rustの答えは、24です:
-“Здравствуйте”をUTF-8でエンコードすると、この長さになります。各Unicodeスカラー値は、2バイトの領域を取るからです。
+<p>文字列の長さはと問われたら、あなたは12と答えるかもしれません。実際には、Rustの答えは、24です:
+“Здравствуйте”をUTF-8でエンコードすると、この長さになります。この文字列に含まれる各Unicodeスカラー値は、2バイトの領域を取るからです。
 それ故に、文字列のバイトの添え字は、必ずしも有効なUnicodeのスカラー値とは相互に関係しないのです。
 デモ用に、こんな非合法なRustコードを考えてください:</p>
-<pre><code class="language-rust ignore">let hello = &quot;Здравствуйте&quot;;
+<pre><code class="language-rust ignore does_not_compile">let hello = &quot;Здравствуйте&quot;;
 let answer = &amp;hello[0];</code></pre>
 <!--
-What should the value of `answer` be? Should it be `З`, the first letter? When
-encoded in UTF-8, the first byte of `З` is `208`, and the second is `151`, so
-`answer` should in fact be `208`, but `208` is not a valid character on its
-own. Returning `208` is likely not what a user would want if they asked for the
-first letter of this string; however, that’s the only data that Rust has at
-byte index 0. Users generally don't want the byte value returned, even if
-the string contains only Latin letters: if `&"hello"[0]` was valid code that
-returned the byte value, it would return `104`, not `h`. To avoid returning an
-unexpected value and causing bugs that might not be discovered immediately,
-Rust doesn’t compile this code at all and prevents misunderstandings early in
-the development process.
+You already know that `answer` will not be `З`, the first letter. When encoded
+in UTF-8, the first byte of `З` is `208` and the second is `151`, so it would
+seem that `answer` should in fact be `208`, but `208` is not a valid character
+on its own. Returning `208` is likely not what a user would want if they asked
+for the first letter of this string; however, that’s the only data that Rust
+has at byte index 0. Users generally don’t want the byte value returned, even
+if the string contains only Latin letters: if `&"hello"[0]` were valid code
+that returned the byte value, it would return `104`, not `h`.
 -->
-<p><code>answer</code>の値は何になるべきでしょうか？最初の文字の<code>З</code>になるべきでしょうか？UTF-8エンコードされた時、
-<code>З</code>の最初のバイトは<code>208</code>、2番目は<code>151</code>になるので、<code>answer</code>は実際、<code>208</code>になるべきですが、
+<p><code>answer</code>の値は、最初の文字の<code>З</code>にはならないことを知っているでしょう。UTF-8エンコードされた時、
+<code>З</code>の最初のバイトは<code>208</code>、2番目は<code>151</code>になるので、<code>answer</code>は実際には<code>208</code>になりそうですが、
 <code>208</code>は単独では有効な文字ではありません。この文字列の最初の文字を求めている場合、<code>208</code>を返すことは、
 ユーザの望んでいるものではないでしょう; しかしながら、Rustには、バイト添え字0の位置には、そのデータしかないのです。
 文字列がラテン文字のみを含む場合でも、ユーザは一般的にバイト値が返ることを望みません:
-<code>&amp;&quot;hello&quot;[0]</code>がバイト値を返す有効なコードだったら、<code>h</code>ではなく、<code>104</code>を返すでしょう。
-予期しない値を返し、すぐには判明しないバグを引き起こさないために、Rustはこのコードを全くコンパイルせず、
+<code>&amp;&quot;hello&quot;[0]</code>がバイト値を返す有効なコードだったら、<code>h</code>ではなく、<code>104</code>を返すでしょう。</p>
+<!--
+The answer, then, is that to avoid returning an unexpected value and causing
+bugs that might not be discovered immediately, Rust doesn’t compile this code
+at all and prevents misunderstandings early in the development process.
+-->
+<p>答えは、予期しない値を返し、すぐには判明しないバグを引き起こさないために、Rustはこのコードを全くコンパイルせず、
 開発過程の早い段階で誤解を防いでくれるのです。</p>
 <!--
 #### Bytes and Scalar Values and Grapheme Clusters! Oh My!
@@ -13882,17 +13896,18 @@ index to determine how many valid characters there were.
 <h3 id="文字列をスライスする"><a class="header" href="#文字列をスライスする">文字列をスライスする</a></h3>
 <!--
 Indexing into a string is often a bad idea because it’s not clear what the
-return type of the string indexing operation should be: a byte value, a
-character, a grapheme cluster, or a string slice. Therefore, Rust asks you to
-be more specific if you really need to use indices to create string slices. To
-be more specific in your indexing and indicate that you want a string slice,
-rather than indexing using `[]` with a single number, you can use `[]` with a
-range to create a string slice containing particular bytes:
+return type of the string-indexing operation should be: a byte value, a
+character, a grapheme cluster, or a string slice. If you really need to use
+indices to create string slices, therefore, Rust asks you to be more specific.
 -->
 <p>文字列に添え字アクセスするのは、しばしば悪い考えです。文字列添え字処理の戻り値の型が明瞭ではないからです:
 バイト値、文字、書記素クラスタ、あるいは文字列スライスにもなります。故に、文字列スライスを生成するのに、
-添え字を使う必要が本当に出た場合にコンパイラは、もっと特定するよう求めてきます。添え字アクセスを特定し、
-文字列スライスが欲しいと示唆するためには、<code>[]</code>で1つの数値により添え字アクセスするのではなく、
+添え字を使う必要が本当に出た場合にコンパイラは、もっと特定するよう求めてきます。</p>
+<!--
+Rather than indexing using `[]` with a single number, you can use `[]` with a
+range to create a string slice containing particular bytes:
+-->
+<p><code>[]</code>で1つの数値により添え字アクセスするのではなく、
 範囲とともに<code>[]</code>を使って、特定のバイトを含む文字列スライスを作ることができます:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -13908,13 +13923,21 @@ Earlier, we mentioned that each of these characters was 2 bytes, which means
 <p>ここで、<code>s</code>は文字列の最初の4バイトを含む<code>&amp;str</code>になります。先ほど、これらの文字は各々2バイトになると指摘しましたから、
 <code>s</code>は<code>Зд</code>になります。</p>
 <!--
-What would happen if we used `&hello[0..1]`? The answer: Rust would panic at
-runtime in the same way as if an invalid index were accessed in a vector:
+If we were to try to slice only part of a character’s bytes with something like
+`&hello[0..1]`, Rust would panic at runtime in the same way as if an invalid
+index were accessed in a vector:
 -->
-<p><code>&amp;hello[0..1]</code>と使用したら、何が起きるでしょうか？答え: Rustはベクタの非合法な添え字にアクセスしたかのように、
-実行時にパニックするでしょう:</p>
-<pre><code class="language-text">thread 'main' panicked at 'byte index 1 is not a char boundary; it is inside 'З' (bytes 0..2) of `Здравствуйте`', src/libcore/str/mod.rs:2188:4
-('main'スレッドは「バイト添え字1は文字の境界ではありません; `Здравствуйте`の'З'(バイト番号0から2)の中です」でパニックしました)
+<p><code>&amp;hello[0..1]</code>のようにして、文字を構成するバイトの一部のみをスライスしようとすると、
+Rustはベクタの非合法な添え字にアクセスしたかのように実行時にパニックするでしょう:</p>
+<pre><code class="language-console">$ cargo run
+   Compiling collections v0.1.0 (file:///projects/collections)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.43s
+     Running `target/debug/collections`
+thread 'main' panicked at src/main.rs:4:19:
+byte index 1 is not a char boundary; it is inside 'З' (bytes 0..2) of `Здравствуйте`
+('main'スレッドはsrc/main:4:19でパニックしました:
+バイト添え字1は文字の境界ではありません; `Здравствуйте`の'З'(バイト0..2)の中です)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 </code></pre>
 <!--
 You should use ranges to create string slices with caution, because doing so
@@ -13926,55 +13949,47 @@ can crash your program.
 -->
 <h3 id="文字列を走査するメソッド群"><a class="header" href="#文字列を走査するメソッド群">文字列を走査するメソッド群</a></h3>
 <!--
-Fortunately, you can access elements in a string in other ways.
+The best way to operate on pieces of strings is to be explicit about whether
+you want characters or bytes. For individual Unicode scalar values, use the
+`chars` method. Calling `chars` on “Зд” separates out and returns two values
+of type `char`, and you can iterate over the result to access each element:
 -->
-<p>幸いなことに、他の方法でも文字列の要素にアクセスすることができます。</p>
-<!--
-If you need to perform operations on individual Unicode scalar values, the best
-way to do so is to use the `chars` method. Calling `chars` on “नमस्ते” separates
-out and returns six values of type `char`, and you can iterate over the result
-to access each element:
--->
-<p>もし、個々のUnicodeスカラー値に対して処理を行う必要があったら、最適な方法は<code>chars</code>メソッドを使用するものです。
-“नमस्ते”に対して<code>chars</code>を呼び出したら、分解して6つの<code>char</code>型の値を返すので、各要素にアクセスするには、
+<p>文字列の部分に対して操作を行うための最良の方法は、文字に対して操作したいのかバイトに対して操作したいのかを明示することです。
+個々のUnicodeスカラー値に対しては、<code>chars</code>メソッドを使用してください。
+“Зд”に対して<code>chars</code>を呼び出したら、分解して2つの<code>char</code>型の値を返すので、各要素にアクセスするには、
 その結果を走査すればいいわけです:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>for c in &quot;नमस्ते&quot;.chars() {
-    println!(&quot;{}&quot;, c);
+</span>for c in &quot;Зд&quot;.chars() {
+    println!(&quot;{c}&quot;);
 }
 <span class="boring">}</span></code></pre></pre>
 <!--
 This code will print the following:
 -->
 <p>このコードは、以下のように出力します:</p>
-<pre><code class="language-text">न
-म
-स
-्
-त
-े
+<pre><code class="language-text">З
+д
 </code></pre>
 <!--
-The `bytes` method returns each raw byte, which might be appropriate for your
-domain:
+Alternatively, the `bytes` method returns each raw byte, which might be
+appropriate for your domain:
 -->
-<p><code>bytes</code>メソッドは、各バイトをそのまま返すので、最適になることもあるかもしれません:</p>
+<p>あるいは、<code>bytes</code>メソッドは各バイトをそのまま返すので、ドメインによってはこちらが適切かもしれません:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>for b in &quot;नमस्ते&quot;.bytes() {
-    println!(&quot;{}&quot;, b);
+</span>for b in &quot;Зд&quot;.bytes() {
+    println!(&quot;{b}&quot;);
 }
 <span class="boring">}</span></code></pre></pre>
 <!--
-This code will print the 18 bytes that make up this `String`:
+This code will print the four bytes that make up this string:
 -->
-<p>このコードは、<code>String</code>をなす18バイトを出力します:</p>
-<pre><code class="language-text">224
-164
-// --snip--
-165
-135
+<p>このコードは、この文字列をなす4バイトを出力します:</p>
+<pre><code class="language-text">208
+151
+208
+180
 </code></pre>
 <!--
 But be sure to remember that valid Unicode scalar values may be made up of more
@@ -13982,11 +13997,12 @@ than 1 byte.
 -->
 <p>ですが、合法なUnicodeスカラー値は、2バイト以上からなる場合もあることは心得ておいてください。</p>
 <!--
-Getting grapheme clusters from strings is complex, so this functionality is not
-provided by the standard library. Crates are available on
-[crates.io](https://crates.io) if this is the functionality you need.
+Getting grapheme clusters from strings as with the Devanagari script is
+complex, so this functionality is not provided by the standard library. Crates
+are available on [crates.io](https://crates.io/) if this is the
+functionality you need.
 -->
-<p>書記素クラスタを文字列から得る方法は複雑なので、この機能は標準ライブラリでは提供されていません。
+<p>デーヴァナーガリー文字を含むような文字列から書記素クラスタを得る方法は複雑なので、この機能は標準ライブラリでは提供されていません。
 この機能が必要なら、<a href="https://crates.io">crates.io</a>でクレートを入手可能です。</p>
 <!--
 ### Strings Are Not So Simple
@@ -14008,27 +14024,36 @@ Rustでは、<code>String</code>データを正しく扱うことが、全ての
 このトレードオフにより、他のプログラミング言語で見えるよりも文字列の複雑性がより露出していますが、
 ASCII以外の文字に関するエラーを開発の後半で扱わなければならない可能性が排除されているのです。</p>
 <!--
+The good news is that the standard library offers a lot of functionality built
+off the `String` and `&str` types to help handle these complex situations
+correctly. Be sure to check out the documentation for useful methods like
+`contains` for searching in a string and `replace` for substituting parts of a
+string with another string.
+-->
+<p>一方で良い面としては、こうした複雑な状況に正しく対処するために、標準ライブラリが<code>String</code>と<code>&amp;str</code>型の上に構築された多数の機能を提供していることです。
+文字列内の検索のための<code>contains</code>や、文字列の一部を別の文字列で置換するための<code>replace</code>などの便利なメソッドについて、ドキュメントを確認してみてください。</p>
+<!--
 Let’s switch to something a bit less complex: hash maps!
 -->
 <p>もう少し複雑でないものに切り替えていきましょう: ハッシュマップです！</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
-## Storing Keys Associated with Values in Hash Maps
+## Storing Keys with Associated Values in Hash Maps
 -->
 <h2 id="キーとそれに紐づいた値をハッシュマップに格納する"><a class="header" href="#キーとそれに紐づいた値をハッシュマップに格納する">キーとそれに紐づいた値をハッシュマップに格納する</a></h2>
 <!--
 The last of our common collections is the *hash map*. The type `HashMap<K, V>`
-stores a mapping of keys of type `K` to values of type `V`. It does this via a
+stores a mapping of keys of type `K` to values of type `V` using a
 *hashing function*, which determines how it places these keys and values into
 memory. Many programming languages support this kind of data structure, but
-often use a different name, such as hash, map, object, hash table, or
-associative array, just to name a few.
+they often use a different name, such as hash, map, object, hash table,
+dictionary, or associative array, just to name a few.
 -->
 <p>一般的なコレクションのトリを飾るのは、<em>ハッシュマップ</em>です。型<code>HashMap&lt;K, V&gt;</code>は、
-<code>K</code>型のキーと<code>V</code>型の値の対応関係を保持します。これを<em>ハッシュ関数</em>を介して行います。
+<code>K</code>型のキーと<code>V</code>型の値の対応関係を<em>ハッシュ関数</em>を使用して保持します。
 ハッシュ関数は、キーと値のメモリ配置方法を決めるものです。多くのプログラミング言語でもこの種のデータ構造はサポートされていますが、
-しばしば名前が違います。hash、map、object、ハッシュテーブル、連想配列など、枚挙に<ruby>暇<rp>(</rp><rt>いとま</rt><rp>)</rp></ruby>はありません。</p>
+しばしば名前が違います。hash、map、object、ハッシュテーブル、辞書、連想配列など、枚挙に<ruby>暇<rp>(</rp><rt>いとま</rt><rp>)</rp></ruby>はありません。</p>
 <!--
-Hash maps are useful when you want to look up data not by an index, as
+Hash maps are useful when you want to look up data not by using an index, as
 you can with vectors, but by using a key that can be of any type. For example,
 in a game, you could keep track of each team’s score in a hash map in which
 each key is a team’s name and the values are each team’s score. Given a team
@@ -14050,21 +14075,21 @@ As always, check the standard library documentation for more information.
 -->
 <h3 id="新規ハッシュマップを生成する"><a class="header" href="#新規ハッシュマップを生成する">新規ハッシュマップを生成する</a></h3>
 <!--
-You can create an empty hash map with `new` and add elements with `insert`. In
-Listing 8-20, we’re keeping track of the scores of two teams whose names are
-Blue and Yellow. The Blue team starts with 10 points, and the Yellow team
-starts with 50.
+One way to create an empty hash map is using `new` and adding elements with
+`insert`. In Listing 8-20, we’re keeping track of the scores of two teams whose
+names are *Blue* and *Yellow*. The Blue team starts with 10 points, and the
+Yellow team starts with 50.
 -->
-<p>空のハッシュマップを<code>new</code>で作り、要素を<code>insert</code>で追加することができます。リスト8-20では、
-名前がブルーとイエローの2チームのスコアを追いかけています。ブルーチームは10点から、イエローチームは50点から始まります。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
+<p>空のハッシュマップを作成する方法のひとつは<code>new</code>を使用する方法で、その後要素を<code>insert</code>で追加することができます。
+リスト8-20では、名前が<em>ブルー</em>と<em>イエロー</em>の2チームのスコアを追いかけています。
+ブルーチームは10点から、イエローチームは50点から始まります。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    use std::collections::HashMap;
 
-let mut scores = HashMap::new();
+    let mut scores = HashMap::new();
 
-scores.insert(String::from(&quot;Blue&quot;), 10);
-scores.insert(String::from(&quot;Yellow&quot;), 50);
+    scores.insert(String::from(&quot;Blue&quot;), 10);
+    scores.insert(String::from(&quot;Yellow&quot;), 50);
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-20: Creating a new hash map and inserting some
@@ -14076,7 +14101,7 @@ Note that we need to first `use` the `HashMap` from the collections portion of
 the standard library. Of our three common collections, this one is the least
 often used, so it’s not included in the features brought into scope
 automatically in the prelude. Hash maps also have less support from the
-standard library; there's no built-in macro to construct them, for example.
+standard library; there’s no built-in macro to construct them, for example.
 -->
 <p>最初に標準ライブラリのコレクション部分から<code>HashMap</code>を<code>use</code>する必要があることに注意してください。
 今までの3つの一般的なコレクションの内、これが最も使用頻度が低いので、初期化処理で自動的にスコープに導入される機能には含まれていません。
@@ -14084,50 +14109,74 @@ standard library; there's no built-in macro to construct them, for example.
 <!--
 Just like vectors, hash maps store their data on the heap. This `HashMap` has
 keys of type `String` and values of type `i32`. Like vectors, hash maps are
-homogeneous: all of the keys must have the same type, and all of the values
-must have the same type.
+homogeneous: all of the keys must have the same type as each other, and all of
+the values must have the same type.
 -->
 <p>ベクタと全く同様に、ハッシュマップはデータをヒープに保持します。この<code>HashMap</code>はキーが<code>String</code>型、
-値は<code>i32</code>型です。ベクタのように、ハッシュマップは均質です: キーは全て同じ型でなければならず、
+値は<code>i32</code>型です。ベクタのように、ハッシュマップは均質です: すべてのキーは互いに同じ型でなければならず、
 値も全て同じ型でなければなりません。</p>
 <!--
-Another way of constructing a hash map is by using the `collect` method on a
-vector of tuples, where each tuple consists of a key and its value. The
-`collect` method gathers data into a number of collection types, including
-`HashMap`. For example, if we had the team names and initial scores in two
-separate vectors, we can use the `zip` method to create a vector of tuples
-where “Blue” is paired with 10, and so forth. Then we can use the `collect`
-method to turn that vector of tuples into a hash map, as shown in Listing 8-21.
+### Accessing Values in a Hash Map
 -->
-<p>ハッシュマップを生成する別の方法は、タプルのベクタに対して<code>collect</code>メソッドを使用するものです。
-ここで、各タプルは、キーと値から構成されています。<code>collect</code>メソッドはいろんなコレクション型にデータをまとめ上げ、
-そこには<code>HashMap</code>も含まれています。例として、チーム名と初期スコアが別々のベクタに含まれていたら、
-<code>zip</code>メソッドを使ってタプルのベクタを作り上げることができ、そこでは「ブルー」は10とペアになるなどします。
-リスト8-21に示したように、それから<code>collect</code>メソッドを使って、そのタプルのベクタをハッシュマップに変換することができるわけです。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
+<h3 id="ハッシュマップの値にアクセスする"><a class="header" href="#ハッシュマップの値にアクセスする">ハッシュマップの値にアクセスする</a></h3>
+<!--
+We can get a value out of the hash map by providing its key to the `get`
+method, as shown in Listing 8-21.
+-->
+<p>リスト8-21に示したように、キーを<code>get</code>メソッドに提供することで、ハッシュマップから値を取り出すことができます。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    use std::collections::HashMap;
 
-let teams  = vec![String::from(&quot;Blue&quot;), String::from(&quot;Yellow&quot;)];
-let initial_scores = vec![10, 50];
+    let mut scores = HashMap::new();
 
-let scores: HashMap&lt;_, _&gt; = teams.iter().zip(initial_scores.iter()).collect();
+    scores.insert(String::from(&quot;Blue&quot;), 10);
+    scores.insert(String::from(&quot;Yellow&quot;), 50);
+
+    let team_name = String::from(&quot;Blue&quot;);
+    let score = scores.get(&amp;team_name).copied().unwrap_or(0);
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-21: Creating a hash map from a list of teams
-and a list of scores</span>
+<span class="caption">Listing 8-21: Accessing the score for the Blue team
+stored in the hash map</span>
 -->
-<p><span class="caption">リスト8-21: チームのリストとスコアのリストからハッシュマップを作る</span></p>
+<p><span class="caption">リスト8-21: ハッシュマップに保持されたブルーチームのスコアにアクセスする</span></p>
 <!--
-The type annotation `HashMap<_, _>` is needed here because it’s possible to
-`collect` into many different data structures and Rust doesn’t know which you
-want unless you specify. For the type parameters for the key and value types,
-however, we use underscores, and Rust can infer the types that the hash map
-contains based on the types of the data in the vectors.
+Here, `score` will have the value that’s associated with the Blue team, and the
+result will be `10`. The `get` method returns an `Option<&V>`; if there’s no
+value for that key in the hash map, `get` will return `None`. This program
+handles the `Option` by calling `copied` to get an `Option<i32>` rather than an
+`Option<&i32>`, then `unwrap_or` to set `score` to zero if `scores` doesn't
+have an entry for the key.
 -->
-<p>ここでは、<code>HashMap&lt;_, _&gt;</code>という型注釈が必要になります。なぜなら、いろんなデータ構造に<code>まとめ上げる</code>ことができ、
-コンパイラは指定しない限り、どれを所望なのかわからないからです。ところが、キーと値の型引数については、
-アンダースコアを使用しており、コンパイラはベクタのデータ型に基づいてハッシュマップが含む型を推論することができるのです。</p>
+<p>ここで、<code>score</code>はブルーチームに紐づけられた値になり、結果は<code>10</code>となるでしょう。
+<code>get</code>メソッドは<code>Option&lt;&amp;V&gt;</code>を返します;
+キーに対応する値がハッシュマップになかったら、<code>get</code>は<code>None</code>を返すでしょう。
+このプログラムはこの<code>Option</code>に対して、<code>Option&lt;&amp;i32&gt;</code>ではなく<code>Option&lt;i32&gt;</code>を得るために<code>copied</code>を呼び出し、
+その後、<code>scores</code>がそのキーに対応するエントリを持たない場合は<code>score</code>を0に設定するために、<code>unwrap_or</code>を呼び出して対処します。</p>
+<!--
+We can iterate over each key/value pair in a hash map in a similar manner as we
+do with vectors, using a `for` loop:
+-->
+<p>ベクタのように、<code>for</code>ループでハッシュマップのキーと値のペアを走査することができます:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    use std::collections::HashMap;
+
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from(&quot;Blue&quot;), 10);
+    scores.insert(String::from(&quot;Yellow&quot;), 50);
+
+    for (key, value) in &amp;scores {
+        println!(&quot;{key}: {value}&quot;);
+    }
+<span class="boring">}</span></code></pre></pre>
+<!--
+This code will print each pair in an arbitrary order:
+-->
+<p>このコードは、各ペアを任意の順番で出力します:</p>
+<pre><code class="language-text">Yellow: 50
+Blue: 10
+</code></pre>
 <!--
 ### Hash Maps and Ownership
 -->
@@ -14140,19 +14189,18 @@ the hash map will be the owner of those values, as demonstrated in Listing 8-22.
 <p><code>i32</code>のような<code>Copy</code>トレイトを実装する型について、値はハッシュマップにコピーされます。
 <code>String</code>のような所有権のある値なら、値はムーブされ、リスト8-22でデモされているように、
 ハッシュマップはそれらの値の所有者になるでしょう。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    use std::collections::HashMap;
 
-let field_name = String::from(&quot;Favorite color&quot;);
-let field_value = String::from(&quot;Blue&quot;);
+    let field_name = String::from(&quot;Favorite color&quot;);
+    let field_value = String::from(&quot;Blue&quot;);
 
-let mut map = HashMap::new();
-map.insert(field_name, field_value);
-// field_name and field_value are invalid at this point, try using them and
-// see what compiler error you get!
-// field_nameとfield_valueはこの時点で無効になる。試しに使ってみて
-// どんなコンパイルエラーが出るか確認してみて！
+    let mut map = HashMap::new();
+    map.insert(field_name, field_value);
+    // field_name and field_value are invalid at this point, try using them and
+    // see what compiler error you get!
+	// field_nameとfield_valueはこの時点で無効になる。試しに使ってみて
+	// どんなコンパイルエラーが出るか確認してみて！
 <span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 8-22: Showing that keys and values are owned by
@@ -14169,88 +14217,34 @@ they’ve been moved into the hash map with the call to `insert`.
 If we insert references to values into the hash map, the values won’t be moved
 into the hash map. The values that the references point to must be valid for at
 least as long as the hash map is valid. We’ll talk more about these issues in
-the “Validating References with Lifetimes” section in Chapter 10.
+the [“Validating References with
+Lifetimes”][validating-references-with-lifetimes] section in
+Chapter 10.
 -->
 <p>値への参照をハッシュマップに挿入したら、値はハッシュマップにムーブされません。参照が指している値は、
 最低でもハッシュマップが有効な間は、有効でなければなりません。これらの問題について詳細には、
-第10章の「ライフタイムで参照を有効化する」節で語ります。</p>
-<!--
-### Accessing Values in a Hash Map
--->
-<h3 id="ハッシュマップの値にアクセスする"><a class="header" href="#ハッシュマップの値にアクセスする">ハッシュマップの値にアクセスする</a></h3>
-<!--
-We can get a value out of the hash map by providing its key to the `get`
-method, as shown in Listing 8-23.
--->
-<p>リスト8-23に示したように、キーを<code>get</code>メソッドに提供することで、ハッシュマップから値を取り出すことができます。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
-
-let mut scores = HashMap::new();
-
-scores.insert(String::from(&quot;Blue&quot;), 10);
-scores.insert(String::from(&quot;Yellow&quot;), 50);
-
-let team_name = String::from(&quot;Blue&quot;);
-let score = scores.get(&amp;team_name);
-<span class="boring">}</span></code></pre></pre>
-<!--
-<span class="caption">Listing 8-23: Accessing the score for the Blue team
-stored in the hash map</span>
--->
-<p><span class="caption">リスト8-23: ハッシュマップに保持されたブルーチームのスコアにアクセスする</span></p>
-<!--
-Here, `score` will have the value that’s associated with the Blue team, and the
-result will be `Some(&10)`. The result is wrapped in `Some` because `get`
-returns an `Option<&V>`; if there’s no value for that key in the hash map,
-`get` will return `None`. The program will need to handle the `Option` in one
-of the ways that we covered in Chapter 6.
--->
-<p>ここで、<code>score</code>はブルーチームに紐づけられた値になり、結果は<code>Some(&amp;10)</code>となるでしょう。
-結果は<code>Some</code>に包まれます。というのも、<code>get</code>は<code>Option&lt;&amp;V&gt;</code>を返すからです; キーに対応する値がハッシュマップになかったら、
-<code>get</code>は<code>None</code>を返すでしょう。プログラムは、この<code>Option</code>を第6章で講義した方法のどれかで扱う必要があるでしょう。</p>
-<!--
-We can iterate over each key/value pair in a hash map in a similar manner as we
-do with vectors, using a `for` loop:
--->
-<p>ベクタのように、<code>for</code>ループでハッシュマップのキーと値のペアを走査することができます:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
-
-let mut scores = HashMap::new();
-
-scores.insert(String::from(&quot;Blue&quot;), 10);
-scores.insert(String::from(&quot;Yellow&quot;), 50);
-
-for (key, value) in &amp;scores {
-    println!(&quot;{}: {}&quot;, key, value);
-}
-<span class="boring">}</span></code></pre></pre>
-<!--
-This code will print each pair in an arbitrary order:
--->
-<p>このコードは、各ペアを任意の順番で出力します:</p>
-<pre><code class="language-text">Yellow: 50
-Blue: 10
-</code></pre>
+第10章の<a href="ch10-03-lifetime-syntax.html#%E3%83%A9%E3%82%A4%E3%83%95%E3%82%BF%E3%82%A4%E3%83%A0%E3%81%A7%E5%8F%82%E7%85%A7%E3%82%92%E6%A4%9C%E8%A8%BC%E3%81%99%E3%82%8B">「ライフタイムで参照を有効化する」</a>節で語ります。</p>
 <!--
 ### Updating a Hash Map
 -->
 <h3 id="ハッシュマップを更新する"><a class="header" href="#ハッシュマップを更新する">ハッシュマップを更新する</a></h3>
 <!--
-Although the number of keys and values is growable, each key can only have one
-value associated with it at a time. When we want to change the data in a hash
-map, we have to decide how to handle the case when a key already has a value
-assigned. We could replace the old value with the new value, completely
-disregarding the old value. We could keep the old value and ignore the new
-value, only adding the new value if the key *doesn’t* already have a value. Or
-we could combine the old value and the new value. Let’s look at how to do each
-of these!
+Although the number of key and value pairs is growable, each unique key can
+only have one value associated with it at a time (but not vice versa: for
+example, both the Blue team and the Yellow team could have value 10 stored in
+the `scores` hash map).
 -->
-<p>キーと値の数は伸長可能なものの、各キーには1回に1つの値しか紐づけることができません。
-ハッシュマップ内のデータを変えたい時は、すでにキーに値が紐づいている場合の扱い方を決めなければなりません。
+<p>キーと値のペアの数は伸長可能ですが、それぞれの一意なキーには同時に1つの値しか紐づけることができません（ただし逆は可能です:
+例えば、<code>scores</code>ハッシュマップ内にブルーチームとイエローチームはともに値10を保存することができます）。</p>
+<!--
+When you want to change the data in a hash map, you have to decide how to
+handle the case when a key already has a value assigned. You could replace the
+old value with the new value, completely disregarding the old value. You could
+keep the old value and ignore the new value, only adding the new value if the
+key *doesn’t* already have a value. Or you could combine the old value and the
+new value. Let’s look at how to do each of these!
+-->
+<p>ハッシュマップ内のデータを変えたい時は、すでにキーに値が紐づいている場合の扱い方を決めなければなりません。
 古い値を新しい値で置き換えて、古い値を完全に無視することもできます。古い値を保持して、
 新しい値を無視し、キーにまだ値が<em>ない</em>場合に新しい値を追加するだけにすることもできます。
 あるいは、古い値と新しい値を組み合わせることもできます。各方法について見ていきましょう！</p>
@@ -14261,88 +14255,96 @@ of these!
 <!--
 If we insert a key and a value into a hash map and then insert that same key
 with a different value, the value associated with that key will be replaced.
-Even though the code in Listing 8-24 calls `insert` twice, the hash map will
+Even though the code in Listing 8-23 calls `insert` twice, the hash map will
 only contain one key/value pair because we’re inserting the value for the Blue
 team’s key both times.
 -->
 <p>キーと値をハッシュマップに挿入し、同じキーを異なる値で挿入したら、そのキーに紐づけられている値は置換されます。
-リスト8-24のコードは、<code>insert</code>を二度呼んでいるものの、ハッシュマップには一つのキーと値の組しか含まれません。
+リスト8-23のコードは、<code>insert</code>を二度呼んでいるものの、ハッシュマップには一つのキーと値の組しか含まれません。
 なぜなら、ブルーチームキーに対する値を2回とも挿入しているからです。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    use std::collections::HashMap;
 
-let mut scores = HashMap::new();
+    let mut scores = HashMap::new();
 
-scores.insert(String::from(&quot;Blue&quot;), 10);
-scores.insert(String::from(&quot;Blue&quot;), 25);
+    scores.insert(String::from(&quot;Blue&quot;), 10);
+    scores.insert(String::from(&quot;Blue&quot;), 25);
 
-println!(&quot;{:?}&quot;, scores);
+    println!(&quot;{:?}&quot;, scores);
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-24: Replacing a value stored with a particular
+<span class="caption">Listing 8-23: Replacing a value stored with a particular
 key</span>
 -->
-<p><span class="caption">リスト8-24: 特定のキーで保持された値を置き換える</span></p>
+<p><span class="caption">リスト8-23: 特定のキーで保持された値を置き換える</span></p>
 <!--
 This code will print `{"Blue": 25}`. The original value of `10` has been
 overwritten.
 -->
 <p>このコードは、<code>{&quot;Blue&quot;: 25}</code>と出力するでしょう。<code>10</code>という元の値は上書きされたのです。</p>
+<!-- Old headings. Do not remove or links may break. -->
 <!--
-#### Only Inserting a Value If the Key Has No Value
+<a id="only-inserting-a-value-if-the-key-has-no-value"></a>
 -->
-<h4 id="キーに値がなかった時のみ値を挿入する"><a class="header" href="#キーに値がなかった時のみ値を挿入する">キーに値がなかった時のみ値を挿入する</a></h4>
 <!--
-It’s common to check whether a particular key has a value and if it doesn’t,
-insert a value for it. Hash maps have a special API for this called `entry`
-that takes the key we want to check as a parameter. The return value of the
-`entry` method is an enum called `Entry` that represents a value that might or
-might not exist. Let’s say we want to check whether the key for the Yellow team
-has a value associated with it. If it doesn’t, we want to insert the value 50,
-and the same for the Blue team. Using the `entry` API, the code looks like
-Listing 8-25.
+#### Adding a Key and Value Only If a Key Isn’t Present
 -->
-<p>特定のキーに値があるか確認することは一般的であり、存在しない時に値を挿入することも一般的です。
-ハッシュマップには、これを行う<code>entry</code>と呼ばれる特別なAPIがあり、これは、引数としてチェックしたいキーを取ります。
+<h4 id="キーが存在しない場合のみキーと値を追加する"><a class="header" href="#キーが存在しない場合のみキーと値を追加する">キーが存在しない場合のみキーと値を追加する</a></h4>
+<!--
+It’s common to check whether a particular key already exists in the hash map
+with a value then take the following actions: if the key does exist in the hash
+map, the existing value should remain the way it is. If the key doesn’t exist,
+insert it and a value for it.
+-->
+<p>特定のキーがハッシュマップ内に値とともに存在しているか確認して、以下のアクションを取ることは一般的でしょう:
+キーがハッシュマップに存在する場合は、既存の値はそのままにします。
+キーが存在しない場合は、そのキーとそれに対応する値を挿入します。</p>
+<!--
+Hash maps have a special API for this called `entry` that takes the key you
+want to check as a parameter. The return value of the `entry` method is an enum
+called `Entry` that represents a value that might or might not exist. Let’s say
+we want to check whether the key for the Yellow team has a value associated
+with it. If it doesn’t, we want to insert the value 50, and the same for the
+Blue team. Using the `entry` API, the code looks like Listing 8-24.
+-->
+<p>ハッシュマップには、これを行う<code>entry</code>と呼ばれる特別なAPIがあり、これは、引数としてチェックしたいキーを取ります。
 この<code>entry</code>メソッドの戻り値は、<code>Entry</code>と呼ばれるenumであり、これは存在したりしなかったりする可能性のある値を表します。
 イエローチームに対するキーに値が紐づけられているか否か確認したくなったとしましょう。存在しなかったら、
-50という値を挿入したく、ブルーチームに対しても同様です。<code>entry</code>APIを使用すれば、コードはリスト8-25のようになります。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
+50という値を挿入したく、ブルーチームに対しても同様です。<code>entry</code>APIを使用すれば、コードはリスト8-24のようになります。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    use std::collections::HashMap;
 
-let mut scores = HashMap::new();
-scores.insert(String::from(&quot;Blue&quot;), 10);
+    let mut scores = HashMap::new();
+    scores.insert(String::from(&quot;Blue&quot;), 10);
 
-scores.entry(String::from(&quot;Yellow&quot;)).or_insert(50);
-scores.entry(String::from(&quot;Blue&quot;)).or_insert(50);
+    scores.entry(String::from(&quot;Yellow&quot;)).or_insert(50);
+    scores.entry(String::from(&quot;Blue&quot;)).or_insert(50);
 
-println!(&quot;{:?}&quot;, scores);
+    println!(&quot;{:?}&quot;, scores);
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-25: Using the `entry` method to only insert if
+<span class="caption">Listing 8-24: Using the `entry` method to only insert if
 the key does not already have a value</span>
 -->
-<p><span class="caption">リスト8-25: <code>entry</code>メソッドを使ってキーに値がない場合だけ挿入する</span></p>
+<p><span class="caption">リスト8-24: <code>entry</code>メソッドを使ってキーに値がない場合だけ挿入する</span></p>
 <!--
 The `or_insert` method on `Entry` is defined to return a mutable reference to
 the value for the corresponding `Entry` key if that key exists, and if not,
 inserts the parameter as the new value for this key and returns a mutable
 reference to the new value. This technique is much cleaner than writing the
-logic ourselves, and in addition, plays more nicely with the borrow checker.
+logic ourselves and, in addition, plays more nicely with the borrow checker.
 -->
 <p><code>Entry</code>上の<code>or_insert</code>メソッドは、対応する<code>Entry</code>キーが存在した時にそのキーに対する値への可変参照を返すために定義されており、
 もしなかったら、引数をこのキーの新しい値として挿入し、新しい値への可変参照を返します。このテクニックの方が、
 そのロジックを自分で書くよりもはるかに綺麗な上に、borrow checkerとも親和性が高くなります。</p>
 <!--
-Running the code in Listing 8-25 will print `{"Yellow": 50, "Blue": 10}`. The
+Running the code in Listing 8-24 will print `{"Yellow": 50, "Blue": 10}`. The
 first call to `entry` will insert the key for the Yellow team with the value
 50 because the Yellow team doesn’t have a value already. The second call to
 `entry` will not change the hash map because the Blue team already has the
 value 10.
 -->
-<p>リスト8-25のコードを実行すると、<code>{&quot;Yellow&quot;: 50, &quot;Blue&quot;: 10}</code>と出力するでしょう。
+<p>リスト8-24のコードを実行すると、<code>{&quot;Yellow&quot;: 50, &quot;Blue&quot;: 10}</code>と出力するでしょう。
 最初の<code>entry</code>呼び出しは、まだイエローチームに対する値がないので、値50でイエローチームのキーを挿入します。
 <code>entry</code>の2回目の呼び出しはハッシュマップを変更しません。なぜなら、ブルーチームには既に10という値があるからです。</p>
 <!--
@@ -14351,73 +14353,87 @@ value 10.
 <h4 id="古い値に基づいて値を更新する"><a class="header" href="#古い値に基づいて値を更新する">古い値に基づいて値を更新する</a></h4>
 <!--
 Another common use case for hash maps is to look up a key’s value and then
-update it based on the old value. For instance, Listing 8-26 shows code that
+update it based on the old value. For instance, Listing 8-25 shows code that
 counts how many times each word appears in some text. We use a hash map with
 the words as keys and increment the value to keep track of how many times we’ve
 seen that word. If it’s the first time we’ve seen a word, we’ll first insert
-the value 0:
+the value 0.
 -->
 <p>ハッシュマップの別の一般的なユースケースは、キーの値を探し、古い値に基づいてそれを更新することです。
-例えば、リスト8-26は、各単語があるテキストに何回出現するかを数え上げるコードを示しています。
+例えば、リスト8-25は、各単語があるテキストに何回出現するかを数え上げるコードを示しています。
 キーに単語を入れたハッシュマップを使用し、その単語を何回見かけたか追いかけるために値を増やします。
-ある単語を見かけたのが最初だったら、まず0という値を挿入します:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::HashMap;
+ある単語を見かけたのが最初だったら、まず0という値を挿入します。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
+</span>    use std::collections::HashMap;
 
-let text = &quot;hello world wonderful world&quot;;
+    let text = &quot;hello world wonderful world&quot;;
 
-let mut map = HashMap::new();
+    let mut map = HashMap::new();
 
-for word in text.split_whitespace() {
-    let count = map.entry(word).or_insert(0);
-    *count += 1;
-}
+    for word in text.split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1;
+    }
 
-println!(&quot;{:?}&quot;, map);
+    println!(&quot;{:?}&quot;, map);
 <span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 8-26: Counting occurrences of words using a hash
+<span class="caption">Listing 8-25: Counting occurrences of words using a hash
 map that stores words and counts</span>
 -->
-<p><span class="caption">リスト8-26: 単語とカウントを保持するハッシュマップを使って単語の出現数をカウントする</span></p>
+<p><span class="caption">リスト8-25: 単語とカウントを保持するハッシュマップを使って単語の出現数をカウントする</span></p>
 <!--
-This code will print `{"world": 2, "hello": 1, "wonderful": 1}`. The
-`or_insert` method actually returns a mutable reference (`&mut V`) to the value
-for this key. Here we store that mutable reference in the `count` variable, so
-in order to assign to that value, we must first dereference `count` using the
-asterisk (`*`). The mutable reference goes out of scope at the end of the `for`
-loop, so all of these changes are safe and allowed by the borrowing rules.
+This code will print `{"world": 2, "hello": 1, "wonderful": 1}`. You might see
+the same key/value pairs printed in a different order: recall from the
+[“Accessing Values in a Hash Map”][access] section that
+iterating over a hash map happens in an arbitrary order.
 -->
 <p>このコードは、<code>{&quot;world&quot;: 2, &quot;hello&quot;: 1, &quot;wonderful&quot;: 1}</code>と出力するでしょう。
-<code>or_insert</code>関数は実際、このキーに対する値への可変参照(<code>&amp;mut V</code>)を返すのです。
+同じキー/値ペアが、異なる順で印字されるかもしれません:
+<a href="ch08-03-hash-maps.html#%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%83%9E%E3%83%83%E3%83%97%E3%81%AE%E5%80%A4%E3%81%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%99%E3%82%8B">「ハッシュマップの値にアクセスする」</a>の節で説明した、
+ハッシュマップの走査は任意の順で起こるということを思い出してください。</p>
+<!--
+The `split_whitespace` method returns an iterator over sub-slices, separated by
+whitespace, of the value in `text`. The `or_insert` method returns a mutable
+reference (`&mut V`) to the value for the specified key. Here we store that
+mutable reference in the `count` variable, so in order to assign to that value,
+we must first dereference `count` using the asterisk (`*`). The mutable
+reference goes out of scope at the end of the `for` loop, so all of these
+changes are safe and allowed by the borrowing rules.
+-->
+<p><code>split_whitespace</code>メソッドは、<code>text</code>の値から、ホワイトスペースによって区切られた部分スライスを走査するイテレータを返します。
+<code>or_insert</code>関数は、指定されたキーに対する値への可変参照(<code>&amp;mut V</code>)を返すのです。
 ここでその可変参照を<code>count</code>変数に保持しているので、その値に代入するには、
 まずアスタリスク(<code>*</code>)で<code>count</code>を参照外ししなければならないのです。この可変参照は、
 <code>for</code>ループの終端でスコープを抜けるので、これらの変更は全て安全であり、借用規則により許可されるのです。</p>
 <!--
-### Hashing Function
+### Hashing Functions
 -->
 <h3 id="ハッシュ関数"><a class="header" href="#ハッシュ関数">ハッシュ関数</a></h3>
 <!--
-By default, `HashMap` uses a cryptographically secure hashing function that can
-provide resistance to Denial of Service (DoS) attacks. This is not the fastest
-hashing algorithm available, but the trade-off for better security that comes
-with the drop in performance is worth it. If you profile your code and find
-that the default hash function is too slow for your purposes, you can switch to
-another function by specifying a different *hasher*. A hasher is a type that
-implements the `BuildHasher` trait. We’ll talk about traits and how to
-implement them in Chapter 10. You don’t necessarily have to implement your own
-hasher from scratch; [crates.io](https://crates.io) has libraries shared by
+By default, `HashMap` uses a hashing function called *SipHash* that can provide
+resistance to Denial of Service (DoS) attacks involving hash
+tables[^siphash]. This is not the fastest hashing algorithm
+available, but the trade-off for better security that comes with the drop in
+performance is worth it. If you profile your code and find that the default
+hash function is too slow for your purposes, you can switch to another function
+by specifying a different hasher. A *hasher* is a type that implements the
+`BuildHasher` trait. We’ll talk about traits and how to implement them in
+Chapter 10. You don’t necessarily have to implement your own hasher from
+scratch; [crates.io](https://crates.io/) has libraries shared by
 other Rust users that provide hashers implementing many common hashing
 algorithms.
 -->
-<p>標準では、<code>HashMap</code>はサービス拒否(DoS)アタックに対して抵抗を示す暗号学的に安全なハッシュ関数を使用します。
+<p><code>HashMap</code>はデフォルトでは、ハッシュテーブルに関するサービス拒否(DoS)攻撃に対する耐性を提供する、<em>SipHash</em>と呼ばれるハッシュ関数を使用します<sup class="footnote-reference"><a href="#siphash">1</a></sup>。
 これは、利用可能な最速のハッシュアルゴリズムではありませんが、パフォーマンスの欠落と引き換えに安全性を得るというトレードオフは、
 価値があります。自分のコードをプロファイリングして、自分の目的では標準のハッシュ関数は遅すぎると判明したら、
-異なる<em>hasher</em>を指定することで別の関数に切り替えることができます。hasherとは、
+異なるhasherを指定することで別の関数に切り替えることができます。<em>hasher</em>とは、
 <code>BuildHasher</code>トレイトを実装する型のことです。トレイトについてとその実装方法については、第10章で語ります。
-必ずしも独自のhasherを1から作り上げる必要はありません; <a href="https://crates.io">crates.io</a>には、
+必ずしも独自のhasherを1から作り上げる必要はありません; <a href="https://crates.io/">crates.io</a>には、
 他のRustユーザによって共有された多くの一般的なハッシュアルゴリズムを実装したhasherを提供するライブラリがあります。</p>
+<div class="footnote-definition" id="siphash"><sup class="footnote-definition-label">1</sup>
+<p><a href="https://en.wikipedia.org/wiki/SipHash">https://en.wikipedia.org/wiki/SipHash</a></p>
+</div>
 <!--
 ## Summary
 -->
@@ -14430,21 +14446,21 @@ some exercises you should now be equipped to solve:
 <p>ベクタ、文字列、ハッシュマップはデータを保持し、アクセスし、変更する必要のあるプログラムで必要になる、
 多くの機能を提供してくれるでしょう。今なら解決可能なはずの練習問題を用意しました:</p>
 <!--
-* Given a list of integers, use a vector and return the mean (the average
-value), median (when sorted, the value in the middle position), and mode (the
-value that occurs most often; a hash map will be helpful here) of the list.
+* Given a list of integers, use a vector and return the median (when sorted,
+  the value in the middle position) and mode (the value that occurs most often;
+  a hash map will be helpful here) of the list.
 * Convert strings to pig latin. The first consonant of each word is moved to
-the end of the word and “ay” is added, so “first” becomes “irst-fay.” Words
-that start with a vowel have “hay” added to the end instead (“apple” becomes
-“apple-hay”). Keep in mind the details about UTF-8 encoding!
+  the end of the word and “ay” is added, so “first” becomes “irst-fay.” Words
+  that start with a vowel have “hay” added to the end instead (“apple” becomes
+  “apple-hay”). Keep in mind the details about UTF-8 encoding!
 * Using a hash map and vectors, create a text interface to allow a user to add
-employee names to a department in a company. For example, “Add Sally to
-Engineering” or “Add Amir to Sales.” Then let the user retrieve a list of all
-people in a department or all people in the company by department, sorted
-alphabetically.
+  employee names to a department in a company. For example, “Add Sally to
+  Engineering” or “Add Amir to Sales.” Then let the user retrieve a list of all
+  people in a department or all people in the company by department, sorted
+  alphabetically.
 -->
 <ul>
-<li>整数のリストが与えられ、ベクタを使ってmean(平均値)、median(ソートされた時に真ん中に来る値)、
+<li>整数のリストが与えられ、ベクタを使ってmedian(ソートされた時に真ん中に来る値)、
 mode(最も頻繁に出現する値; ハッシュマップがここでは有効活用できるでしょう)を返してください。</li>
 <li>文字列をピッグ・ラテン(<code>訳注</code>: 英語の言葉遊びの一つ)に変換してください。各単語の最初の子音は、
 単語の終端に移り、&quot;ay&quot;が足されます。従って、&quot;first&quot;は&quot;irst-fay&quot;になります。ただし、
@@ -14460,11 +14476,16 @@ and hash maps have that will be helpful for these exercises!
 -->
 <p>標準ライブラリのAPIドキュメントには、この練習問題に有用な、ベクタ、文字列、ハッシュマップのメソッドが解説されています。</p>
 <!--
-We’re getting into more complex programs in which operations can fail; so, it’s
-a perfect time to discuss error handling. We'll do that next!
+We’re getting into more complex programs in which operations can fail, so, it’s
+a perfect time to discuss error handling. We’ll do that next!
 -->
-<p>処理が失敗することもあるような、より複雑なプログラムに入り込んできています; ということは、
-エラーの処理法について議論するのにぴったりということです。次はそれをします！</p>
+<p>処理が失敗することもあるような、より複雑なプログラムに入り込んできています。
+ということは、エラーの処理法について議論するのにぴったりということです。次はそれをします！</p>
+<!--
+[validating-references-with-lifetimes]:
+ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
+[access]: #accessing-values-in-a-hash-map
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Error Handling
 -->
