@@ -152,27 +152,26 @@
 We’ll improve `minigrep` by adding an extra feature: an option for
 case-insensitive searching that the user can turn on via an environment
 variable. We could make this feature a command line option and require that
-users enter it each time they want it to apply, but instead we’ll use an
-environment variable. Doing so allows our users to set the environment variable
-once and have all their searches be case insensitive in that terminal session.
+users enter it each time they want it to apply, but by instead making it an
+environment variable, we allow our users to set the environment variable once
+and have all their searches be case insensitive in that terminal session.
 -->
 <p>おまけの機能を追加して<code>minigrep</code>を改善します: 環境変数でユーザがオンにできる大文字小文字無視の検索用のオプションです。
 この機能をコマンドラインオプションにして、適用したい度にユーザが入力しなければならないようにすることもできますが、
-代わりに環境変数を使用します。そうすることでユーザは1回環境変数をセットすれば、そのターミナルセッションの間は、
-大文字小文字無視の検索を行うことができるようになるわけです。</p>
+代わりに環境変数とすることで、ユーザは1回環境変数をセットすれば、そのターミナルセッションの間は大文字小文字無視の検索を行うことができるようにします。</p>
 <!--
 ### Writing a Failing Test for the Case-Insensitive `search` Function
 -->
 <h3 id="大文字小文字を区別しないsearch関数用に失敗するテストを書く"><a class="header" href="#大文字小文字を区別しないsearch関数用に失敗するテストを書く">大文字小文字を区別しない<code>search</code>関数用に失敗するテストを書く</a></h3>
 <!--
-We want to add a new `search_case_insensitive` function that we’ll call when
-the environment variable is on. We’ll continue to follow the TDD process, so
-the first step is again to write a failing test. We’ll add a new test for the
-new `search_case_insensitive` function and rename our old test from
+We first add a new `search_case_insensitive` function that will be called when
+the environment variable has a value. We’ll continue to follow the TDD process,
+so the first step is again to write a failing test. We’ll add a new test for
+the new `search_case_insensitive` function and rename our old test from
 `one_result` to `case_sensitive` to clarify the differences between the two
 tests, as shown in Listing 12-20.
 -->
-<p>環境変数がオンの場合に呼び出す<code>search_case_insensitive</code>関数を新しく追加したいです。テスト駆動開発の過程に従い続けるので、
+<p>まず、環境変数が値を持つ場合に呼び出される<code>search_case_insensitive</code>関数を新しく追加します。テスト駆動開発の過程に従い続けるので、
 最初の手順は、今回も失敗するテストを書くことです。新しい<code>search_case_insensitive</code>関数用の新規テストを追加し、
 古いテストを<code>one_result</code>から<code>case_sensitive</code>に名前変更して、二つのテストの差異を明確化します。
 リスト12-20に示したようにですね。</p>
@@ -180,36 +179,68 @@ tests, as shown in Listing 12-20.
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">use std::error::Error;
+</span><span class="boring">use std::fs;
+</span><span class="boring">
+</span><span class="boring">pub struct Config {
+</span><span class="boring">    pub query: String,
+</span><span class="boring">    pub file_path: String,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl Config {
+</span><span class="boring">    pub fn build(args: &amp;[String]) -&gt; Result&lt;Config, &amp;'static str&gt; {
+</span><span class="boring">        if args.len() &lt; 3 {
+</span><span class="boring">            return Err(&quot;not enough arguments&quot;);
+</span><span class="boring">        }
+</span><span class="boring">
+</span><span class="boring">        let query = args[1].clone();
+</span><span class="boring">        let file_path = args[2].clone();
+</span><span class="boring">
+</span><span class="boring">        Ok(Config { query, file_path })
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn run(config: Config) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+</span><span class="boring">    let contents = fs::read_to_string(config.file_path)?;
+</span><span class="boring">
+</span><span class="boring">    for line in search(&amp;config.query, &amp;contents) {
+</span><span class="boring">        println!(&quot;{line}&quot;);
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn search&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.contains(query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
 </span>#[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
     fn case_sensitive() {
         let query = &quot;duct&quot;;
-// Rust
-// 安全かつ高速で生産的
-// 三つを選んで
-// ガムテープ
         let contents = &quot;\
 Rust:
 safe, fast, productive.
 Pick three.
 Duct tape.&quot;;
 
-        assert_eq!(
-            vec![&quot;safe, fast, productive.&quot;],
-            search(query, contents)
-        );
+        assert_eq!(vec![&quot;safe, fast, productive.&quot;], search(query, contents));
     }
 
     #[test]
     fn case_insensitive() {
         let query = &quot;rUsT&quot;;
-// (最後の行のみ)
-// 私を信じて
         let contents = &quot;\
 Rust:
 safe, fast, productive.
@@ -221,8 +252,7 @@ Trust me.&quot;;
             search_case_insensitive(query, contents)
         );
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 12-20: Adding a new failing test for the
 case-insensitive function we’re about to add</span>
@@ -230,8 +260,8 @@ case-insensitive function we’re about to add</span>
 <p><span class="caption">リスト12-20: 追加しようとしている大文字小文字を区別しない関数用の失敗するテストを新しく追加する</span></p>
 <!--
 Note that we’ve edited the old test’s `contents` too. We’ve added a new line
-with the text `“Duct tape”` using a capital D that shouldn’t match the query
-`“duct”` when we’re searching in a case-sensitive manner. Changing the old test
+with the text `"Duct tape."` using a capital D that shouldn’t match the query
+`"duct"` when we’re searching in a case-sensitive manner. Changing the old test
 in this way helps ensure that we don’t accidentally break the case-sensitive
 search functionality that we’ve already implemented. This test should pass now
 and should continue to pass as we work on the case-insensitive search.
@@ -241,19 +271,19 @@ and should continue to pass as we work on the case-insensitive search.
 このように古いテストを変更することで、既に実装済みの大文字小文字を区別する検索機能を誤って壊してしまわないことを保証する助けになります。
 このテストはもう通り、大文字小文字を区別しない検索に取り掛かっても通り続けるはずです。</p>
 <!--
-The new test for the case-*insensitive* search uses “rUsT” as its query. In the
-`search_case_insensitive` function we’re about to add, the query “rUsT”
-should match the line containing “Rust:” with a capital R and match the line
-`“Trust me.”` even though both have different casing than the query. This is
+The new test for the case-*insensitive* search uses `"rUsT"` as its query. In
+the `search_case_insensitive` function we’re about to add, the query `"rUsT"`
+should match the line containing `"Rust:"` with a capital R and match the line
+`"Trust me."` even though both have different casing from the query. This is
 our failing test, and it will fail to compile because we haven’t yet defined
 the `search_case_insensitive` function. Feel free to add a skeleton
 implementation that always returns an empty vector, similar to the way we did
 for the `search` function in Listing 12-16 to see the test compile and fail.
 -->
-<p>大文字小文字を区別<em>しない</em>検索の新しいテストは、クエリに&quot;rUsT&quot;を使用しています。
-追加直前の<code>search_case_insensitive</code>関数では、&quot;rUsT&quot;というクエリは、
-両方ともクエリとは大文字小文字が異なるのに、大文字Rの&quot;Rust:&quot;を含む行と、
-<code>“Trust me.”</code>という行にもマッチするはずです。これが失敗するテストであり、まだ<code>search_case_insensitive</code>関数を定義していないので、
+<p>大文字小文字を区別<em>しない</em>検索の新しいテストは、クエリに<code>&quot;rUsT&quot;</code>を使用しています。
+追加直前の<code>search_case_insensitive</code>関数では、<code>&quot;rUsT&quot;</code>というクエリは、
+両方ともクエリとは大文字小文字が異なるのに、大文字Rの<code>&quot;Rust:&quot;</code>を含む行と、
+<code>&quot;Trust me.&quot;</code>という行にもマッチするはずです。これが失敗するテストであり、まだ<code>search_case_insensitive</code>関数を定義していないので、
 コンパイルは失敗するでしょう。リスト12-16の<code>search</code>関数で行ったのと同様に空のベクタを常に返すような仮実装を追加し、テストがコンパイルされるものの、失敗する様をご自由に確認してください。</p>
 <!--
 ### Implementing the `search_case_insensitive` Function
@@ -272,9 +302,53 @@ they’ll be the same case when we check whether the line contains the query.
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub fn search_case_insensitive&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
+<pre><code class="language-rust noplayground"><span class="boring">use std::error::Error;
+</span><span class="boring">use std::fs;
+</span><span class="boring">
+</span><span class="boring">pub struct Config {
+</span><span class="boring">    pub query: String,
+</span><span class="boring">    pub file_path: String,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl Config {
+</span><span class="boring">    pub fn build(args: &amp;[String]) -&gt; Result&lt;Config, &amp;'static str&gt; {
+</span><span class="boring">        if args.len() &lt; 3 {
+</span><span class="boring">            return Err(&quot;not enough arguments&quot;);
+</span><span class="boring">        }
+</span><span class="boring">
+</span><span class="boring">        let query = args[1].clone();
+</span><span class="boring">        let file_path = args[2].clone();
+</span><span class="boring">
+</span><span class="boring">        Ok(Config { query, file_path })
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn run(config: Config) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+</span><span class="boring">    let contents = fs::read_to_string(config.file_path)?;
+</span><span class="boring">
+</span><span class="boring">    for line in search(&amp;config.query, &amp;contents) {
+</span><span class="boring">        println!(&quot;{line}&quot;);
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn search&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.contains(query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
+</span>pub fn search_case_insensitive&lt;'a&gt;(
+    query: &amp;str,
+    contents: &amp;'a str,
+) -&gt; Vec&lt;&amp;'a str&gt; {
     let query = query.to_lowercase();
     let mut results = Vec::new();
 
@@ -286,7 +360,38 @@ they’ll be the same case when we check whether the line contains the query.
 
     results
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">#[cfg(test)]
+</span><span class="boring">mod tests {
+</span><span class="boring">    use super::*;
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_sensitive() {
+</span><span class="boring">        let query = &quot;duct&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Duct tape.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(vec![&quot;safe, fast, productive.&quot;], search(query, contents));
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_insensitive() {
+</span><span class="boring">        let query = &quot;rUsT&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Trust me.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(
+</span><span class="boring">            vec![&quot;Rust:&quot;, &quot;Trust me.&quot;],
+</span><span class="boring">            search_case_insensitive(query, contents)
+</span><span class="boring">        );
+</span><span class="boring">    }
+</span><span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 12-21: Defining the `search_case_insensitive`
 function to lowercase the query and the line before comparing them</span>
@@ -294,19 +399,26 @@ function to lowercase the query and the line before comparing them</span>
 <p><span class="caption">リスト12-21: 比較する前にクエリと行を小文字化するよう、<code>search_case_insensitive</code>関数を定義する</span></p>
 <!--
 First, we lowercase the `query` string and store it in a shadowed variable with
-the same name. Calling `to_lowercase` on the query is necessary so no matter
-whether the user’s query is `“rust”`, `“RUST”`, `“Rust”`, or `“rUsT”`, we’ll treat the
-query as if it was `“rust”` and be insensitive to the case.
+the same name. Calling `to_lowercase` on the query is necessary so no
+matter whether the user’s query is `"rust"`, `"RUST"`, `"Rust"`, or `"rUsT"`,
+we’ll treat the query as if it were `"rust"` and be insensitive to the case.
+While `to_lowercase` will handle basic Unicode, it won’t be 100% accurate. If
+we were writing a real application, we’d want to do a bit more work here, but
+this section is about environment variables, not Unicode, so we’ll leave it at
+that here.
 -->
 <p>まず、<code>query</code>文字列を小文字化し、同じ名前の覆い隠された変数に保存します。ユーザのクエリが<code>&quot;rust&quot;</code>や<code>&quot;RUST&quot;</code>、
 <code>&quot;Rust&quot;</code>、<code>&quot;rUsT&quot;</code>などだったりしても、<code>&quot;rust&quot;</code>であり、大文字小文字を区別しないかのようにクエリを扱えるように、
-<code>to_lowercase</code>をクエリに対して呼び出すことは必須です。</p>
+<code>to_lowercase</code>をクエリに対して呼び出すことは必須です。
+<code>to_lowercase</code>は基本的なUnicodeを処理しますが、100%正確ではありません。
+現実のアプリケーションを書いているとしたら、ここでもう少し処理を入れたくなるでしょうが、
+この節は環境変数についての節であってUnicodeについての節ではないので、ここではそのままにしておきましょう。</p>
 <!--
 Note that `query` is now a `String` rather than a string slice, because calling
 `to_lowercase` creates new data rather than referencing existing data. Say the
-query is `“rUsT”`, as an example: that string slice doesn’t contain a lowercase
+query is `"rUsT"`, as an example: that string slice doesn’t contain a lowercase
 `u` or `t` for us to use, so we have to allocate a new `String` containing
-`“rust”`. When we pass `query` as an argument to the `contains` method now, we
+`"rust"`. When we pass `query` as an argument to the `contains` method now, we
 need to add an ampersand because the signature of `contains` is defined to take
 a string slice.
 -->
@@ -316,25 +428,39 @@ a string slice.
 <code>&quot;rust&quot;</code>を含む新しい<code>String</code>のメモリを確保しなければならないのです。今、<code>contains</code>メソッドに引数として<code>query</code>を渡すと、
 アンド記号を追加する必要があります。<code>contains</code>のシグニチャは、文字列スライスを取るよう定義されているからです。</p>
 <!--
-2行目真ん中、to lowercase ...がかかる先が微妙。今の訳の通りなら、beforeの前にtoを記述する気もする
+Next, we add a call to `to_lowercase` on each `line` to lowercase all
+characters. Now that we’ve converted `line` and `query` to lowercase, we’ll
+find matches no matter what the case of the query is.
 -->
-<!--
-Next, we add a call to `to_lowercase` on each `line` before we check whether it
-contains `query` to lowercase all characters. Now that we’ve converted `line`
-and `query` to lowercase, we’ll find matches no matter what the case of the
-query is.
--->
-<p>次に、各<code>line</code>が<code>query</code>を含むか確かめる前に<code>to_lowercase</code>の呼び出しを追加し、全文字を小文字化しています。
+<p>次に、各<code>line</code>に対して<code>to_lowercase</code>の呼び出しを追加し、全文字を小文字化しています。
 今や<code>line</code>と<code>query</code>を小文字に変換したので、クエリが大文字であろうと小文字であろうとマッチを検索するでしょう。</p>
 <!--
 Let’s see if this implementation passes the tests:
 -->
 <p>この実装がテストを通過するか確認しましょう:</p>
-<pre><code class="language-text">running 2 tests
-test test::case_insensitive ... ok
-test test::case_sensitive ... ok
+<pre><code class="language-console">$ cargo test
+   Compiling minigrep v0.1.0 (file:///projects/minigrep)
+    Finished test [unoptimized + debuginfo] target(s) in 1.33s
+     Running unittests src/lib.rs (target/debug/deps/minigrep-9cd200e5fac0fc94)
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+running 2 tests
+test tests::case_insensitive ... ok
+test tests::case_sensitive ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/minigrep-9cd200e5fac0fc94)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests minigrep
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
 </code></pre>
 <!--
 Great! They passed. Now, let’s call the new `search_case_insensitive` function
@@ -350,152 +476,378 @@ this field anywhere yet:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">use std::error::Error;
+</span><span class="boring">use std::fs;
+</span><span class="boring">
 </span>pub struct Config {
     pub query: String,
-    pub filename: String,
-    pub case_sensitive: bool,
+    pub file_path: String,
+    pub ignore_case: bool,
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">impl Config {
+</span><span class="boring">    pub fn build(args: &amp;[String]) -&gt; Result&lt;Config, &amp;'static str&gt; {
+</span><span class="boring">        if args.len() &lt; 3 {
+</span><span class="boring">            return Err(&quot;not enough arguments&quot;);
+</span><span class="boring">        }
+</span><span class="boring">
+</span><span class="boring">        let query = args[1].clone();
+</span><span class="boring">        let file_path = args[2].clone();
+</span><span class="boring">
+</span><span class="boring">        Ok(Config { query, file_path })
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn run(config: Config) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+</span><span class="boring">    let contents = fs::read_to_string(config.file_path)?;
+</span><span class="boring">
+</span><span class="boring">    let results = if config.ignore_case {
+</span><span class="boring">        search_case_insensitive(&amp;config.query, &amp;contents)
+</span><span class="boring">    } else {
+</span><span class="boring">        search(&amp;config.query, &amp;contents)
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    for line in results {
+</span><span class="boring">        println!(&quot;{line}&quot;);
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn search&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.contains(query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn search_case_insensitive&lt;'a&gt;(
+</span><span class="boring">    query: &amp;str,
+</span><span class="boring">    contents: &amp;'a str,
+</span><span class="boring">) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let query = query.to_lowercase();
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.to_lowercase().contains(&amp;query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">#[cfg(test)]
+</span><span class="boring">mod tests {
+</span><span class="boring">    use super::*;
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_sensitive() {
+</span><span class="boring">        let query = &quot;duct&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Duct tape.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(vec![&quot;safe, fast, productive.&quot;], search(query, contents));
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_insensitive() {
+</span><span class="boring">        let query = &quot;rUsT&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Trust me.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(
+</span><span class="boring">            vec![&quot;Rust:&quot;, &quot;Trust me.&quot;],
+</span><span class="boring">            search_case_insensitive(query, contents)
+</span><span class="boring">        );
+</span><span class="boring">    }
+</span><span class="boring">}</span></code></pre>
 <!--
-Note that we added the `case_sensitive` field that holds a Boolean. Next, we
-need the `run` function to check the `case_sensitive` field’s value and use
-that to decide whether to call the `search` function or the
-`search_case_insensitive` function, as shown in Listing 12-22. Note this still
-won’t compile yet.
+We added the `ignore_case` field that holds a Boolean. Next, we need the `run`
+function to check the `ignore_case` field’s value and use that to decide
+whether to call the `search` function or the `search_case_insensitive`
+function, as shown in Listing 12-22. This still won’t compile yet.
 -->
-<p>論理値を持つ<code>case_sensitive</code>フィールドを追加したことに注意してください。次に、<code>run</code>関数に、
-<code>case_sensitive</code>フィールドの値を確認し、<code>search</code>関数か<code>search_case_insensitive</code>関数を呼ぶかを決定するのに使ってもらう必要があります。
-リスト12-22のようにですね。それでも、これはまだコンパイルできないことに注意してください。</p>
+<p>論理値を持つ<code>ignore_case</code>フィールドを追加しました。次に、<code>run</code>関数に、
+<code>ignore_case</code>フィールドの値を確認し、<code>search</code>関数か<code>search_case_insensitive</code>関数を呼ぶかを決定するのに使ってもらう必要があります。
+リスト12-22のようにですね。それでも、これはまだコンパイルできません。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">use std::error::Error;
-</span><span class="boring">use std::fs::File;
-</span><span class="boring">use std::io::prelude::*;
-</span><span class="boring">
-</span><span class="boring">fn search&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
-</span><span class="boring">     vec![]
-</span><span class="boring">}
-</span><span class="boring">
-</span><span class="boring">pub fn search_case_insensitive&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
-</span><span class="boring">     vec![]
-</span><span class="boring">}
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">use std::error::Error;
+</span><span class="boring">use std::fs;
 </span><span class="boring">
 </span><span class="boring">pub struct Config {
-</span><span class="boring">    query: String,
-</span><span class="boring">    filename: String,
-</span><span class="boring">    case_sensitive: bool,
+</span><span class="boring">    pub query: String,
+</span><span class="boring">    pub file_path: String,
+</span><span class="boring">    pub ignore_case: bool,
 </span><span class="boring">}
 </span><span class="boring">
-</span>pub fn run(config: Config) -&gt; Result&lt;(), Box&lt;Error&gt;&gt; {
-    let mut f = File::open(config.filename)?;
+</span><span class="boring">impl Config {
+</span><span class="boring">    pub fn build(args: &amp;[String]) -&gt; Result&lt;Config, &amp;'static str&gt; {
+</span><span class="boring">        if args.len() &lt; 3 {
+</span><span class="boring">            return Err(&quot;not enough arguments&quot;);
+</span><span class="boring">        }
+</span><span class="boring">
+</span><span class="boring">        let query = args[1].clone();
+</span><span class="boring">        let file_path = args[2].clone();
+</span><span class="boring">
+</span><span class="boring">        Ok(Config { query, file_path })
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span>pub fn run(config: Config) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+    let contents = fs::read_to_string(config.file_path)?;
 
-    let mut contents = String::new();
-    f.read_to_string(&amp;mut contents)?;
-
-    let results = if config.case_sensitive {
-        search(&amp;config.query, &amp;contents)
-    } else {
+    let results = if config.ignore_case {
         search_case_insensitive(&amp;config.query, &amp;contents)
+    } else {
+        search(&amp;config.query, &amp;contents)
     };
 
     for line in results {
-        println!(&quot;{}&quot;, line);
+        println!(&quot;{line}&quot;);
     }
 
     Ok(())
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">pub fn search&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.contains(query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn search_case_insensitive&lt;'a&gt;(
+</span><span class="boring">    query: &amp;str,
+</span><span class="boring">    contents: &amp;'a str,
+</span><span class="boring">) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let query = query.to_lowercase();
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.to_lowercase().contains(&amp;query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">#[cfg(test)]
+</span><span class="boring">mod tests {
+</span><span class="boring">    use super::*;
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_sensitive() {
+</span><span class="boring">        let query = &quot;duct&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Duct tape.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(vec![&quot;safe, fast, productive.&quot;], search(query, contents));
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_insensitive() {
+</span><span class="boring">        let query = &quot;rUsT&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Trust me.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(
+</span><span class="boring">            vec![&quot;Rust:&quot;, &quot;Trust me.&quot;],
+</span><span class="boring">            search_case_insensitive(query, contents)
+</span><span class="boring">        );
+</span><span class="boring">    }
+</span><span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 12-22: Calling either `search` or
-`search_case_insensitive` based on the value in `config.case_sensitive`</span>
+`search_case_insensitive` based on the value in `config.ignore_case`</span>
 -->
-<p><span class="caption">リスト12-22: <code>config.case_sensitive</code>の値に基づいて<code>search</code>か<code>search_case_insensitive</code>を呼び出す</span></p>
+<p><span class="caption">リスト12-22: <code>config.ignore_case</code>の値に基づいて<code>search</code>か<code>search_case_insensitive</code>を呼び出す</span></p>
 <!--
 Finally, we need to check for the environment variable. The functions for
 working with environment variables are in the `env` module in the standard
-library, so we want to bring that module into scope with a `use std::env;` line
-at the top of *src/lib.rs*. Then we’ll use the `var` function from the `env`
-module to check for an environment variable named `CASE_INSENSITIVE`, as shown
-in Listing 12-23.
+library, so we bring that module into scope at the top of *src/lib.rs*. Then
+we’ll use the `var` function from the `env` module to check to see if any value
+has been set for an environment variable named `IGNORE_CASE`, as shown in
+Listing 12-23.
 -->
 <p>最後に、環境変数を確認する必要があります。環境変数を扱う関数は、標準ライブラリの<code>env</code>モジュールにあるので、
-<code>use std::env;</code>行で<em>src/lib.rs</em>の冒頭でそのモジュールをスコープに持ってくる必要があります。そして、
-<code>env</code>モジュールから<code>var</code>関数を使用して<code>CASE_INSENSITIVE</code>という環境変数のチェックを行います。
+<em>src/lib.rs</em>の冒頭でそのモジュールをスコープ内に持ち込みます。そして、
+<code>env</code>モジュールから<code>var</code>関数を使用して、<code>IGNORE_CASE</code>という環境変数に何らかの値が設定されているかチェックします。
 リスト12-23のようにですね。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::env;
-<span class="boring">struct Config {
-</span><span class="boring">    query: String,
-</span><span class="boring">    filename: String,
-</span><span class="boring">    case_sensitive: bool,
-</span><span class="boring">}
-</span>
+<pre><code class="language-rust noplayground">use std::env;
 // --snip--
 
-impl Config {
-    pub fn new(args: &amp;[String]) -&gt; Result&lt;Config, &amp;'static str&gt; {
+<span class="boring">use std::error::Error;
+</span><span class="boring">use std::fs;
+</span><span class="boring">
+</span><span class="boring">pub struct Config {
+</span><span class="boring">    pub query: String,
+</span><span class="boring">    pub file_path: String,
+</span><span class="boring">    pub ignore_case: bool,
+</span><span class="boring">}
+</span><span class="boring">
+</span>impl Config {
+    pub fn build(args: &amp;[String]) -&gt; Result&lt;Config, &amp;'static str&gt; {
         if args.len() &lt; 3 {
             return Err(&quot;not enough arguments&quot;);
         }
 
         let query = args[1].clone();
-        let filename = args[2].clone();
+        let file_path = args[2].clone();
 
-        let case_sensitive = env::var(&quot;CASE_INSENSITIVE&quot;).is_err();
+        let ignore_case = env::var(&quot;IGNORE_CASE&quot;).is_ok();
 
-        Ok(Config { query, filename, case_sensitive })
+        Ok(Config {
+            query,
+            file_path,
+            ignore_case,
+        })
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">pub fn run(config: Config) -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+</span><span class="boring">    let contents = fs::read_to_string(config.file_path)?;
+</span><span class="boring">
+</span><span class="boring">    let results = if config.ignore_case {
+</span><span class="boring">        search_case_insensitive(&amp;config.query, &amp;contents)
+</span><span class="boring">    } else {
+</span><span class="boring">        search(&amp;config.query, &amp;contents)
+</span><span class="boring">    };
+</span><span class="boring">
+</span><span class="boring">    for line in results {
+</span><span class="boring">        println!(&quot;{line}&quot;);
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    Ok(())
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn search&lt;'a&gt;(query: &amp;str, contents: &amp;'a str) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.contains(query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn search_case_insensitive&lt;'a&gt;(
+</span><span class="boring">    query: &amp;str,
+</span><span class="boring">    contents: &amp;'a str,
+</span><span class="boring">) -&gt; Vec&lt;&amp;'a str&gt; {
+</span><span class="boring">    let query = query.to_lowercase();
+</span><span class="boring">    let mut results = Vec::new();
+</span><span class="boring">
+</span><span class="boring">    for line in contents.lines() {
+</span><span class="boring">        if line.to_lowercase().contains(&amp;query) {
+</span><span class="boring">            results.push(line);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    results
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">#[cfg(test)]
+</span><span class="boring">mod tests {
+</span><span class="boring">    use super::*;
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_sensitive() {
+</span><span class="boring">        let query = &quot;duct&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Duct tape.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(vec![&quot;safe, fast, productive.&quot;], search(query, contents));
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn case_insensitive() {
+</span><span class="boring">        let query = &quot;rUsT&quot;;
+</span><span class="boring">        let contents = &quot;\
+</span><span class="boring">Rust:
+</span><span class="boring">safe, fast, productive.
+</span><span class="boring">Pick three.
+</span><span class="boring">Trust me.&quot;;
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(
+</span><span class="boring">            vec![&quot;Rust:&quot;, &quot;Trust me.&quot;],
+</span><span class="boring">            search_case_insensitive(query, contents)
+</span><span class="boring">        );
+</span><span class="boring">    }
+</span><span class="boring">}</span></code></pre>
 <!--
-<span class="caption">Listing 12-23: Checking for an environment variable named
-`CASE_INSENSITIVE`</span>
+<span class="caption">Listing 12-23: Checking for any value in an environment
+variable named `IGNORE_CASE`</span>
 -->
-<p><span class="caption">リスト12-23: <code>CASE_INSENSITIVE</code>という環境変数のチェックを行う</span></p>
+<p><span class="caption">リスト12-23: <code>IGNORE_CASE</code>という環境変数に何らかの値が設定されているかチェックする</span></p>
 <!--
-Here, we create a new variable `case_sensitive`. To set its value, we call the
-`env::var` function and pass it the name of the `CASE_INSENSITIVE` environment
-variable. The `env::var` function returns a `Result` that will be the successful
-`Ok` variant that contains the value of the environment variable if the
-environment variable is set. It will return the `Err` variant if the
-environment variable is not set.
+Here, we create a new variable `ignore_case`. To set its value, we call the
+`env::var` function and pass it the name of the `IGNORE_CASE` environment
+variable. The `env::var` function returns a `Result` that will be the
+successful `Ok` variant that contains the value of the environment variable if
+the environment variable is set to any value. It will return the `Err` variant
+if the environment variable is not set.
 -->
-<p>ここで、<code>case_sensitive</code>という新しい変数を生成しています。その値をセットするために、
-<code>env::var</code>関数を呼び出し、<code>CASE_INSENSITIVE</code>環境変数の名前を渡しています。<code>env::var</code>関数は、
-環境変数がセットされていたら、環境変数の値を含む<code>Ok</code>列挙子の成功値になる<code>Result</code>を返します。
+<p>ここで、<code>ignore_case</code>という新しい変数を生成しています。その値をセットするために、
+<code>env::var</code>関数を呼び出し、<code>IGNORE_CASE</code>環境変数の名前を渡しています。<code>env::var</code>関数は、
+環境変数に何らかの値がセットされていたら、環境変数の値を含む<code>Ok</code>列挙子の成功値になる<code>Result</code>を返します。
 環境変数がセットされていなければ、<code>Err</code>列挙子を返すでしょう。</p>
 <!--
-We’re using the `is_err` method on the `Result` to check whether it’s an error
-and therefore unset, which means it *should* do a case-sensitive search. If the
-`CASE_INSENSITIVE` environment variable is set to anything, `is_err` will
-return false and the program will perform a case-insensitive search. We don’t
+We’re using the `is_ok` method on the `Result` to check whether the environment
+variable is set, which means the program should do a case-insensitive search.
+If the `IGNORE_CASE` environment variable isn’t set to anything, `is_ok` will
+return false and the program will perform a case-sensitive search. We don’t
 care about the *value* of the environment variable, just whether it’s set or
-unset, so we’re checking `is_err` rather than `unwrap`, `expect`, or any
+unset, so we’re checking `is_ok` rather than using `unwrap`, `expect`, or any
 of the other methods we’ve seen on `Result`.
 -->
-<p><code>Result</code>の<code>is_err</code>メソッドを使用して、エラーでありゆえに、セットされていないことを確認しています。
-これは大文字小文字を区別する検索をす<em>べき</em>ことを意味します。<code>CASE_INSENSITIVE</code>環境変数が何かにセットされていれば、
-<code>is_err</code>はfalseを返し、プログラムは大文字小文字を区別しない検索を実行するでしょう。環境変数の<em>値</em>はどうでもよく、
-セットされているかどうかだけ気にするので、<code>unwrap</code>や<code>expect</code>あるいは、他のここまで見かけた<code>Result</code>のメソッドではなく、
-<code>is_err</code>をチェックしています。</p>
+<p><code>Result</code>の<code>is_ok</code>メソッドを使用して、環境変数が設定されているか、つまりプログラムが大文字小文字を区別しない検索を行うべきかどうかを、
+チェックしています。<code>IGNORE_CASE</code>環境変数が何にも設定されていなければ、
+<code>is_ok</code>はfalseを返し、プログラムは大文字小文字を区別する検索を実行するでしょう。環境変数の<em>値</em>はどうでもよく、
+セットされているかどうかだけ気にするので、<code>unwrap</code>や<code>expect</code>あるいは、他のここまで見かけた<code>Result</code>のメソッドを使用するのではなく、
+<code>is_ok</code>をチェックしています。</p>
 <!--
-We pass the value in the `case_sensitive` variable to the `Config` instance so
-the `run` function can read that value and decide whether to call `search` or
-`search_case_insensitive`, as we implemented in Listing 12-22.
+We pass the value in the `ignore_case` variable to the `Config` instance so the
+`run` function can read that value and decide whether to call
+`search_case_insensitive` or `search`, as we implemented in Listing 12-22.
 -->
-<p><code>case_sensitive</code>変数の値を<code>Config</code>インスタンスに渡しているので、リスト12-22で実装したように、
-<code>run</code>関数はその値を読み取り、<code>search</code>か<code>search_case_insensitive</code>を呼び出すか決定できるのです。</p>
+<p><code>ignore_case</code>変数の値を<code>Config</code>インスタンスに渡しているので、リスト12-22で実装したように、
+<code>run</code>関数はその値を読み取り、<code>search_case_insensitive</code>か<code>search</code>を呼び出すか決定できるのです。</p>
 <!--
 Let’s give it a try! First, we’ll run our program without the environment
 variable set and with the query `to`, which should match any line that contains
@@ -503,34 +855,45 @@ the word “to” in all lowercase:
 -->
 <p>試行してみましょう！まず、環境変数をセットせずにクエリは<code>to</code>でプログラムを実行し、
 この時は全て小文字で&quot;to&quot;という言葉を含むあらゆる行が合致するはずです。</p>
-<pre><code class="language-text">$ cargo run to poem.txt
+<pre><code class="language-console">$ cargo run -- to poem.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs
+    Finished dev [unoptimized + debuginfo] target(s) in 0.0s
      Running `target/debug/minigrep to poem.txt`
 Are you nobody, too?
 How dreary to be somebody!
 </code></pre>
 <!--
-Looks like that still works! Now, let’s run the program with `CASE_INSENSITIVE`
+Looks like that still works! Now, let’s run the program with `IGNORE_CASE`
 set to `1` but with the same query `to`.
 -->
-<p>まだ機能しているようです！では、<code>CASE_INSENSITIVE</code>を1にしつつ、同じクエリの<code>to</code>でプログラムを実行しましょう。</p>
+<p>まだ機能しているようです！では、<code>IGNORE_CASE</code>を1にしつつ、同じクエリの<code>to</code>でプログラムを実行しましょう。</p>
+<pre><code class="language-console">$ IGNORE_CASE=1 cargo run -- to poem.txt
+</code></pre>
 <!--
 If you’re using PowerShell, you will need to set the environment variable and
-run the program in two commands rather than one:
+run the program as separate commands:
 -->
-<p>PowerShellを使用しているなら、1コマンドではなく、2コマンドで環境変数をセットし、プログラムを実行する必要があるでしょう:</p>
-<pre><code class="language-text">$ $env:CASE_INSENSITIVE=1
-$ cargo run to poem.txt
+<p>PowerShellを使用しているなら、環境変数の設定とプログラムの実行を別々のコマンドとして実行する必要があるでしょう:</p>
+<pre><code class="language-console">PS&gt; $Env:IGNORE_CASE=1; cargo run -- to poem.txt
+</code></pre>
+<!--
+This will make `IGNORE_CASE` persist for the remainder of your shell
+session. It can be unset with the `Remove-Item` cmdlet:
+-->
+<p>これを実行すると、<code>IGNORE_CASE</code>は以降のシェルセッションでも残り続けるでしょう。
+これは<code>Remove-Item</code>コマンドレットで解除することができます:</p>
+<pre><code class="language-console">PS&gt; Remove-Item Env:IGNORE_CASE
 </code></pre>
 <!--
 We should get lines that contain “to” that might have uppercase letters:
 -->
 <p>大文字も含む可能性のある&quot;to&quot;を含有する行が得られるはずです:</p>
-<pre><code class="language-text">$ CASE_INSENSITIVE=1 cargo run to poem.txt
-    Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs
-     Running `target/debug/minigrep to poem.txt`
-Are you nobody, too?
+<!-- manual-regeneration
+cd listings/ch12-an-io-project/listing-12-23
+IGNORE_CASE=1 cargo run -- to poem.txt
+can't extract because of the environment variable
+-->
+<pre><code class="language-console">Are you nobody, too?
 How dreary to be somebody!
 To tell your name the livelong day
 To an admiring bog!
@@ -547,16 +910,16 @@ variables.
 <!--
 Some programs allow arguments *and* environment variables for the same
 configuration. In those cases, the programs decide that one or the other takes
-precedence. For another exercise on your own, try controlling case
-insensitivity through either a command line argument or an environment
-variable. Decide whether the command line argument or the environment variable
-should take precedence if the program is run with one set to case sensitive and
-one set to case insensitive.
+precedence. For another exercise on your own, try controlling case sensitivity
+through either a command line argument or an environment variable. Decide
+whether the command line argument or the environment variable should take
+precedence if the program is run with one set to case sensitive and one set to
+ignore case.
 -->
 <p>引数<em>と</em>環境変数で同じ設定を行うことができるプログラムもあります。そのような場合、
 プログラムはどちらが優先されるか決定します。自身の別の鍛錬として、コマンドライン引数か、
 環境変数で大文字小文字の区別を制御できるようにしてみてください。
-片方は大文字小文字を区別するようにセットされ、もう片方は区別しないようにセットしてプログラムが実行された時に、
+片方は大文字小文字を区別するようにセットされ、もう片方は無視するようにセットしてプログラムが実行された時に、
 コマンドライン引数と環境変数のどちらの優先度が高くなるかを決めてください。</p>
 <!--
 The `std::env` module contains many more useful features for dealing with

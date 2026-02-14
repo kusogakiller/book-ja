@@ -149,33 +149,33 @@
 -->
 <h2 id="標準出力ではなく標準エラーにエラーメッセージを書き込む"><a class="header" href="#標準出力ではなく標準エラーにエラーメッセージを書き込む">標準出力ではなく標準エラーにエラーメッセージを書き込む</a></h2>
 <!--
-At the moment we’re writing all of our output to the terminal using the
-`println!` function. Most terminals provide two kinds of output: *standard
-output* (`stdout`) for general information and *standard error* (`stderr`)
-for error messages. This distinction enables users to choose to direct the
+At the moment, we’re writing all of our output to the terminal using the
+`println!` macro. In most terminals, there are two kinds of output: *standard
+output* (`stdout`) for general information and *standard error* (`stderr`) for
+error messages. This distinction enables users to choose to direct the
 successful output of a program to a file but still print error messages to the
 screen.
 -->
-<p>現時点では、すべての出力を<code>println!</code>関数を使用して端末に書き込んでいます。多くの端末は、
-2種類の出力を提供します: 普通の情報用の<em>標準出力</em>(<code>stdout</code>)とエラーメッセージ用の<em>標準エラー出力</em>(<code>stderr</code>)です。
+<p>現時点では、すべての出力を<code>println!</code>マクロを使用して端末に書き込んでいます。多くの端末には、
+2種類の出力があります: 普通の情報用の<em>標準出力</em>(<code>stdout</code>)とエラーメッセージ用の<em>標準エラー出力</em>(<code>stderr</code>)です。
 この差異のおかげで、ユーザは、エラーメッセージを画面に表示しつつ、
 プログラムの成功した出力をファイルにリダイレクトすることを選択できます。</p>
 <!--
-The `println!` function is only capable of printing to standard output, so we
+The `println!` macro is only capable of printing to standard output, so we
 have to use something else to print to standard error.
 -->
-<p><code>println!</code>関数は、標準出力に出力する能力しかないので、標準エラーに出力するには他のものを使用しなければなりません。</p>
+<p><code>println!</code>マクロは、標準出力に出力する能力しかないので、標準エラーに出力するには他のものを使用しなければなりません。</p>
 <!--
-### Checking Where Errors Are Written to
+### Checking Where Errors Are Written
 -->
 <h3 id="エラーが書き込まれる場所を確認する"><a class="header" href="#エラーが書き込まれる場所を確認する">エラーが書き込まれる場所を確認する</a></h3>
 <!--
 First, let’s observe how the content printed by `minigrep` is currently being
 written to standard output, including any error messages we want to write to
 standard error instead. We’ll do that by redirecting the standard output stream
-to a file while also intentionally causing an error. We won’t redirect the
-standard error stream, so any content sent to standard error will continue to
-display on the screen.
+to a file while intentionally causing an error. We won’t redirect the standard
+error stream, so any content sent to standard error will continue to display on
+the screen.
 -->
 <p>まず、<code>minigrep</code>に出力される中身が、代わりに標準エラーに書き込みたいいかなるエラーメッセージも含め、
 どのように標準出力に書き込まれているかを観察しましょう。意図的にエラーを起こしつつ、
@@ -192,13 +192,13 @@ we’re about to see that it saves the error message output to a file instead!
 我々のプログラムは、現状、いい振る舞いをしていません: 代わりにファイルにエラーメッセージ出力を保存するところを、
 目撃するところです！</p>
 <!--
-The way to demonstrate this behavior is by running the program with `>` and the
-filename, *output.txt*, that we want to redirect the standard output stream to.
-We won’t pass any arguments, which should cause an error:
+To demonstrate this behavior, we’ll run the program with `>` and the file path,
+*output.txt*, that we want to redirect the standard output stream to. We won’t
+pass any arguments, which should cause an error:
 -->
-<p>この動作をデモする方法は、<code>&gt;</code>と標準出力ストリームをリダイレクトする先のファイル名、<em>output.txt</em>でプログラムを走らせることによります。
+<p>この動作をデモするために、<code>&gt;</code>と、標準出力ストリームをリダイレクトする先のファイルパスである<em>output.txt</em>を付けて、プログラムを走らせましょう。
 引数は何も渡さず、そうするとエラーが起きるはずです:</p>
-<pre><code class="language-text">$ cargo run &gt; output.txt
+<pre><code class="language-console">$ cargo run &gt; output.txt
 </code></pre>
 <!--
 The `>` syntax tells the shell to write the contents of standard output to
@@ -214,7 +214,7 @@ file. This is what *output.txt* contains:
 <!--
 Yup, our error message is being printed to standard output. It’s much more
 useful for error messages like this to be printed to standard error so only
-data from a successful run ends up in the file. We'll change that.
+data from a successful run ends up in the file. We’ll change that.
 -->
 <p>そうです。エラーメッセージは標準出力に出力されているのです。このようなエラーメッセージは標準エラーに出力され、
 成功した状態のデータのみがファイルに残ると遥かに有用です。それを変更します。</p>
@@ -238,17 +238,21 @@ instead.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn main() {
+<pre><code class="language-rust ignore"><span class="boring">use std::env;
+</span><span class="boring">use std::process;
+</span><span class="boring">
+</span><span class="boring">use minigrep::Config;
+</span><span class="boring">
+</span>fn main() {
     let args: Vec&lt;String&gt; = env::args().collect();
 
-    let config = Config::new(&amp;args).unwrap_or_else(|err| {
-        eprintln!(&quot;Problem parsing arguments: {}&quot;, err);
+    let config = Config::build(&amp;args).unwrap_or_else(|err| {
+        eprintln!(&quot;Problem parsing arguments: {err}&quot;);
         process::exit(1);
     });
 
     if let Err(e) = minigrep::run(config) {
-        eprintln!(&quot;Application error: {}&quot;, e);
-
+        eprintln!(&quot;Application error: {e}&quot;);
         process::exit(1);
     }
 }</code></pre>
@@ -258,12 +262,11 @@ instead of standard output using `eprintln!`</span>
 -->
 <p><span class="caption">リスト12-24: <code>eprintln!</code>を使って標準出力ではなく、標準エラーにエラーメッセージを書き込む</span></p>
 <!--
-After changing `println!` to `eprintln!`, let’s run the program again in the
-same way, without any arguments and redirecting standard output with `>`:
+Let’s now run the program again in the same way, without any arguments and
+redirecting standard output with `>`:
 -->
-<p><code>println!</code>を<code>eprintln!</code>に変えてから、再度同じようにプログラムを実行しましょう。
-引数なしかつ、標準出力を<code>&gt;</code>でリダイレクトしてね:</p>
-<pre><code class="language-text">$ cargo run &gt; output.txt
+<p>それでは再度同じように、引数なしで、標準出力を<code>&gt;</code>でリダイレクトしつつ、プログラムを実行しましょう:</p>
+<pre><code class="language-console">$ cargo run &gt; output.txt
 Problem parsing arguments: not enough arguments
 </code></pre>
 <!--
@@ -276,7 +279,7 @@ Let’s run the program again with arguments that don’t cause an error but sti
 redirect standard output to a file, like so:
 -->
 <p>再度、標準出力をファイルにリダイレクトしてエラーは起こさない引数でプログラムを走らせましょう。以下のようにですね:</p>
-<pre><code class="language-text">$ cargo run to poem.txt &gt; output.txt
+<pre><code class="language-console">$ cargo run -- to poem.txt &gt; output.txt
 </code></pre>
 <!--
 We won’t see any output to the terminal, and *output.txt* will contain our
@@ -303,14 +306,14 @@ and standard error for error output as appropriate.
 This chapter recapped some of the major concepts you’ve learned so far and
 covered how to perform common I/O operations in Rust. By using command line
 arguments, files, environment variables, and the `eprintln!` macro for printing
-errors, you’re now prepared to write command line applications. By using the
-concepts in previous chapters, your code will be well organized, store data
+errors, you’re now prepared to write command line applications. Combined with
+the concepts in previous chapters, your code will be well organized, store data
 effectively in the appropriate data structures, handle errors nicely, and be
 well tested.
 -->
 <p>この章では、ここまでに学んできた主要な概念の一部を念押しし、Rustで入出力処理を行う方法を講義しました。
 コマンドライン引数、ファイル、環境変数、そしてエラー出力に<code>eprintln!</code>マクロを使用することで、
-もう、コマンドラインアプリケーションを書く準備ができています。以前の章の概念を使用することで、
+もう、コマンドラインアプリケーションを書く準備ができています。以前の章の概念と組み合わせて、
 コードはうまく体系化され、適切なデータ構造に効率的にデータを保存し、エラーをうまく扱い、
 よくテストされるでしょう。</p>
 <!--
