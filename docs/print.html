@@ -27397,24 +27397,24 @@ other, more advanced features to show you how to do the following:
 以下のことをする方法をお見せしましょう:</p>
 <!--
 * Customize your build through release profiles
-* Publish libraries on [crates.io](https://crates.io)
+* Publish libraries on [crates.io](https://crates.io/)
 * Organize large projects with workspaces
-* Install binaries from [crates.io](https://crates.io)
+* Install binaries from [crates.io](https://crates.io/)
 * Extend Cargo using custom commands
 -->
 <ul>
 <li>リリースプロファイルでビルドをカスタマイズする</li>
-<li><a href="https://crates.io">crates.io</a>でライブラリを公開する</li>
+<li><a href="https://crates.io/">crates.io</a>でライブラリを公開する</li>
 <li>ワークスペースで巨大なプロジェクトを体系化する</li>
-<li><a href="https://crates.io">crates.io</a>からバイナリをインストールする</li>
+<li><a href="https://crates.io/">crates.io</a>からバイナリをインストールする</li>
 <li>独自のコマンドを使用してCargoを拡張する</li>
 </ul>
 <!--
-Cargo can do even more than what we cover in this chapter, so for a full
-explanation of all its features, see [its
+Cargo can do even more than the functionality we cover in this chapter, so for
+a full explanation of all its features, see [its
 documentation](https://doc.rust-lang.org/cargo/).
 -->
-<p>また、Cargoはこの章で講義する以上のこともできるので、機能の全解説を見るには、
+<p>また、Cargoはこの章で講義する機能以上のこともできるので、機能の全解説を見るには、
 <a href="https://doc.rust-lang.org/cargo/">ドキュメンテーション</a>を参照されたし。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Customizing Builds with Release Profiles
@@ -27442,26 +27442,31 @@ and the `release` profile has good defaults for release builds.
 These profile names might be familiar from the output of your builds:
 -->
 <p>これらのプロファイル名は、ビルドの出力で馴染みのある可能性があります:</p>
-<pre><code class="language-text">$ cargo build
-    Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs
+<!-- manual-regeneration
+anywhere, run:
+cargo build
+cargo build --release
+and ensure output below is accurate
+-->
+<pre><code class="language-console">$ cargo build
+    Finished dev [unoptimized + debuginfo] target(s) in 0.0s
 $ cargo build --release
-    Finished release [optimized] target(s) in 0.0 secs
+    Finished release [optimized] target(s) in 0.0s
 </code></pre>
 <!--
-The `dev` and `release` shown in this build output indicate that the compiler
-is using different profiles.
+The `dev` and `release` are these different profiles used by the compiler.
 -->
-<p>このビルド出力で表示されている<code>dev</code>と<code>release</code>は、コンパイラが異なるプロファイルを使用していることを示しています。</p>
+<p><code>dev</code>と<code>release</code>が、コンパイラによって使用される異なるプロファイルです。</p>
 <!--
-Cargo has default settings for each of the profiles that apply when there
-aren’t any `[profile.*]` sections in the project’s *Cargo.toml* file. By adding
-`[profile.*]` sections for any profile you want to customize, you can override
-any subset of the default settings. For example, here are the default values
-for the `opt-level` setting for the `dev` and `release` profiles:
+Cargo has default settings for each of the profiles that apply when you haven't
+explicitly added any `[profile.*]` sections in the project’s *Cargo.toml* file.
+By adding `[profile.*]` sections for any profile you want to customize, you
+override any subset of the default settings. For example, here are the default
+values for the `opt-level` setting for the `dev` and `release` profiles:
 -->
-<p>プロジェクトの<em>Cargo.toml</em>ファイルに<code>[profile.*]</code>セクションが存在しない際に適用される各プロファイル用のデフォルト設定が、
-Cargoには存在します。カスタマイズしたいプロファイル用の<code>[profile.*]</code>セクションを追加することで、
-デフォルト設定の一部を上書きすることができます。例えば、こちらが<code>dev</code>と<code>release</code>プロファイルの<code>opt-level</code>設定のデフォルト値です:</p>
+<p>Cargoには、プロジェクトの<em>Cargo.toml</em>ファイルに<code>[profile.*]</code>セクションが明示的に追加されていない際に適用される、
+各プロファイル用のデフォルト設定が存在します。カスタマイズしたいプロファイル用の<code>[profile.*]</code>セクションを追加することで、
+デフォルト設定の一部が上書きされます。例えば、こちらが<code>dev</code>と<code>release</code>プロファイルの<code>opt-level</code>設定のデフォルト値です:</p>
 <!--
 <span class="filename">Filename: Cargo.toml</span>
 -->
@@ -27473,29 +27478,26 @@ opt-level = 0
 opt-level = 3
 </code></pre>
 <!--
-4行目最後、唯一の理由と言っているのは、the reasonになっているから
--->
-<!--
 The `opt-level` setting controls the number of optimizations Rust will apply to
-your code with a range of 0 to 3. Applying more optimizations extends
+your code, with a range of 0 to 3. Applying more optimizations extends
 compiling time, so if you’re in development and compiling your code often,
-you’ll want faster compiling even if the resulting code runs slower. That is
-the reason the default `opt-level` for `dev` is `0`. When you’re ready to
-release your code, it’s best to spend more time compiling. You’ll only compile
-in release mode once, but you’ll run the compiled program many times, so
-release mode trades longer compile time for code that runs faster. That is why
-the default `opt-level` for the `release` profile is `3`.
+you’ll want fewer optimizations to compile faster even if the resulting code
+runs slower. The default `opt-level` for `dev` is therefore `0`. When you’re
+ready to release your code, it’s best to spend more time compiling. You’ll only
+compile in release mode once, but you’ll run the compiled program many times,
+so release mode trades longer compile time for code that runs faster. That is
+why the default `opt-level` for the `release` profile is `3`.
 -->
 <p><code>opt-level</code>設定は、0から3の範囲でコンパイラがコードに適用する最適化の度合いを制御します。
-最適化を多くかけると、コンパイル時間が延びるので、開発中に頻繁にコードをコンパイルするのなら、
-たとえ出力結果のコードの動作速度が遅くなっても早くコンパイルが済んでほしいですよね。
-これが、<code>dev</code>の<code>opt-level</code>のデフォルト設定が<code>0</code>になっている唯一の理由です。
+最適化を多くかけるとコンパイル時間が延びるので、開発中に頻繁にコードをコンパイルするのなら、
+たとえ出力結果のコードの動作速度が遅くなっても早くコンパイルできるように、より少ない最適化で済ませてほしいですよね。
+そのため、<code>dev</code>の<code>opt-level</code>のデフォルト設定は<code>0</code>になっています。
 コードのリリース準備ができたら、より長い時間をコンパイルにかけるのが最善の策です。
 リリースモードでコンパイルするのはたった1回ですが、コンパイル結果のプログラムは何度も実行するので、
 リリースモードでは、長いコンパイル時間と引き換えに、生成したコードが速く動作します。
 そのため、<code>release</code>の<code>opt-level</code>のデフォルト設定が<code>3</code>になっているのです。</p>
 <!--
-You can override any default setting by adding a different value for it in
+You can override a default setting by adding a different value for it in
 *Cargo.toml*. For example, if we want to use optimization level 1 in the
 development profile, we can add these two lines to our project’s *Cargo.toml*
 file:
@@ -27520,30 +27522,30 @@ optimizations than the default, but not as many as in a release build.
 <code>opt-level</code>を<code>1</code>に設定したので、Cargoはデフォルトよりは最適化を行いますが、リリースビルドほどではありません。</p>
 <!--
 For the full list of configuration options and defaults for each profile, see
-[Cargo’s documentation](https://doc.rust-lang.org/cargo/).
+[Cargo’s documentation](https://doc.rust-lang.org/cargo/reference/profiles.html).
 -->
-<p>設定の選択肢と各プロファイルのデフォルト設定の一覧は、<a href="https://doc.rust-lang.org/cargo/">Cargoのドキュメンテーション</a>を参照されたし。</p>
+<p>設定の選択肢と各プロファイルのデフォルト設定の一覧は、<a href="https://doc.rust-lang.org/cargo/reference/profiles.html">Cargoのドキュメンテーション</a>を参照されたし。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Publishing a Crate to Crates.io
 -->
 <h2 id="cratesioにクレートを公開する"><a class="header" href="#cratesioにクレートを公開する">Crates.ioにクレートを公開する</a></h2>
 <!--
-We’ve used packages from [crates.io](https://crates.io) as
+We’ve used packages from [crates.io](https://crates.io/) as
 dependencies of our project, but you can also share your code with other people
 by publishing your own packages. The crate registry at
-[crates.io](https://crates.io) distributes the source code of
+[crates.io](https://crates.io/) distributes the source code of
 your packages, so it primarily hosts code that is open source.
 -->
-<p>プロジェクトの依存として<a href="https://crates.io">crates.io</a>のパッケージを使用しましたが、
+<p>プロジェクトの依存として<a href="https://crates.io/">crates.io</a>のパッケージを使用しましたが、
 自分のパッケージを公開することで他の人とコードを共有することもできます。
-<a href="https://crates.io">crates.io</a>のクレート登録所は、自分のパッケージのソースコードを配布するので、
+<a href="https://crates.io/">crates.io</a>のクレートレジストリは、自分のパッケージのソースコードを配布するので、
 主にオープンソースのコードをホストします。</p>
 <!--
-Rust and Cargo have features that help make your published package easier for
-people to use and to find in the first place. We’ll talk about some of these
-features next and then explain how to publish a package.
+Rust and Cargo have features that make your published package easier for people
+to find and use. We’ll talk about some of these features next and then explain
+how to publish a package.
 -->
-<p>RustとCargoは、公開したパッケージを人が使用し、そもそも見つけやすくしてくれる機能を有しています。
+<p>RustとCargoは、公開されたパッケージを人々が見つけやすく、使いやすくしてくれる機能を有しています。
 これらの機能の一部を次に語り、そして、パッケージの公開方法を説明します。</p>
 <!--
 ### Making Useful Documentation Comments
@@ -27553,8 +27555,8 @@ features next and then explain how to publish a package.
 Accurately documenting your packages will help other users know how and when to
 use them, so it’s worth investing the time to write documentation. In Chapter
 3, we discussed how to comment Rust code using two slashes, `//`. Rust also has
-a paticular kind of comment for documentation, known conveniently as
-a *documentation comment*, that will generate HTML documentation. The HTML
+a particular kind of comment for documentation, known conveniently as a
+*documentation comment*, that will generate HTML documentation. The HTML
 displays the contents of documentation comments for public API items intended
 for programmers interested in knowing how to *use* your crate as opposed to how
 your crate is *implemented*.
@@ -27568,11 +27570,11 @@ HTMLドキュメントを生成します。クレートの<em>実装</em>法と�
 Documentation comments use three slashes, `///`, instead of two and support
 Markdown notation for formatting the text. Place documentation comments just
 before the item they’re documenting. Listing 14-1 shows documentation comments
-for an `add_one` function in a crate named `my_crate`:
+for an `add_one` function in a crate named `my_crate`.
 -->
 <p>ドキュメンテーションコメントは、2つではなく、3連スラッシュ、<code>///</code>を使用し、テキストを整形するMarkdown記法もサポートしています。
 ドキュメント対象の要素の直前にドキュメンテーションコメントを配置してください。
-リスト14-1は、<code>my_crate</code>という名のクレートの<code>add_one</code>関数用のドキュメンテーションコメントを示しています:</p>
+リスト14-1は、<code>my_crate</code>という名のクレートの<code>add_one</code>関数用のドキュメンテーションコメントを示しています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
@@ -27583,9 +27585,10 @@ for an `add_one` function in a crate named `my_crate`:
 /// # Examples
 ///
 /// ```
-/// let five = 5;
+/// let arg = 5;
+/// let answer = my_crate::add_one(arg);
 ///
-/// assert_eq!(6, my_crate::add_one(5));
+/// assert_eq!(6, answer);
 /// ```
 pub fn add_one(x: i32) -&gt; i32 {
     x + 1
@@ -27639,18 +27642,18 @@ authors commonly use in their documentation:
 こちらがこれ以外にドキュメントでよくクレート筆者が使用するセクションです:</p>
 <!--
 * **Panics**: The scenarios in which the function being documented could
-`panic!`. Callers of the function who don’t want their programs to panic should
-make sure they don’t call the function in these situations.
+  panic. Callers of the function who don’t want their programs to panic should
+  make sure they don’t call the function in these situations.
 * **Errors**: If the function returns a `Result`, describing the kinds of
-errors that might occur and what conditions might cause those errors to be
-returned can be helpful to callers so they can write code to handle the
-different kinds of errors in different ways.
+  errors that might occur and what conditions might cause those errors to be
+  returned can be helpful to callers so they can write code to handle the
+  different kinds of errors in different ways.
 * **Safety**: If the function is `unsafe` to call (we discuss unsafety in
-Chapter 19), there should be a section explaining why the function is unsafe
-and covering the invariants that the function expects callers to uphold.
+  Chapter 19), there should be a section explaining why the function is unsafe
+  and covering the invariants that the function expects callers to uphold.
 -->
 <ul>
-<li><strong>Panics</strong>: ドキュメント対象の関数が<code>panic!</code>する可能性のある筋書きです。プログラムをパニックさせたくない関数の使用者は、
+<li><strong>Panics</strong>: ドキュメント対象の関数がパニックする可能性のある筋書きです。プログラムをパニックさせたくない関数の使用者は、
 これらの状況で関数が呼ばれないことを確かめる必要があります。</li>
 <li><strong>Errors</strong>: 関数が<code>Result</code>を返すなら、起きうるエラーの種類とどんな条件がそれらのエラーを引き起こす可能性があるのか解説すると、
 呼び出し側の役に立つので、エラーの種類によって処理するコードを変えて書くことができます。</li>
@@ -27659,11 +27662,11 @@ and covering the invariants that the function expects callers to uphold.
 </ul>
 <!--
 Most documentation comments don’t need all of these sections, but this is a
-good checklist to remind you of the aspects of your code that people calling
-your code will be interested in knowing about.
+good checklist to remind you of the aspects of your code users will be
+interested in knowing about.
 -->
 <p>多くのドキュメンテーションコメントでは、これら全てのセクションが必要になることはありませんが、
-これは自分のコードを呼び出している人が知りたいと思うコードの方向性を思い出させてくれるいいチェックリストになります。</p>
+これはコードの利用者が知りたいと思うコードの方向性を思い出させてくれるいいチェックリストになります。</p>
 <!--
 #### Documentation Comments as Tests
 -->
@@ -27682,12 +27685,17 @@ function from Listing 14-1, we will see a section in the test results like this:
 例付きのドキュメントに上回るものはありません。しかし、ドキュメントが書かれてからコードが変更されたがために、
 動かない例がついているよりも悪いものもありません。リスト14-1から<code>add_one</code>関数のドキュメンテーションとともに、
 <code>cargo test</code>を走らせたら、テスト結果に以下のような区域が見られます:</p>
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/listing-14-01/
+cargo test
+copy just the doc-tests section below
+-->
 <pre><code class="language-text">   Doc-tests my_crate
 
 running 1 test
 test src/lib.rs - add_one (line 5) ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
 </code></pre>
 <!--
 2行目最後、catch that S Vの用法は辞書に載っていなかった。Oxfordには載っているのかもしれません
@@ -27695,7 +27703,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 <!--
 Now if we change either the function or the example so the `assert_eq!` in the
 example panics and run `cargo test` again, we’ll see that the doc tests catch
-that the example and the code are out of sync from one another!
+that the example and the code are out of sync with each other!
 -->
 <p>さて、例の<code>assert_eq!</code>がパニックするように、関数か例を変更し、再度<code>cargo test</code>を実行したら、
 docテストが、例とコードがお互いに同期されていないことを捕捉するところを目撃するでしょう！</p>
@@ -27704,23 +27712,22 @@ docテストが、例とコードがお互いに同期されていないこと�
 -->
 <h4 id="含まれている要素にコメントする"><a class="header" href="#含まれている要素にコメントする">含まれている要素にコメントする</a></h4>
 <!--
-Another style of doc comment, `//!`, adds documentation to the item that
-contains the comments rather than adding documentation to the items following
-the comments. We typically use these doc comments inside the crate root file
-(*src/lib.rs* by convention) or inside a module to document the crate or the
-module as a whole.
+The style of doc comment `//!` adds documentation to the item that contains the
+comments rather than to the items following the comments. We typically use
+these doc comments inside the crate root file (*src/lib.rs* by convention) or
+inside a module to document the crate or the module as a whole.
 -->
-<p>docコメントの別スタイル、<code>//!</code>は、コメントに続く要素にドキュメンテーションを付け加えるのではなく、
-コメントを含む要素にドキュメンテーションを付け加えます。典型的には、クレートのルートファイル(慣例的には、<em>src/lib.rs</em>)内部や、
+<p><code>//!</code>スタイルのdocコメントは、コメントに続く要素にではなく、コメントを含む要素にドキュメンテーションを付け加えます。
+典型的には、クレートのルートファイル(慣例的には、<em>src/lib.rs</em>)内部や、
 モジュールの内部で使用して、クレートやモジュール全体にドキュメントをつけます。</p>
 <!--
-For example, if we want to add documentation that describes the purpose of the
-`my_crate` crate that contains the `add_one` function, we can add documentation
-comments that start with `//!` to the beginning of the *src/lib.rs* file, as
-shown in Listing 14-2:
+For example, to add documentation that describes the purpose of the `my_crate`
+crate that contains the `add_one` function, we add documentation comments that
+start with `//!` to the beginning of the *src/lib.rs* file, as shown in Listing
+14-2:
 -->
-<p>例えば、<code>add_one</code>関数を含む<code>my_crate</code>クレートの目的を解説するドキュメンテーションを追加したいのなら、
-<code>//!</code>で始まるドキュメンテーションコメントを<em>src/lib.rs</em>ファイルの先頭につけることができます。
+<p>例えば、<code>add_one</code>関数を含む<code>my_crate</code>クレートの目的を解説するドキュメンテーションを追加するには、
+<code>//!</code>で始まるドキュメンテーションコメントを<em>src/lib.rs</em>ファイルの先頭につけます。
 リスト14-2に示したようにですね:</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
@@ -27730,13 +27737,24 @@ shown in Listing 14-2:
 //!
 //! `my_crate` is a collection of utilities to make performing certain
 //! calculations more convenient.
-
-//! #自分のクレート
+//!
+//! # 自分のクレート
 //!
 //! `my_crate`は、ユーティリティの集まりであり、特定の計算をより便利に行うことができます。
-
 /// Adds one to the number given.
-// --snip--</code></pre>
+// --snip--
+<span class="boring">///
+</span><span class="boring">/// # Examples
+</span><span class="boring">///
+</span><span class="boring">/// ```
+</span><span class="boring">/// let arg = 5;
+</span><span class="boring">/// let answer = my_crate::add_one(arg);
+</span><span class="boring">///
+</span><span class="boring">/// assert_eq!(6, answer);
+</span><span class="boring">/// ```
+</span><span class="boring">pub fn add_one(x: i32) -&gt; i32 {
+</span><span class="boring">    x + 1
+</span><span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 14-2: Documentation for the `my_crate` crate as a
 whole</span>
@@ -27746,12 +27764,12 @@ whole</span>
 Notice there isn’t any code after the last line that begins with `//!`. Because
 we started the comments with `//!` instead of `///`, we’re documenting the item
 that contains this comment rather than an item that follows this comment. In
-this case, the item that contains this comment is the *src/lib.rs* file, which
-is the crate root. These comments describe the entire crate.
+this case, that item is the *src/lib.rs* file, which is the crate root. These
+comments describe the entire crate.
 -->
 <p><code>//!</code>で始まる最後の行のあとにコードがないことに注目してください。<code>///</code>ではなく、<code>//!</code>でコメントを開始しているので、
 このコメントに続く要素ではなく、このコメントを含む要素にドキュメントをつけているわけです。
-今回の場合、このコメントを含む要素は<em>src/lib.rs</em>ファイルであり、クレートのルートです。
+今回の場合、そのような要素は<em>src/lib.rs</em>ファイルであり、クレートのルートです。
 これらのコメントは、クレート全体を解説しています。</p>
 <!--
 When we run `cargo doc --open`, these comments will display on the front
@@ -27772,32 +27790,14 @@ including the comment describing the crate as a whole</span>
 <!--
 Documentation comments within items are useful for describing crates and
 modules especially. Use them to explain the overall purpose of the container to
-help your crate users understand the crate’s organization.
+help your users understand the crate’s organization.
 -->
 <p>要素内のドキュメンテーションコメントは、特にクレートやモジュールを解説するのに有用です。
-コンテナの全体の目的を説明し、クレートの使用者がクレートの体系を理解する手助けをするのに使用してください。</p>
+コンテナの全体の目的を説明し、使用者がクレートの体系を理解する手助けをするのに使用してください。</p>
 <!--
 ### Exporting a Convenient Public API with `pub use`
 -->
 <h3 id="pub-useで便利な公開apiをエクスポートする"><a class="header" href="#pub-useで便利な公開apiをエクスポートする"><code>pub use</code>で便利な公開APIをエクスポートする</a></h3>
-<!--
-In Chapter 7, we covered how to organize our code into modules using the `mod`
-keyword, how to make items public using the `pub` keyword, and how to bring
-items into a scope with the `use` keyword. However, the structure that makes
-sense to you while you’re developing a crate might not be very convenient for
-your users. You might want to organize your structs in a hierarchy containing
-multiple levels, but then people who want to use a type you’ve defined deep in
-the hierarchy might have trouble finding out that type exists. They might also
-be annoyed at having to enter `use`
-`my_crate::some_module::another_module::UsefulType;` rather than `use`
-`my_crate::UsefulType;`.
--->
-<p>第7章において、<code>mod</code>キーワードを使用してモジュールにコードを体系化する方法、<code>pub</code>キーワードで要素を公開にする方法、
-<code>use</code>キーワードで要素をスコープに導入する方法について講義しました。しかしながら、クレートの開発中に、
-自分にとって意味のある構造は、ユーザにはあまり便利ではない可能性があります。複数階層を含む階層で、
-自分の構造体を体系化したくなるかもしれませんが、それから階層の深いところで定義した型を使用したい人は、
-型が存在することを見つけ出すのに困難を伴う可能性もあります。また、そのような人は、
-<code>use my_crate::UsefulType</code>の代わりに<code>use my_crate::some_module::another_module::UsefulType;</code>と入力するのを煩わしく感じる可能性もあります。</p>
 <!--
 The structure of your public API is a major consideration when publishing a
 crate. People who use your crate are less familiar with the structure than you
@@ -27807,10 +27807,26 @@ has a large module hierarchy.
 <p>自分の公開APIの構造は、クレートを公開する際に考慮すべき点です。自分のクレートを使用したい人は、
 自分よりもその構造に馴染みがないですし、クレートのモジュール階層が大きければ、使用したい部分を見つけるのが困難になる可能性があります。</p>
 <!--
+In Chapter 7, we covered how to make items public using the `pub` keyword, and
+bring items into a scope with the `use` keyword. However, the structure that
+makes sense to you while you’re developing a crate might not be very convenient
+for your users. You might want to organize your structs in a hierarchy
+containing multiple levels, but then people who want to use a type you’ve
+defined deep in the hierarchy might have trouble finding out that type exists.
+They might also be annoyed at having to enter `use`
+`my_crate::some_module::another_module::UsefulType;` rather than `use`
+`my_crate::UsefulType;`.
+-->
+<p>第7章において、<code>pub</code>キーワードで要素を公開にする方法、<code>use</code>キーワードで要素をスコープに導入する方法について講義しました。
+しかしながら、クレートの開発中に自分にとって意味のある構造は、ユーザにはあまり便利ではない可能性があります。
+複数階層を含む階層で自分の構造体を体系化したくなるかもしれませんが、それから階層の深いところで定義した型を使用したい人は、
+型が存在することを見つけ出すのに困難を伴う可能性もあります。また、そのような人は、
+<code>use my_crate::UsefulType</code>の代わりに<code>use my_crate::some_module::another_module::UsefulType;</code>と入力するのを煩わしく感じる可能性もあります。</p>
+<!--
 The good news is that if the structure *isn’t* convenient for others to use
 from another library, you don’t have to rearrange your internal organization:
 instead, you can re-export items to make a public structure that’s different
-than your private structure by using `pub use`. Re-exporting takes a public
+from your private structure by using `pub use`. Re-exporting takes a public
 item in one location and makes it public in another location, as if it were
 defined in the other location instead.
 -->
@@ -27830,16 +27846,17 @@ function named `mix`, as shown in Listing 14-3:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><code class="language-rust ignore">//! # Art
+<pre><code class="language-rust noplayground test_harness">//! # Art
 //!
 //! A library for modeling artistic concepts.
-//! #芸術
+//!
+//! # 芸術
 //!
 //! 芸術的な概念をモデル化するライブラリ。
 
 pub mod kinds {
     /// The primary colors according to the RYB color model.
-    /// RYBカラーモデルによる主色
+    /// RYBカラーモデルによる主色。
     pub enum PrimaryColor {
         Red,
         Yellow,
@@ -27847,7 +27864,7 @@ pub mod kinds {
     }
 
     /// The secondary colors according to the RYB color model.
-    /// RYBカラーモデルによる副色
+    /// RYBカラーモデルによる副色。
     pub enum SecondaryColor {
         Orange,
         Green,
@@ -27856,14 +27873,15 @@ pub mod kinds {
 }
 
 pub mod utils {
-    use kinds::*;
+    use crate::kinds::*;
 
     /// Combines two primary colors in equal amounts to create
     /// a secondary color.
-    ///2つの主色を同じ割合で混合し、副色にする
+    /// 2つの主色を同じ割合で混合し、副色にする。
     pub fn mix(c1: PrimaryColor, c2: PrimaryColor) -&gt; SecondaryColor {
         // --snip--
-    }
+<span class="boring">        unimplemented!();
+</span>    }
 }</code></pre>
 <!--
 <span class="caption">Listing 14-3: An `art` library with items organized into
@@ -27893,20 +27911,18 @@ see them.
 <code>kinds</code>と<code>utils</code>をクリックしなければ、参照することができません。</p>
 <!--
 Another crate that depends on this library would need `use` statements that
-import the items from `art`, specifying the module structure that’s currently
-defined. Listing 14-4 shows an example of a crate that uses the `PrimaryColor`
-and `mix` items from the `art` crate:
+bring the items from `art` into scope, specifying the module structure that’s
+currently defined. Listing 14-4 shows an example of a crate that uses the
+`PrimaryColor` and `mix` items from the `art` crate:
 -->
 <p>このライブラリに依存する別のクレートは、現在定義されているモジュール構造を指定して、
-<code>art</code>の要素をインポートする<code>use</code>文が必要になるでしょう。リスト14-4は、
+<code>art</code>の要素をスコープ内に持ち込む<code>use</code>文が必要になるでしょう。リスト14-4は、
 <code>art</code>クレートから<code>PrimaryColor</code>と<code>mix</code>要素を使用するクレートの例を示しています:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">extern crate art;
-
-use art::kinds::PrimaryColor;
+<pre><code class="language-rust ignore">use art::kinds::PrimaryColor;
 use art::utils::mix;
 
 fn main() {
@@ -27923,21 +27939,18 @@ its internal structure exported</span>
 The author of the code in Listing 14-4, which uses the `art` crate, had to
 figure out that `PrimaryColor` is in the `kinds` module and `mix` is in the
 `utils` module. The module structure of the `art` crate is more relevant to
-developers working on the `art` crate than to developers using the `art` crate.
-The internal structure that organizes parts of the crate into the `kinds`
-module and the `utils` module doesn’t contain any useful information for
-someone trying to understand how to use the `art` crate. Instead, the `art`
-crate’s module structure causes confusion because developers have to figure out
-where to look, and the structure is inconvenient because developers must
-specify the module names in the `use` statements.
+developers working on the `art` crate than to those using it. The internal
+structure doesn’t contain any useful information for someone trying to
+understand how to use the `art` crate, but rather causes confusion because
+developers who use it have to figure out where to look, and must specify the
+module names in the `use` statements.
 -->
-<p>リスト14-4は<code>art</code>クレートを使用していますが、このコードの筆者は、<code>PrimaryColor</code>が<code>kinds</code>モジュールにあり、
+<p>リスト14-4は<code>art</code>クレートを使用していますが、このコードの作者は、<code>PrimaryColor</code>が<code>kinds</code>モジュールにあり、
 <code>mix</code>が<code>utils</code>モジュールにあることを理解しなければなりませんでした。<code>art</code>クレートのモジュール構造は、
 <code>art</code>クレートの使用者よりも、<code>art</code>クレートに取り組む開発者などに関係が深いです。
-クレートの一部を<code>kinds</code>モジュールと<code>utils</code>モジュールに体系化する内部構造は、<code>art</code>クレートの使用方法を理解しようとする人には、
-何も役に立つ情報を含んでいません。代わりに、開発者がどこを見るべきか計算する必要があるので、
-<code>art</code>クレートのモジュール構造は混乱を招き、また、開発者はモジュール名を<code>use</code>文で指定しなければならないので、
-この構造は不便です。</p>
+この内部構造は<code>art</code>クレートの使用方法を理解しようとする人とって役に立つ情報を何も含んでおらず、むしろ、
+利用者はどこを見ればよいのか探し出す必要があり、モジュール名を<code>use</code>文で指定しなければならないので、
+混乱を招くものです。</p>
 <!--
 To remove the internal organization from the public API, we can modify the
 `art` crate code in Listing 14-3 to add `pub use` statements to re-export the
@@ -27953,17 +27966,37 @@ items at the top level, as shown in Listing 14-5:
 //!
 //! A library for modeling artistic concepts.
 
-pub use kinds::PrimaryColor;
-pub use kinds::SecondaryColor;
-pub use utils::mix;
+pub use self::kinds::PrimaryColor;
+pub use self::kinds::SecondaryColor;
+pub use self::utils::mix;
 
 pub mod kinds {
     // --snip--
-}
+<span class="boring">    /// The primary colors according to the RYB color model.
+</span><span class="boring">    pub enum PrimaryColor {
+</span><span class="boring">        Red,
+</span><span class="boring">        Yellow,
+</span><span class="boring">        Blue,
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    /// The secondary colors according to the RYB color model.
+</span><span class="boring">    pub enum SecondaryColor {
+</span><span class="boring">        Orange,
+</span><span class="boring">        Green,
+</span><span class="boring">        Purple,
+</span><span class="boring">    }
+</span>}
 
 pub mod utils {
     // --snip--
-}</code></pre>
+<span class="boring">    use crate::kinds::*;
+</span><span class="boring">
+</span><span class="boring">    /// Combines two primary colors in equal amounts to create
+</span><span class="boring">    /// a secondary color.
+</span><span class="boring">    pub fn mix(c1: PrimaryColor, c2: PrimaryColor) -&gt; SecondaryColor {
+</span><span class="boring">        SecondaryColor::Orange
+</span><span class="boring">    }
+</span>}</code></pre>
 <!--
 <span class="caption">Listing 14-5: Adding `pub use` statements to re-export
 items</span>
@@ -27996,14 +28029,15 @@ structure in Listing 14-5, as shown in Listing 14-6:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">extern crate art;
-
+<pre><code class="language-rust ignore">use art::mix;
 use art::PrimaryColor;
-use art::mix;
 
 fn main() {
     // --snip--
-}</code></pre>
+<span class="boring">    let red = PrimaryColor::Red;
+</span><span class="boring">    let yellow = PrimaryColor::Yellow;
+</span><span class="boring">    mix(red, yellow);
+</span>}</code></pre>
 <!--
 <span class="caption">Listing 14-6: A program using the re-exported items from
 the `art` crate</span>
@@ -28012,10 +28046,13 @@ the `art` crate</span>
 <!--
 In cases where there are many nested modules, re-exporting the types at the top
 level with `pub use` can make a significant difference in the experience of
-people who use the crate.
+people who use the crate. Another common use of `pub use` is to re-export
+definitions of a dependency in the current crate to make that crate's
+definitions part of your crate’s public API.
 -->
 <p>ネストされたモジュールがたくさんあるような場合、最上位階層で<code>pub use</code>により型を再エクスポートすることは、
-クレートの使用者の経験に大きな違いを生みます。</p>
+クレートの使用者の経験に大きな違いを生みます。別のよくある<code>pub use</code>の使用法は、
+依存クレートの定義をクレートの公開APIの一部とするために、現在のクレートの中で依存クレートの定義を再エクスポートすることです。</p>
 <!--
 Creating a useful public API structure is more of an art than a science, and
 you can iterate to find the API that works best for your users. Choosing `pub
@@ -28034,58 +28071,60 @@ differs from their public API.
 <h3 id="cratesioのアカウントをセットアップする"><a class="header" href="#cratesioのアカウントをセットアップする">Crates.ioのアカウントをセットアップする</a></h3>
 <!--
 Before you can publish any crates, you need to create an account on
-[crates.io](https://crates.io) and get an API token. To do so,
-visit the home page at [crates.io](https://crates.io) and log in
-via a GitHub account. (The GitHub account is currently a requirement, but the
-site might support other ways of creating an account in the future.) Once
-you're logged in, visit your account settings at
+[crates.io](https://crates.io/) and get an API token. To do so,
+visit the home page at [crates.io](https://crates.io/) and log
+in via a GitHub account. (The GitHub account is currently a requirement, but
+the site might support other ways of creating an account in the future.) Once
+you’re logged in, visit your account settings at
 [https://crates.io/me/](https://crates.io/me/) and retrieve your
 API key. Then run the `cargo login` command with your API key, like this:
 -->
-<p>クレートを公開する前に、<a href="https://crates.io">crates.io</a>のアカウントを作成し、
-APIトークンを取得する必要があります。そうするには、<a href="https://crates.io">crates.io</a>のホームページを訪れ、
+<p>クレートを公開する前に、<a href="https://crates.io/">crates.io</a>のアカウントを作成し、
+APIトークンを取得する必要があります。そうするには、<a href="https://crates.io/">crates.io</a>のホームページを訪れ、
 Githubアカウントでログインしてください。(現状は、Githubアカウントがなければなりませんが、
 いずれは他の方法でもアカウントを作成できるようになる可能性があります。)ログインしたら、
 <a href="https://crates.io/me/">https://crates.io/me/</a>で自分のアカウントの設定に行き、
 APIキーを取り扱ってください。そして、<code>cargo login</code>コマンドをAPIキーとともに実行してください。
 以下のようにですね:</p>
-<pre><code class="language-text">$ cargo login abcdefghijklmnopqrstuvwxyz012345
+<pre><code class="language-console">$ cargo login abcdefghijklmnopqrstuvwxyz012345
 </code></pre>
 <!--
 This command will inform Cargo of your API token and store it locally in
 *~/.cargo/credentials*. Note that this token is a *secret*: do not share it
 with anyone else. If you do share it with anyone for any reason, you should
-revoke it and generate a new token on [crates.io](https://crates.io)
+revoke it and generate a new token on [crates.io](https://crates.io/)
+.
 -->
 <p>このコマンドは、CargoにAPIトークンを知らせ、<em>~/.cargo/credentials</em>にローカルに保存します。
 このトークンは、<em>秘密</em>です: 他人とは共有しないでください。なんらかの理由で他人と実際に共有してしまったら、
-古いものを破棄して<a href="https://crates.io">crates.io</a>で新しいトークンを生成するべきです。</p>
+古いものを破棄して<a href="https://crates.io/">crates.io</a>で新しいトークンを生成するべきです。</p>
 <!--
 ### Adding Metadata to a New Crate
 -->
 <h3 id="新しいクレートにメタデータを追加する"><a class="header" href="#新しいクレートにメタデータを追加する">新しいクレートにメタデータを追加する</a></h3>
 <!--
-Now that you have an account, let’s say you have a crate you want to publish.
-Before publishing, you’ll need to add some metadata to your crate by adding it
-to the `[package]` section of the crate’s *Cargo.toml* file.
+Let’s say you have a crate you want to publish. Before publishing, you’ll need
+to add some metadata in the `[package]` section of the crate’s *Cargo.toml*
+file.
 -->
-<p>アカウントはできたので、公開したいクレートがあるとしましょう。公開前に、
-<em>Cargo.toml</em>ファイルの<code>[package]</code>セクションに追加することでクレートにメタデータを追加する必要があるでしょう。</p>
+<p>公開したいクレートがあるとしましょう。公開前に、
+<em>Cargo.toml</em>ファイルの<code>[package]</code>セクションにメタデータを追加する必要があるでしょう。</p>
 <!--
 Your crate will need a unique name. While you’re working on a crate locally,
 you can name a crate whatever you’d like. However, crate names on
-[crates.io](https://crates.io) are allocated on a first-come,
+[crates.io](https://crates.io/) are allocated on a first-come,
 first-served basis. Once a crate name is taken, no one else can publish a crate
-with that name. Search for the name you want to use on the site to find out
-whether it has been used. If it hasn’t, edit the name in the *Cargo.toml* file
-under `[package]` to use the name for publishing, like so:
+with that name. Before attempting to publish a crate, search for the name you
+want to use. If the name has been used, you will need to find another name and
+edit the `name` field in the *Cargo.toml* file under the `[package]` section to
+use the new name for publishing, like so:
 -->
-<p>クレートには、独自の名前が必要でしょう。クレートをローカルで作成している間、
-クレートの名前はなんでもいい状態でした。ところが、<a href="https://crates.io">crates.io</a>のクレート名は、
+<p>クレートには、一意な名前が必要でしょう。クレートをローカルで作成している間、
+クレートの名前はなんでもいい状態でした。ところが、<a href="https://crates.io/">crates.io</a>のクレート名は、
 最初に来たもの勝ちの精神で付与されていますので、一旦クレート名が取られてしまったら、
-その名前のクレートを他の人が公開することは絶対できません。もう使われているか、
-サイトで使いたい名前を検索してください。まだなら、<em>Cargo.toml</em>ファイルの<code>[package]</code>以下の名前を編集して、
-名前を公開用に使ってください。以下のように:</p>
+その名前のクレートを他の人が公開することは絶対できません。クレートを公開しようとする前に使いたい名前を検索してください。
+すでに使用されている場合は、他の名前を探して、<em>Cargo.toml</em>ファイルの<code>[package]</code>セクション下の<code>name</code>フィールドを編集して、
+公開用に新しい名前を使う必要があるでしょう。以下のように:</p>
 <!--
 <span class="filename">Filename: Cargo.toml</span>
 -->
@@ -28097,35 +28136,40 @@ name = &quot;guessing_game&quot;
 Even if you’ve chosen a unique name, when you run `cargo publish` to publish
 the crate at this point, you’ll get a warning and then an error:
 -->
-<p>たとえ、独自の名前を選択していたとしても、この時点で<code>cargo publish</code>を実行すると、警告とエラーが出ます:</p>
-<pre><code class="language-text">$ cargo publish
-    Updating registry `https://github.com/rust-lang/crates.io-index`
-warning: manifest has no description, license, license-file, documentation,
-homepage or repository.
-(警告: マニフェストに説明、ライセンス、ライセンスファイル、ドキュメンテーション、ホームページ、
-リポジトリがありません)
+<p>たとえ、一意な名前を選択していたとしても、この時点で<code>cargo publish</code>を実行すると、警告とエラーが出ます:</p>
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/listing-14-01/
+cargo publish
+copy just the relevant lines below
+-->
+<pre><code class="language-console">$ cargo publish
+    Updating crates.io index
+warning: manifest has no description, license, license-file, documentation, homepage or repository.
+See https://doc.rust-lang.org/cargo/reference/manifest.html#package-metadata for more info.
+(警告: マニフェストに説明、ライセンス、ライセンスファイル、ドキュメンテーション、ホームページ、リポジトリがありません。
+さらなる情報については https://doc.rust-lang.org/cargo/reference/manifest.html#package-metadata を参照してください。)
 --snip--
-error: api errors: missing or empty metadata fields: description, license.
-(エラー: APIエラー: 存在しないメタデータフィールド: description, license)
+error: failed to publish to registry at https://crates.io
+(エラー: https://crates.ioにあるレジストリへの公開に失敗しました)
+
+Caused by:
+  the remote server responded with an error: missing or empty metadata fields: description, license. Please see https://doc.rust-lang.org/cargo/reference/manifest.html for how to upload metadata
+(原因:
+  リモートサーバがエラーを返しました: 存在しないか空のメタデータフィールド: description, license. メタデータをアップロードする方法については https://doc.rust-lang.org/cargo/reference/manifest.html を参照してください)
 </code></pre>
 <!--
-The reason is that you’re missing some crucial information: a description and
+This errors because you’re missing some crucial information: a description and
 license are required so people will know what your crate does and under what
-terms they can use it. To rectify this error, you need to include this
-information in the *Cargo.toml* file.
+terms they can use it. In *Cargo.toml*, add a description that's just a
+sentence or two, because it will appear with your crate in search results. For
+the `license` field, you need to give a *license identifier value*. The [Linux
+Foundation’s Software Package Data Exchange (SPDX)][spdx] lists the identifiers
+you can use for this value. For example, to specify that you’ve licensed your
+crate using the MIT License, add the `MIT` identifier:
 -->
-<p>原因は、大事な情報を一部入れていないからです: 説明とライセンスは、
+<p>これがエラーになるのは、大事な情報を一部入れていないからです: 説明とライセンスは、
 他の人があなたのクレートは何をし、どんな条件の元で使っていいのかを知るために必要なのです。
-このエラーを解消するには、<em>Cargo.toml</em>ファイルにこの情報を入れ込む必要があります。</p>
-<!--
-Add a description that is just a sentence or two, because it will appear with
-your crate in search results. For the `license` field, you need to give a
-*license identifier value*. The [Linux Foundation’s Software Package Data
-Exchange (SPDX)][spdx] lists the identifiers you can use for this value. For
-example, to specify that you’ve licensed your crate using the MIT License, add
-the `MIT` identifier:
--->
-<p>1文か2文程度の説明をつけてください。これは、検索結果に表示されますからね。
+<em>Cargo.toml</em>に1文か2文程度の説明をつけてください。これは、検索結果に表示されますからね。
 <code>license</code>フィールドには、<em>ライセンス識別子</em>を与える必要があります。
 <a href="http://spdx.org/licenses/">Linux団体のSoftware Package Data Exchange(SPDX)</a>に、この値に使用できる識別子が列挙されています。
 例えば、自分のクレートをMITライセンスでライセンスするためには、
@@ -28159,11 +28203,10 @@ by `OR` to have multiple licenses for your project.
 Rust自体と同じようにプロジェクトをライセンスします。この実践は、<code>OR</code>で区切られる複数のライセンス識別子を指定して、
 プロジェクトに複数のライセンスを持たせることもできることを模擬しています。</p>
 <!--
-With a unique name, the version, the author details that `cargo new` added
-when you created the crate, your description, and a license added, the
+With a unique name, the version, your description, and a license added, the
 *Cargo.toml* file for a project that is ready to publish might look like this:
 -->
-<p>独自の名前、バージョン、クレート作成時に<code>cargo new</code>が追加した筆者の詳細、説明、ライセンスが追加され、
+<p>一意な名前、バージョン、説明、ライセンスが追加され、
 公開準備のできたプロジェクト用の<code>Cargo.toml</code>ファイルは以下のような見た目になっていることでしょう:</p>
 <!--
 <span class="filename">Filename: Cargo.toml</span>
@@ -28172,7 +28215,7 @@ when you created the crate, your description, and a license added, the
 <pre><code class="language-toml">[package]
 name = &quot;guessing_game&quot;
 version = &quot;0.1.0&quot;
-authors = [&quot;Your Name &lt;you@example.com&gt;&quot;]
+edition = &quot;2021&quot;
 description = &quot;A fun game where you guess what number the computer has chosen.&quot;
               (コンピュータが選択した数字を言い当てる面白いゲーム)
 license = &quot;MIT OR Apache-2.0&quot;
@@ -28194,37 +28237,42 @@ easily.
 Now that you’ve created an account, saved your API token, chosen a name for
 your crate, and specified the required metadata, you’re ready to publish!
 Publishing a crate uploads a specific version to
-[crates.io](https://crates.io) for others to use.
+[crates.io](https://crates.io/) for others to use.
 -->
 <p>アカウントを作成し、APIトークンを保存し、クレートの名前を決め、必要なメタデータを指定したので、
 公開する準備が整いました！クレートを公開すると、特定のバージョンが、
-<a href="http://crates.io">crates.io</a>に他の人が使用できるようにアップロードされます。</p>
+<a href="http://crates.io/">crates.io</a>に他の人が使用できるようにアップロードされます。</p>
 <!--
-Be careful when publishing a crate because a publish is *permanent*. The
-version can never be overwritten, and the code cannot be deleted. One major
-goal of [crates.io](https://crates.io) is to act as a permanent
-archive of code so that builds of all projects that depend on crates from
-[crates.io](https://crates.io) will continue to work. Allowing
+Be careful, because a publish is *permanent*. The version can never be
+overwritten, and the code cannot be deleted. One major goal of
+[crates.io](https://crates.io/) is to act as a permanent archive
+of code so that builds of all projects that depend on crates from
+[crates.io](https://crates.io/) will continue to work. Allowing
 version deletions would make fulfilling that goal impossible. However, there is
 no limit to the number of crate versions you can publish.
 -->
-<p>公開は<em>永久</em>なので、クレートの公開時には気をつけてください。バージョンは絶対に上書きできず、
-コードも削除できません。<a href="https://crates.io">crates.io</a>の一つの主な目標が、
-<a href="https://crates.io">crates.io</a>のクレートに依存している全てのプロジェクトのビルドが、
+<p>公開は<em>永久</em>なので、気をつけてください。バージョンは絶対に上書きできず、
+コードも削除できません。<a href="https://crates.io/">crates.io</a>の一つの主な目標が、
+<a href="https://crates.io/">crates.io</a>のクレートに依存している全てのプロジェクトのビルドが、
 動き続けるようにコードの永久アーカイブとして機能することなのです。バージョン削除を可能にしてしまうと、
 その目標を達成するのが不可能になってしまいます。ですが、公開できるクレートバージョンの数に制限はありません。</p>
 <!--
 Run the `cargo publish` command again. It should succeed now:
 -->
 <p>再度<code>cargo publish</code>コマンドを実行してください。今度は成功するはずです:</p>
-<pre><code class="language-text">$ cargo publish
- Updating registry `https://github.com/rust-lang/crates.io-index`
-Packaging guessing_game v0.1.0 (file:///projects/guessing_game)
-Verifying guessing_game v0.1.0 (file:///projects/guessing_game)
-Compiling guessing_game v0.1.0
+<!-- manual-regeneration
+go to some valid crate, publish a new version
+cargo publish
+copy just the relevant lines below
+-->
+<pre><code class="language-console">$ cargo publish
+    Updating crates.io index
+   Packaging guessing_game v0.1.0 (file:///projects/guessing_game)
+   Verifying guessing_game v0.1.0 (file:///projects/guessing_game)
+   Compiling guessing_game v0.1.0
 (file:///projects/guessing_game/target/package/guessing_game-0.1.0)
- Finished dev [unoptimized + debuginfo] target(s) in 0.19 secs
-Uploading guessing_game v0.1.0 (file:///projects/guessing_game)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.19s
+   Uploading guessing_game v0.1.0 (file:///projects/guessing_game)
 </code></pre>
 <!--
 Congratulations! You’ve now shared your code with the Rust community, and
@@ -28246,10 +28294,14 @@ Then run `cargo publish` to upload the new version.
 <em>Cargo.toml</em>ファイルに指定された<code>version</code>の値を変更し、再公開します。
 <a href="http://semver.org/">セマンティックバージョンルール</a>を使用して加えた変更の種類に基づいて次の適切なバージョン番号を決定してください。
 そして、<code>cargo publish</code>を実行し、新バージョンをアップロードします。</p>
+<!-- Old link, do not remove -->
 <!--
-### Removing Versions from Crates.io with `cargo yank`
+<a id="removing-versions-from-cratesio-with-cargo-yank"></a>
 -->
-<h3 id="cargo-yankでcratesioからバージョンを削除する"><a class="header" href="#cargo-yankでcratesioからバージョンを削除する"><code>cargo yank</code>でCrates.ioからバージョンを削除する</a></h3>
+<!--
+### Deprecating Versions from Crates.io with `cargo yank`
+-->
+<h3 id="cargo-yankでcratesioからバージョンを非推奨化する"><a class="header" href="#cargo-yankでcratesioからバージョンを非推奨化する"><code>cargo yank</code>でCrates.ioからバージョンを非推奨化する</a></h3>
 <!--
 最後の行。辞書には、yankingはグイっと引っ張ることとしかないが、ここでは取り下げと意訳しておく
 -->
@@ -28263,36 +28315,48 @@ supports *yanking* a crate version.
 これは、なんらかの理由により、クレートバージョンが壊れている場合に有用です。そのような場面において、
 Cargoはクレートバージョンの <em>取り下げ(yank)</em> をサポートしています。</p>
 <!--
-Yanking a version prevents new projects from starting to depend on that version
-while allowing all existing projects that depend on it to continue to download
-and depend on that version. Essentially, a yank means that all projects with a
-*Cargo.lock* will not break, and any future *Cargo.lock* files generated will
-not use the yanked version.
+Yanking a version prevents new projects from depending on that version while
+allowing all existing projects that depend on it to continue. Essentially, a
+yank means that all projects with a *Cargo.lock* will not break, and any future
+*Cargo.lock* files generated will not use the yanked version.
 -->
-<p>バージョンを取り下げると、既存のプロジェクトは、引き続きダウンロードしたりそのバージョンに依存したりしつづけられますが、
-新規プロジェクトが新しくそのバージョンに依存しだすことは防止されます。つまるところ、取り下げは、
+<p>バージョンを取り下げると、それに依存するすべての既存のプロジェクトは引き続き依存することができますが、
+新規プロジェクトがそのバージョンに依存することはできなくなります。つまるところ、取り下げは、
 すでに<em>Cargo.lock</em>が存在するプロジェクトは壊さないが、将来的に生成された<em>Cargo.lock</em>ファイルは
 取り下げられたバージョンを使わない、ということを意味します。</p>
 <!--
-To yank a version of a crate, run `cargo yank` and specify which version you
-want to yank:
+To yank a version of a crate, in the directory of the crate that you’ve
+previously published, run `cargo yank` and specify which version you want to
+yank. For example, if we've published a crate named `guessing_game` version
+1.0.1 and we want to yank it, in the project directory for `guessing_game` we'd
+run:
+
 -->
-<p>あるバージョンのクレートを取り下げるには、<code>cargo yank</code>を実行し、取り下げたいバージョンを指定します:</p>
-<pre><code class="language-text">$ cargo yank --vers 1.0.1
+<p>あるバージョンのクレートを取り下げるには、以前公開したクレートのディレクトリで、取り下げたいバージョンを指定して<code>cargo yank</code>を実行してください。
+例えば、<code>guessing_game</code>という名前のクレートのバージョン1.0.1を公開したことがあり、それを取り下げたい場合は、
+<code>guessing_game</code>のプロジェクトディレクトリで以下を実行します:</p>
+<!-- manual-regeneration:
+cargo yank carol-test --version 2.1.0
+cargo yank carol-test --version 2.1.0 --undo
+-->
+<pre><code class="language-console">$ cargo yank --vers 1.0.1
+    Updating crates.io index
+        Yank guessing_game@1.0.1
 </code></pre>
 <!--
 By adding `--undo` to the command, you can also undo a yank and allow projects
 to start depending on a version again:
 -->
 <p><code>--undo</code>をコマンドに付与することで、取り下げを取り消し、再度あるバージョンにプロジェクトを依存させ始めることもできます:</p>
-<pre><code class="language-text">$ cargo yank --vers 1.0.1 --undo
+<pre><code class="language-console">$ cargo yank --vers 1.0.1 --undo
+    Updating crates.io index
+      Unyank guessing_game@1.0.1
 </code></pre>
 <!--
-A yank *does not* delete any code. For example, the yank feature is not
-intended for deleting accidentally uploaded secrets. If that happens, you must
-reset those secrets immediately.
+A yank *does not* delete any code. It cannot, for example, delete accidentally
+uploaded secrets. If that happens, you must reset those secrets immediately.
 -->
-<p>取り下げは、コードの削除は一切し<em>ません</em>。例として、取り下げ機能は、誤ってアップロードされた秘密鍵を削除するためのものではありません。
+<p>取り下げは、コードの削除は一切<em>しません</em>。例えば、誤ってアップロードされた秘密鍵を削除することはできません。
 もしそうなってしまったら、即座に秘密鍵をリセットしなければなりません。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Cargo Workspaces
@@ -28301,48 +28365,47 @@ reset those secrets immediately.
 <!--
 In Chapter 12, we built a package that included a binary crate and a library
 crate. As your project develops, you might find that the library crate
-continues to get bigger and you want to split up your package further into
-multiple library crates. In this situation, Cargo offers a feature called
-*workspaces* that can help manage multiple related packages that are developed
-in tandem.
+continues to get bigger and you want to split your package further into
+multiple library crates. Cargo offers a feature called *workspaces* that can
+help manage multiple related packages that are developed in tandem.
 -->
 <p>第12章で、バイナリクレートとライブラリクレートを含むパッケージを構築しました。プロジェクトの開発が進むにつれて、
 ライブラリクレートの肥大化が続き、その上で複数のライブラリクレートにパッケージを分割したくなることでしょう。
-この場面において、Cargoは<em>ワークスペース</em>という協調して開発された関連のある複数のパッケージを管理するのに役立つ機能を提供しています。</p>
+Cargoは<em>ワークスペース</em>という協調して開発された関連のある複数のパッケージを管理するのに役立つ機能を提供しています。</p>
 <!--
 ### Creating a Workspace
 -->
 <h3 id="ワークスペースを生成する"><a class="header" href="#ワークスペースを生成する">ワークスペースを生成する</a></h3>
 <!--
 A *workspace* is a set of packages that share the same *Cargo.lock* and output
-directory. Let’s make a project using a workspace-we'll use trivial code so we
+directory. Let’s make a project using a workspace—we’ll use trivial code so we
 can concentrate on the structure of the workspace. There are multiple ways to
-structure a workspace; we’re going to show a common way. We’ll have a
+structure a workspace, so we'll just show one common way. We’ll have a
 workspace containing a binary and two libraries. The binary, which will provide
 the main functionality, will depend on the two libraries. One library will
 provide an `add_one` function, and a second library an `add_two` function.
-These three crates will be part of the same workspace. We'll start by creating
+These three crates will be part of the same workspace. We’ll start by creating
 a new directory for the workspace:
 -->
 <p><em>ワークスペース</em>は、同じ<em>Cargo.lock</em>と出力ディレクトリを共有する一連のパッケージです。
 ワークスペースを使用したプロジェクトを作成し、ワークスペースの構造に集中できるよう、瑣末なコードを使用しましょう。
-ワークスペースを構築する方法は複数ありますが、一般的な方法を提示しましょう。バイナリ1つとライブラリ2つを含むワークスペースを作ります。
+ワークスペースを構築する方法は複数あるので、よく使われる方法だけを提示しましょう。バイナリ1つとライブラリ2つを含むワークスペースを作ります。
 バイナリは、主要な機能を提供しますが、2つのライブラリに依存しています。
 一方のライブラリは、<code>add_one</code>関数を提供し、2番目のライブラリは、<code>add_two</code>関数を提供します。
 これら3つのクレートが同じワークスペースの一部になります。ワークスペース用の新しいディレクトリを作ることから始めましょう:</p>
-<pre><code class="language-text">$ mkdir add
+<pre><code class="language-console">$ mkdir add
 $ cd add
 </code></pre>
 <!--
 Next, in the *add* directory, we create the *Cargo.toml* file that will
-configure the entire workspace. This file won't have a `[package]` section or
-the metadata we’ve seen in other *Cargo.toml* files. Instead, it will start
-with a `[workspace]` section that will allow us to add members to the workspace
-by specifying the path to our binary crate; in this case, that path is *adder*:
+configure the entire workspace. This file won’t have a `[package]` section.
+Instead, it will start with a `[workspace]` section that will allow us to add
+members to the workspace by specifying the path to the package with our binary
+crate; in this case, that path is *adder*:
 -->
 <p>次に<em>add</em>ディレクトリにワークスペース全体を設定する<em>Cargo.toml</em>ファイルを作成します。
-このファイルには、他の<em>Cargo.toml</em>ファイルで見かけるような<code>[package]</code>セクションやメタデータはありません。
-代わりにバイナリクレートへのパスを指定することでワークスペースにメンバを追加させてくれる<code>[workspace]</code>セクションから開始します;
+このファイルには<code>[package]</code>セクションはありません。
+代わりに、バイナリクレートを含むパッケージへのパスを指定することでワークスペースにメンバを追加させてくれる<code>[workspace]</code>セクションから開始します;
 今回の場合、そのパスは<em>adder</em>です:</p>
 <!--
 <span class="filename">Filename: Cargo.toml</span>
@@ -28359,8 +28422,14 @@ Next, we’ll create the `adder` binary crate by running `cargo new` within the
 *add* directory:
 -->
 <p>次に、<em>add</em>ディレクトリ内で<code>cargo new</code>を実行することで<code>adder</code>バイナリクレートを作成しましょう:</p>
-<pre><code class="language-text">$ cargo new --bin adder
-     Created binary (application) `adder` project
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/output-only-01-adder-crate/add
+rm -rf adder
+cargo new adder
+copy output below
+-->
+<pre><code class="language-console">$ cargo new adder
+     Created binary (application) `adder` package
 </code></pre>
 <!--
 At this point, we can build the workspace by running `cargo build`. The files
@@ -28377,36 +28446,36 @@ in your *add* directory should look like this:
 └── target
 </code></pre>
 <!--
-The workspace has one *target* directory at the top level for the compiled
-artifacts to be placed into; the `adder` crate doesn’t have its own *target*
-directory. Even if we were to run `cargo build` from inside the *adder*
-directory, the compiled artifacts would still end up in *add/target* rather
-than *add/adder/target*. Cargo structures the *target* directory in a workspace
-like this because the crates in a workspace are meant to depend on each other.
-If each crate had its own *target* directory, each crate would have to
-recompile each of the other crates in the workspace to have the artifacts in
-its own *target* directory. By sharing one *target* directory, the crates can
-avoid unnecessary rebuilding.
+The workspace has one *target* directory at the top level that the compiled
+artifacts will be placed into; the `adder` package doesn’t have its own
+*target* directory. Even if we were to run `cargo build` from inside the
+*adder* directory, the compiled artifacts would still end up in *add/target*
+rather than *add/adder/target*. Cargo structures the *target* directory in a
+workspace like this because the crates in a workspace are meant to depend on
+each other. If each crate had its own *target* directory, each crate would have
+to recompile each of the other crates in the workspace to place the artifacts
+in its own *target* directory. By sharing one *target* directory, the crates
+can avoid unnecessary rebuilding.
 -->
-<p>ワークスペースには、コンパイルした生成物を置けるように最上位に<em>target</em>のディレクトリがあります;
-<code>adder</code>クレートには<em>target</em>ディレクトリはありません。
+<p>ワークスペースは、コンパイルした生成物が置かれる単一の<em>target</em>ディレクトリを最上位に持ちます;
+<code>adder</code>パッケージには<em>target</em>ディレクトリはありません。
 <em>adder</em>ディレクトリ内部から<code>cargo build</code>を走らせることになっていたとしても、コンパイルされる生成物は、
 <em>add/adder/target</em>ではなく、<em>add/target</em>に落ち着くでしょう。ワークスペースのクレートは、
 お互いに依存しあうことを意味するので、Cargoはワークスペースの<em>target</em>ディレクトリをこのように構成します。
-各クレートが<em>target</em>ディレクトリを持っていたら、各クレートがワークスペースの他のクレートを再コンパイルし、
-<em>target</em>ディレクトリに生成物がある状態にしなければならないでしょう。一つの<em>target</em>ディレクトリを共有することで、
+各クレートが<em>target</em>ディレクトリを持っていたら、各クレートは自身の<em>target</em>ディレクトリにワークスペースの他のクレートの生成物を置くために、
+ワークスペースの他のクレートを再コンパイルしなくてはならなくなるでしょう。一つの<em>target</em>ディレクトリを共有することで、
 クレートは不必要な再ビルドを回避できるのです。</p>
 <!--
-### Creating the Second Crate in the Workspace
+### Creating the Second Package in the Workspace
 -->
-<h3 id="ワークスペース内に2番目のクレートを作成する"><a class="header" href="#ワークスペース内に2番目のクレートを作成する">ワークスペース内に2番目のクレートを作成する</a></h3>
+<h3 id="ワークスペース内に2番目のパッケージを作成する"><a class="header" href="#ワークスペース内に2番目のパッケージを作成する">ワークスペース内に2番目のパッケージを作成する</a></h3>
 <!--
-Next, let’s create another member crate in the workspace and call it `add-one`.
-Change the top-level *Cargo.toml* to specify the *add-one* path in the
-`members` list:
+Next, let’s create another member package in the workspace and call it
+`add_one`. Change the top-level *Cargo.toml* to specify the *add_one* path in
+the `members` list:
 -->
-<p>次に、ワークスペースに別のメンバクレートを作成し、<code>add-one</code>と呼びましょう。
-最上位の<em>Cargo.toml</em>を変更して<code>members</code>リストで<em>add-one</em>パスを指定するようにしてください:</p>
+<p>次に、ワークスペースに別のメンバパッケージを作成し、<code>add_one</code>と呼びましょう。
+最上位の<em>Cargo.toml</em>を変更して<code>members</code>リストで<em>add_one</em>パスを指定するようにしてください:</p>
 <!--
 <span class="filename">Filename: Cargo.toml</span>
 -->
@@ -28415,15 +28484,21 @@ Change the top-level *Cargo.toml* to specify the *add-one* path in the
 
 members = [
     &quot;adder&quot;,
-    &quot;add-one&quot;,
+    &quot;add_one&quot;,
 ]
 </code></pre>
 <!--
-Then generate a new library crate named `add-one`:
+Then generate a new library crate named `add_one`:
 -->
-<p>それから、<code>add-one</code>という名前のライブラリクレートを生成してください:</p>
-<pre><code class="language-text">$ cargo new add-one --lib
-     Created library `add-one` project
+<p>それから、<code>add_one</code>という名前のライブラリクレートを生成してください:</p>
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/output-only-02-add-one/add
+rm -rf add_one
+cargo new add_one --lib
+copy output below
+-->
+<pre><code class="language-console">$ cargo new add_one --lib
+     Created library `add_one` package
 </code></pre>
 <!--
 Your *add* directory should now have these directories and files:
@@ -28431,7 +28506,7 @@ Your *add* directory should now have these directories and files:
 <p>これで<em>add</em>ディレクトリには、以下のディレクトリやファイルが存在するはずです:</p>
 <pre><code class="language-text">├── Cargo.lock
 ├── Cargo.toml
-├── add-one
+├── add_one
 │   ├── Cargo.toml
 │   └── src
 │       └── lib.rs
@@ -28442,178 +28517,210 @@ Your *add* directory should now have these directories and files:
 └── target
 </code></pre>
 <!--
-In the *add-one/src/lib.rs* file, let’s add an `add_one` function:
+In the *add_one/src/lib.rs* file, let’s add an `add_one` function:
 -->
-<p><em>add-one/src/lib.rs</em>ファイルに<code>add_one</code>関数を追加しましょう:</p>
+<p><em>add_one/src/lib.rs</em>ファイルに<code>add_one</code>関数を追加しましょう:</p>
 <!--
-<span class="filename">Filename: add-one/src/lib.rs</span>
+<span class="filename">Filename: add_one/src/lib.rs</span>
 -->
-<p><span class="filename">ファイル名: add-one/src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub fn add_one(x: i32) -&gt; i32 {
+<p><span class="filename">ファイル名: add_one/src/lib.rs</span></p>
+<pre><code class="language-rust noplayground">pub fn add_one(x: i32) -&gt; i32 {
     x + 1
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
-Now that we have a library crate in the workspace, we can have the binary crate
-`adder` depend on the library crate `add-one`. First, we’ll need to add a path
-dependency on `add-one` to *adder/Cargo.toml*:
+Now we can have the `adder` package with our binary depend on the `add_one`
+package that has our library. First, we’ll need to add a path dependency on
+`add_one` to *adder/Cargo.toml*.
 -->
-<p>ワークスペースにライブラリクレートが存在するようになったので、バイナリクレート<code>adder</code>をライブラリクレートの<code>add-one</code>に依存させられます。
-まず、<code>add-one</code>へのパス依存を<em>adder/Cargo.toml</em>に追加する必要があります:</p>
+<p>これで、バイナリを持つパッケージ<code>adder</code>を、ライブラリを持つパッケージ<code>add_one</code>に依存させることができるようになりました。
+まず、<code>add_one</code>へのパス依存を<em>adder/Cargo.toml</em>に追加する必要があります。</p>
 <!--
 <span class="filename">Filename: adder/Cargo.toml</span>
 -->
 <p><span class="filename">ファイル名: adder/Cargo.toml</span></p>
 <pre><code class="language-toml">[dependencies]
-
-add-one = { path = &quot;../add-one&quot; }
+add_one = { path = &quot;../add_one&quot; }
 </code></pre>
 <!--
-Cargo doesn't assume that crates in a workspace will depend on each other, so
-we need to be explicit about the dependency relationships between the crates.
+Cargo doesn’t assume that crates in a workspace will depend on each other, so
+we need to be explicit about the dependency relationships.
 -->
 <p>Cargoはワークスペースのクレートが、お互いに依存しているとは想定していないので、
-クレート間の依存関係について明示する必要があります。</p>
+依存関係について明示する必要があります。</p>
 <!--
-Next, let’s use the `add_one` function from the `add-one` crate in the `adder`
-crate. Open the *adder/src/main.rs* file and add an `extern crate` line at
-the top to bring the new `add-one` library crate into scope. Then change the
-`main` function to call the `add_one` function, as in Listing 14-7:
+Next, let’s use the `add_one` function (from the `add_one` crate) in the
+`adder` crate. Open the *adder/src/main.rs* file and add a `use` line at the
+top to bring the new `add_one` library crate into scope. Then change the `main`
+function to call the `add_one` function, as in Listing 14-7.
 -->
-<p>次に、<code>adder</code>クレートの<code>add-one</code>クレートから<code>add_one</code>関数を使用しましょう。<em>adder/src/main.rs</em>ファイルを開き、
-冒頭に<code>extern crate</code>行を追加して新しい<code>add-one</code>ライブラリクレートをスコープに導入してください。
-それから<code>main</code>関数を変更し、<code>add_one</code>関数を呼び出します。リスト14-7のようにですね:</p>
+<p>次に、<code>adder</code>クレート内で(<code>add_one</code>クレートの)<code>add_one</code>関数を使用しましょう。<em>adder/src/main.rs</em>ファイルを開き、
+冒頭に<code>use</code>行を追加して新しい<code>add_one</code>ライブラリクレートをスコープに導入してください。
+それから<code>main</code>関数を変更し、<code>add_one</code>関数を呼び出します。リスト14-7のようにですね。</p>
 <!--
 <span class="filename">Filename: adder/src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: adder/src/main.rs</span></p>
-<pre><code class="language-rust ignore">extern crate add_one;
+<pre><code class="language-rust ignore">use add_one;
 
 fn main() {
     let num = 10;
-    // こんにちは世界！{}+1は{}!
-    println!(&quot;Hello, world! {} plus one is {}!&quot;, num, add_one::add_one(num));
+    //       &quot;こんにちは世界！{num}+1は{}!&quot;
+    println!(&quot;Hello, world! {num} plus one is {}!&quot;, add_one::add_one(num));
 }</code></pre>
 <!--
-<span class="caption">Listing 14-7: Using the `add-one` library crate from the
-`adder` crate</span>
+<span class="caption">Listing 14-7: Using the `add_one` library crate from the
+ `adder` crate</span>
 -->
-<p><span class="caption">リスト14-7: <code>adder</code>クレートから<code>add-one</code>ライブラリクレートを使用する</span></p>
+<p><span class="caption">リスト14-7: <code>adder</code>クレートから<code>add_one</code>ライブラリクレートを使用する</span></p>
 <!--
 Let’s build the workspace by running `cargo build` in the top-level *add*
 directory!
 -->
 <p>最上位の<em>add</em>ディレクトリで<code>cargo build</code>を実行することでワークスペースをビルドしましょう！</p>
-<pre><code class="language-text">$ cargo build
-   Compiling add-one v0.1.0 (file:///projects/add/add-one)
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/listing-14-07/add
+cargo build
+copy output below; the output updating script doesn't handle subdirectories in paths properly
+-->
+<pre><code class="language-console">$ cargo build
+   Compiling add_one v0.1.0 (file:///projects/add/add_one)
    Compiling adder v0.1.0 (file:///projects/add/adder)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.68 secs
+    Finished dev [unoptimized + debuginfo] target(s) in 0.68s
 </code></pre>
 <!--
-To run the binary crate from the *add* directory, we need to specify which
-package in the workspace we want to use by using the `-p` argument and the
+To run the binary crate from the *add* directory, we can specify which
+package in the workspace we want to run by using the `-p` argument and the
 package name with `cargo run`:
 -->
 <p><em>add</em>ディレクトリからバイナリクレートを実行するには、<code>-p</code>引数とパッケージ名を<code>cargo run</code>と共に使用して、
-使用したいワークスペースのパッケージを指定する必要があります:</p>
-<pre><code class="language-text">$ cargo run -p adder
-    Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs
+実行したいワークスペースのパッケージを指定することができます:</p>
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/listing-14-07/add
+cargo run -p adder
+copy output below; the output updating script doesn't handle subdirectories in paths properly
+-->
+<pre><code class="language-console">$ cargo run -p adder
+    Finished dev [unoptimized + debuginfo] target(s) in 0.0s
      Running `target/debug/adder`
 Hello, world! 10 plus one is 11!
 </code></pre>
 <!--
-This runs the code in *adder/src/main.rs*, which depends on the `add-one` crate.
+This runs the code in *adder/src/main.rs*, which depends on the `add_one` crate.
 -->
 <p>これにより、<em>adder/src/main.rs</em>のコードが実行され、これは<code>add_one</code>クレートに依存しています。</p>
 <!--
-#### Depending on an External Crate in a Workspace
+#### Depending on an External Package in a Workspace
 -->
-<h4 id="ワークスペースの外部クレートに依存する"><a class="header" href="#ワークスペースの外部クレートに依存する">ワークスペースの外部クレートに依存する</a></h4>
+<h4 id="ワークスペースの外部パッケージに依存する"><a class="header" href="#ワークスペースの外部パッケージに依存する">ワークスペースの外部パッケージに依存する</a></h4>
 <!--
-Notice that the workspace has only one *Cargo.lock* file at the top level of
-the workspace rather than having a *Cargo.lock* in each crate’s directory. This
-ensures that all crates are using the same version of all dependencies. If we
-add the `rand` crate to the *adder/Cargo.toml* and *add-one/Cargo.toml*
-files, Cargo will resolve both of those to one version of `rand` and record
-that in the one *Cargo.lock*. Making all crates in the workspace use the same
-dependencies means the crates in the workspace will always be compatible with
-each other. Let’s add the `rand` crate to the `[dependencies]` section in the
-*add-one/Cargo.toml* file to be able to use the `rand` crate in the `add-one`
-crate:
+Notice that the workspace has only one *Cargo.lock* file at the top level,
+rather than having a *Cargo.lock* in each crate’s directory. This ensures that
+all crates are using the same version of all dependencies. If we add the `rand`
+package to the *adder/Cargo.toml* and *add_one/Cargo.toml* files, Cargo will
+resolve both of those to one version of `rand` and record that in the one
+*Cargo.lock*. Making all crates in the workspace use the same dependencies
+means the crates will always be compatible with each other. Let’s add the
+`rand` crate to the `[dependencies]` section in the *add_one/Cargo.toml* file
+so we can use the `rand` crate in the `add_one` crate:
 -->
 <p>ワークスペースには、各クレートのディレクトリそれぞれに<em>Cargo.lock</em>が存在するのではなく、
-ワークスペースの最上位階層にただ一つの<em>Cargo.lock</em>が存在するだけのことに注目してください。
+最上位階層にただ一つの<em>Cargo.lock</em>が存在するだけのことに注目してください。
 これにより、全クレートが全依存の同じバージョンを使用していることが確認されます。
-<code>rand</code>クレートを<em>adder/Cargo.toml</em>と<em>add-one/Cargo.toml</em>ファイルに追加すると、
+<code>rand</code>パッケージを<em>adder/Cargo.toml</em>と<em>add_one/Cargo.toml</em>ファイルに追加すると、
 Cargoは両者をあるバージョンの<code>rand</code>に解決し、それを一つの<em>Cargo.lock</em>に記録します。
 ワークスペースの全クレートに同じ依存を使用させるということは、
-ワークスペースのクレートが相互に互換性を常に維持するということになります。
-<em>add-one/Cargo.toml</em>ファイルの<code>[dependencies]</code>セクションに<code>rand</code>クレートを追加して、
-<code>add-one</code>クレートで<code>rand</code>クレートを使用できます:</p>
-<!--
-<span class="filename">Filename: add-one/Cargo.toml</span>
+クレートが相互に互換性を常に維持するということになります。
+<code>add_one</code>クレートで<code>rand</code>クレートを使用できるように、
+<em>add_one/Cargo.toml</em>ファイルの<code>[dependencies]</code>セクションに<code>rand</code>クレートを追加しましょう:</p>
+<!-- When updating the version of `rand` used, also update the version of
+`rand` used in these files so they all match:
+* ch02-00-guessing-game-tutorial.md
+* ch07-04-bringing-paths-into-scope-with-the-use-keyword.md
 -->
-<p><span class="filename">ファイル名: add-one/Cargo.toml</span></p>
+<!--
+<span class="filename">Filename: add_one/Cargo.toml</span>
+-->
+<p><span class="filename">ファイル名: add_one/Cargo.toml</span></p>
 <pre><code class="language-toml">[dependencies]
-
-rand = &quot;0.3.14&quot;
+rand = &quot;0.8.5&quot;
 </code></pre>
 <!--
-We can now add `extern crate rand;` to the *add-one/src/lib.rs* file, and
-building the whole workspace by running `cargo build` in the *add* directory
-will bring in and compile the `rand` crate:
+We can now add `use rand;` to the *add_one/src/lib.rs* file, and building the
+whole workspace by running `cargo build` in the *add* directory will bring in
+and compile the `rand` crate. We will get one warning because we aren’t
+referring to the `rand` we brought into scope:
 -->
-<p>これで、<em>add-one/src/lib.rs</em>ファイルに<code>extern crate rand;</code>を追加でき、
+<p>これで、<em>add_one/src/lib.rs</em>ファイルに<code>use rand;</code>を追加でき、
 <em>add</em>ディレクトリで<code>cargo build</code>を実行することでワークスペース全体をビルドすると、
-<code>rand</code>クレートを持ってきてコンパイルするでしょう:</p>
-<pre><code class="language-text">$ cargo build
-    Updating registry `https://github.com/rust-lang/crates.io-index`
- Downloading rand v0.3.14
+<code>rand</code>クレートを持ってきてコンパイルするでしょう。
+スコープ内に持ち込んだ<code>rand</code>を参照していないので、警告が出るでしょう:</p>
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/no-listing-03-workspace-with-external-dependency/add
+cargo build
+copy output below; the output updating script doesn't handle subdirectories in paths properly
+-->
+<pre><code class="language-console">$ cargo build
+    Updating crates.io index
+  Downloaded rand v0.8.5
    --snip--
-   Compiling rand v0.3.14
-   Compiling add-one v0.1.0 (file:///projects/add/add-one)
+   Compiling rand v0.8.5
+   Compiling add_one v0.1.0 (file:///projects/add/add_one)
+warning: unused import: `rand`
+(警告: 未使用のインポート: `rand`)
+ --&gt; add_one/src/lib.rs:1:5
+  |
+1 | use rand;
+  |     ^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: `add_one` (lib) generated 1 warning
    Compiling adder v0.1.0 (file:///projects/add/adder)
-    Finished dev [unoptimized + debuginfo] target(s) in 10.18 secs
+    Finished dev [unoptimized + debuginfo] target(s) in 10.18s
 </code></pre>
 <!--
 The top-level *Cargo.lock* now contains information about the dependency of
-`add-one` on `rand`. However, even though `rand` is used somewhere in the
+`add_one` on `rand`. However, even though `rand` is used somewhere in the
 workspace, we can’t use it in other crates in the workspace unless we add
-`rand` to their *Cargo.toml* files as well. For example, if we add `extern
-crate rand;` to the *adder/src/main.rs* file for the `adder` crate, we’ll get
-an error:
+`rand` to their *Cargo.toml* files as well. For example, if we add `use rand;`
+to the *adder/src/main.rs* file for the `adder` package, we’ll get an error:
 -->
-<p>さて、最上位の<em>Cargo.lock</em>は、<code>rand</code>に対する<code>add-one</code>の依存の情報を含むようになりました。
+<p>さて、最上位の<em>Cargo.lock</em>は、<code>rand</code>に対する<code>add_one</code>の依存の情報を含むようになりました。
 ですが、<code>rand</code>はワークスペースのどこかで使用されているにも関わらず、それぞれの<em>Cargo.toml</em>ファイルにも、
 <code>rand</code>を追加しない限り、ワークスペースの他のクレートでそれを使用することはできません。
-例えば、<code>adder</code>クレートの<em>adder/src/main.rs</em>ファイルに<code>extern crate rand;</code>を追加すると、
+例えば、<code>adder</code>パッケージの<em>adder/src/main.rs</em>ファイルに<code>use rand;</code>を追加すると、
 エラーが出ます:</p>
-<pre><code class="language-text">$ cargo build
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/output-only-03-use-rand/add
+cargo build
+copy output below; the output updating script doesn't handle subdirectories in paths properly
+-->
+<pre><code class="language-console">$ cargo build
+  --snip--
    Compiling adder v0.1.0 (file:///projects/add/adder)
-error: use of unstable library feature 'rand': use `rand` from crates.io (see
-issue #27703)
-(エラー: 不安定なライブラリの機能'rand'を使用しています: crates.ioの`rand`を使用してください)
- --&gt; adder/src/main.rs:1:1
+error[E0432]: unresolved import `rand`
+(エラー: 未解決のインポート`rand`)
+ --&gt; adder/src/main.rs:2:5
   |
-1 | extern crate rand;
+2 | use rand;
+  |     ^^^^ no external crate `rand`
+  |         (外部クレート`rand`は存在しません)
 </code></pre>
 <!--
-To fix this, edit the *Cargo.toml* file for the `adder` crate and indicate that
-`rand` is a dependency for that crate as well. Building the `adder` crate will
+To fix this, edit the *Cargo.toml* file for the `adder` package and indicate
+that `rand` is a dependency for it as well. Building the `adder` package will
 add `rand` to the list of dependencies for `adder` in *Cargo.lock*, but no
-additional copies of `rand` will be downloaded. Cargo has ensured that any
-crate in the workspace using the `rand` crate will be using the same version.
-Using the same version of `rand` across the workspace saves space because we
-won’t have multiple copies and ensures that the crates in the workspace will be
-compatible with each other.
+additional copies of `rand` will be downloaded. Cargo has ensured that every
+crate in every package in the workspace using the `rand` package will be using
+the same version, saving us space and ensuring that the crates in the workspace
+will be compatible with each other.
 -->
-<p>これを修正するには、<code>adder</code>クレートの<em>Cargo.toml</em>ファイルを編集し、同様にそのクレートが<code>rand</code>に依存していることを示してください。
-<code>adder</code>クレートをビルドすると、<code>rand</code>を<em>Cargo.lock</em>の<code>adder</code>の依存一覧に追加しますが、
-<code>rand</code>のファイルが追加でダウンロードされることはありません。Cargoが、ワークスペースの<code>rand</code>を使用するどのクレートも、
-同じバージョンを使っていることを確かめてくれるのです。ワークスペース全体で<code>rand</code>の同じバージョンを使用することにより、
-複数のコピーが存在しないのでスペースを節約し、ワークスペースのクレートが相互に互換性を維持することを確かめます。</p>
+<p>これを修正するには、<code>adder</code>パッケージの<em>Cargo.toml</em>ファイルを編集し、これも<code>rand</code>に依存していることを示してください。
+<code>adder</code>パッケージをビルドすると、<code>rand</code>を<em>Cargo.lock</em>の<code>adder</code>の依存一覧に追加しますが、
+<code>rand</code>のファイルが追加でダウンロードされることはありません。Cargoが、
+ワークスペース内で<code>rand</code>パッケージを使用するすべてのパッケージ内のすべてのクレートが、
+同じバージョンを使用することを保証してくれるのです。これによりスペースを節約し、
+ワークスペースのクレートが相互に互換性があることを保証してくれます。</p>
 <!--
 #### Adding a Test to a Workspace
 -->
@@ -28624,12 +28731,10 @@ within the `add_one` crate:
 -->
 <p>さらなる改善として、<code>add_one</code>クレート内に<code>add_one::add_one</code>関数のテストを追加しましょう:</p>
 <!--
-<span class="filename">Filename: add-one/src/lib.rs</span>
+<span class="filename">Filename: add_one/src/lib.rs</span>
 -->
-<p><span class="filename">ファイル名: add-one/src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub fn add_one(x: i32) -&gt; i32 {
+<p><span class="filename">ファイル名: add_one/src/lib.rs</span></p>
+<pre><code class="language-rust noplayground">pub fn add_one(x: i32) -&gt; i32 {
     x + 1
 }
 
@@ -28641,46 +28746,52 @@ mod tests {
     fn it_works() {
         assert_eq!(3, add_one(2));
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
-Now run `cargo test` in the top-level *add* directory:
+Now run `cargo test` in the top-level *add* directory. Running `cargo test` in
+a workspace structured like this one will run the tests for all the crates in
+the workspace:
 -->
-<p>では、最上位の<em>add</em>ディレクトリで<code>cargo test</code>を実行してください:</p>
-<pre><code class="language-text">$ cargo test
-   Compiling add-one v0.1.0 (file:///projects/add/add-one)
+<p>では、最上位の<em>add</em>ディレクトリで<code>cargo test</code>を実行してください。
+このような構造をしたワークスペースで<code>cargo test</code>を走らせると、ワークスペースの全クレートのテストを実行します:</p>
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/no-listing-04-workspace-with-tests/add
+cargo test
+copy output below; the output updating script doesn't handle subdirectories in
+paths properly
+-->
+<pre><code class="language-console">$ cargo test
+   Compiling add_one v0.1.0 (file:///projects/add/add_one)
    Compiling adder v0.1.0 (file:///projects/add/adder)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.27 secs
-     Running target/debug/deps/add_one-f0253159197f7841
+    Finished test [unoptimized + debuginfo] target(s) in 0.27s
+     Running unittests src/lib.rs (target/debug/deps/add_one-f0253159197f7841)
 
 running 1 test
 test tests::it_works ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-     Running target/debug/deps/adder-f88af9d2cc175a5e
-
-running 0 tests
-
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
-
-   Doc-tests add-one
+     Running unittests src/main.rs (target/debug/deps/adder-49979ff40686fa8e)
 
 running 0 tests
 
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests add_one
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 </code></pre>
 <!--
-The first section of the output shows that the `it_works` test in the `add-one`
+The first section of the output shows that the `it_works` test in the `add_one`
 crate passed. The next section shows that zero tests were found in the `adder`
 crate, and then the last section shows zero documentation tests were found in
-the `add-one` crate. Running `cargo test` in a workspace structured like this
-one will run the tests for all the crates in the workspace.
+the `add_one` crate.
 -->
-<p>出力の最初の区域が、<code>add-one</code>クレートの<code>it_works</code>テストが通ったことを示しています。
+<p>出力の最初の区域が、<code>add_one</code>クレートの<code>it_works</code>テストが通ったことを示しています。
 次の区域には、<code>adder</code>クレートにはテストが見つからなかったことが示され、
-さらに最後の区域には、<code>add-one</code>クレートにドキュメンテーションテストは見つからなかったと表示されています。
-このような構造をしたワークスペースで<code>cargo test</code>を走らせると、ワークスペースの全クレートのテストを実行します。</p>
+さらに最後の区域には、<code>add_one</code>クレートにドキュメンテーションテストは見つからなかったと表示されています。</p>
 <!--
 We can also run tests for one particular crate in a workspace from the
 top-level directory by using the `-p` flag and specifying the name of the crate
@@ -28688,60 +28799,67 @@ we want to test:
 -->
 <p><code>-p</code>フラグを使用し、テストしたいクレートの名前を指定することで最上位ディレクトリから、
 ワークスペースのある特定のクレート用のテストを実行することもできます:</p>
-<pre><code class="language-text">$ cargo test -p add-one
-    Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs
-     Running target/debug/deps/add_one-b3235fea9a156f74
+<!-- manual-regeneration
+cd listings/ch14-more-about-cargo/no-listing-04-workspace-with-tests/add
+cargo test -p add_one
+copy output below; the output updating script doesn't handle subdirectories in paths properly
+-->
+<pre><code class="language-console">$ cargo test -p add_one
+    Finished test [unoptimized + debuginfo] target(s) in 0.00s
+     Running unittests src/lib.rs (target/debug/deps/add_one-b3235fea9a156f74)
 
 running 1 test
 test tests::it_works ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests add-one
+   Doc-tests add_one
 
 running 0 tests
 
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 </code></pre>
 <!--
-This output shows `cargo test` only ran the tests for the `add-one` crate and
+This output shows `cargo test` only ran the tests for the `add_one` crate and
 didn’t run the `adder` crate tests.
 -->
-<p>この出力は、<code>cargo test</code>が<code>add-one</code>クレートのテストのみを実行し、<code>adder</code>クレートのテストは実行しなかったことを示しています。</p>
+<p>この出力は、<code>cargo test</code>が<code>add_one</code>クレートのテストのみを実行し、<code>adder</code>クレートのテストは実行しなかったことを示しています。</p>
 <!--
-If you publish the crates in the workspace to *https://crates.io/*, each crate
-in the workspace will need to be published separately. The `cargo publish`
-command does not have an `--all` flag or a `-p` flag, so you must change to
-each crate’s directory and run `cargo publish` on each crate in the workspace
-to publish the crates.
+If you publish the crates in the workspace to [crates.io](https://crates.io/),
+each crate in the workspace will need to be published separately. Like `cargo
+test`, we can publish a particular crate in our workspace by using the `-p`
+flag and specifying the name of the crate we want to publish.
 -->
-<p>ワークスペースのクレートを <em>https://crates.io/</em> に公開したら、ワークスペースのクレートは個別に公開される必要があります。
-<code>cargo publish</code>コマンドには<code>--all</code>フラグや<code>-p</code>フラグはないので、各クレートのディレクトリに移動して、
-ワークスペースの各クレートを<code>cargo publish</code>して、公開しなければなりません。</p>
+<p>ワークスペースのクレートを <a href="https://crates.io/">crates.io</a> に公開したら、ワークスペースのクレートは個別に公開される必要があります。
+<code>cargo test</code>のように、<code>-p</code>フラグを使用して公開したいクレートの名前を指定することで、ワークスペース内の特定のクレートを公開することができます。</p>
 <!--
-For additional practice, add an `add-two` crate to this workspace in a similar
-way as the `add-one` crate!
+For additional practice, add an `add_two` crate to this workspace in a similar
+way as the `add_one` crate!
 -->
-<p>鍛錬を積むために、<code>add-one</code>クレートと同様の方法でワークスペースに<code>add-two</code>クレートを追加してください！</p>
+<p>鍛錬を積むために、<code>add_one</code>クレートと同様の方法でワークスペースに<code>add_two</code>クレートを追加してください！</p>
 <!--
 As your project grows, consider using a workspace: it’s easier to understand
 smaller, individual components than one big blob of code. Furthermore, keeping
-the crates in a workspace can make coordination between them easier if they are
-often changed at the same time.
+the crates in a workspace can make coordination between crates easier if they
+are often changed at the same time.
 -->
 <p>プロジェクトが肥大化してきたら、ワークスペースの使用を考えてみてください: 大きな一つのコードの塊よりも、
 微細で個別のコンポーネントの方が理解しやすいです。またワークスペースにクレートを保持することは、
-同時に変更されることが多いのなら、協調しやすくなることにも繋がります。</p>
-<div style="break-before: page; page-break-before: always;"></div><!--
-## Installing Binaries from Crates.io with `cargo install`
+同時に変更されることが多いのなら、クレート間の協調をしやすくなることにも繋がります。</p>
+<div style="break-before: page; page-break-before: always;"></div><!-- Old link, do not remove -->
+<!--
+<a id="installing-binaries-from-cratesio-with-cargo-install"></a>
 -->
-<h2 id="cargo-installでcratesioからバイナリをインストールする"><a class="header" href="#cargo-installでcratesioからバイナリをインストールする"><code>cargo install</code>でCrates.ioからバイナリをインストールする</a></h2>
+<!--
+## Installing Binaries with `cargo install`
+-->
+<h2 id="cargo-installでバイナリをインストールする"><a class="header" href="#cargo-installでバイナリをインストールする"><code>cargo install</code>でバイナリをインストールする</a></h2>
 <!--
 The `cargo install` command allows you to install and use binary crates
 locally. This isn’t intended to replace system packages; it’s meant to be a
 convenient way for Rust developers to install tools that others have shared on
-[crates.io](https://crates.io). Note that you can only install
-packages that have binary targets. A binary target is the runnable program
+[crates.io](https://crates.io/). Note that you can only install
+packages that have binary targets. A *binary target* is the runnable program
 that is created if the crate has a *src/main.rs* file or another file specified
 as a binary, as opposed to a library target that isn’t runnable on its own but
 is suitable for including within other programs. Usually, crates have
@@ -28750,43 +28868,49 @@ binary target, or both.
 -->
 <p><code>cargo install</code>コマンドにより、バイナリクレートをローカルにインストールし、使用することができます。
 これは、システムパッケージを置き換えることを意図したものではありません。<ruby>即<rp>(</rp><rt>すなわ</rt><rp>)</rp></ruby>ち、
-Rustの開発者が、他人が<a href="https://crates.io">crates.io</a>に共有したツールをインストールするのに便利な方法を意味するのです。
-バイナリターゲットを持つパッケージのみインストールできることに注意してください。バイナリターゲットとは、
+Rustの開発者が、他人が<a href="https://crates.io/">crates.io</a>に共有したツールをインストールするのに便利な方法を意味するのです。
+バイナリターゲットを持つパッケージのみインストールできることに注意してください。<em>バイナリターゲット</em>とは、
 クレートが<em>src/main.rs</em>ファイルやバイナリとして指定された他のファイルを持つ場合に生成される実行可能なプログラムのことであり、
 単独では実行不可能なものの、他のプログラムに含むのには適しているライブラリターゲットとは一線を画します。
 通常、クレートには、<em>README</em>ファイルに、クレートがライブラリかバイナリターゲットか、両方をもつかという情報があります。</p>
 <!--
 All binaries installed with `cargo install` are stored in the installation
-root’s *bin* folder. If you installed Rust using `rustup` and don’t have any
+root’s *bin* folder. If you installed Rust using *rustup.rs* and don’t have any
 custom configurations, this directory will be *$HOME/.cargo/bin*. Ensure that
 directory is in your `$PATH` to be able to run programs you’ve installed with
 `cargo install`.
 -->
 <p><code>cargo install</code>でインストールされるバイナリは全て、インストールのルートの<em>bin</em>フォルダに保持されます。
-Rustを<code>rustup</code>を使用し、独自の設定を何も行なっていなければ、このディレクトリは、<em>$HOME/.cargo/bin</em>になります。
+<em>rustup.rs</em>を使用しRustをインストールし、独自の設定を何も行なっていなければ、このディレクトリは、<em>$HOME/.cargo/bin</em>になります。
 <code>cargo install</code>でインストールしたプログラムを実行できるようにするためには、そのディレクトリが<code>$PATH</code>に含まれていることを確かめてください。</p>
 <!--
 For example, in Chapter 12 we mentioned that there’s a Rust implementation of
-the `grep` tool called `ripgrep` for searching files. If we want to install
-`ripgrep`, we can run the following:
+the `grep` tool called `ripgrep` for searching files. To install `ripgrep`, we
+can run the following:
 -->
 <p>例えば、第12章で、ファイルを検索する<code>ripgrep</code>という<code>grep</code>ツールのRust版があることに触れました。
-<code>ripgrep</code>をインストールしたかったら、以下を実行することができます:</p>
-<pre><code class="language-text">$ cargo install ripgrep
-Updating registry `https://github.com/rust-lang/crates.io-index`
- Downloading ripgrep v0.3.2
- --snip--
-   Compiling ripgrep v0.3.2
-    Finished release [optimized + debuginfo] target(s) in 97.91 secs
+<code>ripgrep</code>をインストールするには、以下を実行することができます:</p>
+<!-- manual-regeneration
+cargo install something you don't have, copy relevant output below
+-->
+<pre><code class="language-console">$ cargo install ripgrep
+    Updating crates.io index
+  Downloaded ripgrep v13.0.0
+  Downloaded 1 crate (243.3 KB) in 0.88s
+  Installing ripgrep v13.0.0
+--snip--
+   Compiling ripgrep v13.0.0
+    Finished release [optimized + debuginfo] target(s) in 3m 10s
   Installing ~/.cargo/bin/rg
+   Installed package `ripgrep v13.0.0` (executable `rg`)
 </code></pre>
 <!--
-The last line of the output shows the location and the name of the installed
-binary, which in the case of `ripgrep` is `rg`. As long as the installation
-directory is in your `$PATH`, as mentioned previously, you can then run `rg
---help` and start using a faster, rustier tool for searching files!
+The second-to-last line of the output shows the location and the name of the
+installed binary, which in the case of `ripgrep` is `rg`. As long as the
+installation directory is in your `$PATH`, as mentioned previously, you can
+then run `rg --help` and start using a faster, rustier tool for searching files!
 -->
-<p>出力の最後の行が、インストールされたバイナリの位置と名前を示していて、<code>ripgrep</code>の場合、<code>rg</code>です。
+<p>出力の最後から2番目の行が、インストールされたバイナリの位置と名前を示していて、<code>ripgrep</code>の場合、<code>rg</code>です。
 インストールディレクトリが<code>$PATH</code>に存在する限り、前述したように、<code>rg --help</code>を走らせて、
 より高速でRustらしいファイル検索ツールを使用し始めることができます！</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
@@ -28811,17 +28935,17 @@ Cargoのサブコマンドであるかのように実行することができま
 -->
 <h2 id="まとめ-13"><a class="header" href="#まとめ-13">まとめ</a></h2>
 <!--
-Sharing code with Cargo and [crates.io](https://crates.io) is
+Sharing code with Cargo and [crates.io](https://crates.io/) is
 part of what makes the Rust ecosystem useful for many different tasks. Rust’s
 standard library is small and stable, but crates are easy to share, use, and
 improve on a timeline different from that of the language. Don’t be shy about
-sharing code that’s useful to you on [crates.io](https://crates.io);
-it’s likely that it will be useful to someone else as well!
+sharing code that’s useful to you on [crates.io](https://crates.io/)
+; it’s likely that it will be useful to someone else as well!
 -->
-<p>Cargoで<a href="https://crates.io">crates.io</a>とコードを共有することは、
+<p>Cargoで<a href="https://crates.io/">crates.io</a>とコードを共有することは、
 Rustのエコシステムを多くの異なる作業に有用にするものの一部です。Rustの標準ライブラリは、
 小さく安定的ですが、クレートは共有および使用しやすく、言語とは異なるタイムラインで進化します。
-積極的に<a href="https://crates.io">crates.io</a>で自分にとって有用なコードを共有してください;
+積極的に<a href="https://crates.io/">crates.io</a>で自分にとって有用なコードを共有してください;
 他の誰かにとっても、役に立つものであることでしょう！</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Smart Pointers
