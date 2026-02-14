@@ -16194,18 +16194,19 @@ can use them in your code.
 <h1 id="ジェネリック型トレイトライフタイム"><a class="header" href="#ジェネリック型トレイトライフタイム">ジェネリック型、トレイト、ライフタイム</a></h1>
 <!--
 Every programming language has tools for effectively handling the duplication
-of concepts. In Rust, one such tool is *generics*. Generics are abstract
-stand-ins for concrete types or other properties. When we’re writing code, we
-can express the behavior of generics or how they relate to other generics
-without knowing what will be in their place when compiling and running the code.
+of concepts. In Rust, one such tool is *generics*: abstract stand-ins for
+concrete types or other properties. We can express the behavior of generics or
+how they relate to other generics without knowing what will be in their place
+when compiling and running the code.
 -->
-<p>全てのプログラミング言語には、概念の重複を効率的に扱う道具があります。Rustにおいて、そのような道具の一つが<em>ジェネリクス</em>です。
-ジェネリクスは、具体型や他のプロパティの抽象的な代役です。コード記述の際、コンパイルやコード実行時に、
+<p>全てのプログラミング言語には、概念の重複を効率的に扱う道具があります。
+Rustにおいて、そのような道具の一つが<em>ジェネリクス</em>です。
+ジェネリクスは、具体型や他のプロパティの抽象的な代役です。コンパイルやコード実行時に、
 ジェネリクスの位置に何が入るかを知ることなく、ジェネリクスの振る舞いや他のジェネリクスとの関係を表現できるのです。</p>
 <!--
-Similar to the way a function takes parameters with unknown values to run the
-same code on multiple concrete values, functions can take parameters of some
-generic type instead of a concrete type, like `i32` or `String`. In fact, we’ve
+Functions can take parameters of some generic type, instead of a concrete type
+like `i32` or `String`, in the same way a function takes parameters with
+unknown values to run the same code on multiple concrete values. In fact, we’ve
 already used generics in Chapter 6 with `Option<T>`, Chapter 8 with `Vec<T>`
 and `HashMap<K, V>`, and Chapter 9 with `Result<T, E>`. In this chapter, you’ll
 explore how to define your own types, functions, and methods with generics!
@@ -16215,8 +16216,8 @@ explore how to define your own types, functions, and methods with generics!
 実際、第6章で<code>Option&lt;T&gt;</code>、第8章で<code>Vec&lt;T&gt;</code>と<code>HashMap&lt;K, V&gt;</code>、第9章で<code>Result&lt;T, E&gt;</code>を既に使用しました。
 この章では、独自の型、関数、メソッドをジェネリクスとともに定義する方法を探究します！</p>
 <!--
-First, we’ll review how to extract a function to reduce code duplication. Next,
-we’ll use the same technique to make a generic function from two functions that
+First, we’ll review how to extract a function to reduce code duplication. We’ll
+then use the same technique to make a generic function from two functions that
 differ only in the types of their parameters. We’ll also explain how to use
 generic types in struct and enum definitions.
 -->
@@ -16225,38 +16226,44 @@ generic types in struct and enum definitions.
 ジェネリックな型を構造体やenum定義で使用する方法も説明します。</p>
 <!--
 Then you’ll learn how to use *traits* to define behavior in a generic way. You
-can combine traits with generic types to constrain a generic type to only
-those types that have a particular behavior, as opposed to just any type.
+can combine traits with generic types to constrain a generic type to accept
+only those types that have a particular behavior, as opposed to just any type.
 -->
 <p>それから、トレイトを使用して、ジェネリックな方法で振る舞いを定義する方法を学びます。
-ジェネリックな型にトレイトを組み合わせることで、ジェネリックな型を、単にあらゆる型に対してではなく、特定の振る舞いのある型のみに制限できます。</p>
+ジェネリックな型にトレイトを組み合わせることで、ジェネリックな型を、単にあらゆる型に対してではなく、特定の振る舞いのある型のみを受け付けるように制限できます。</p>
 <!--
-Finally, we’ll discuss *lifetimes*, a variety of generics that give the
+Finally, we’ll discuss *lifetimes*: a variety of generics that give the
 compiler information about how references relate to each other. Lifetimes allow
-us to borrow values in many situations while still enabling the compiler to
-check that the references are valid.
+us to give the compiler enough information about borrowed values so that it can
+ensure references will be valid in more situations than it could without our
+help.
 -->
 <p>最後に、ライフタイムを議論します。ライフタイムとは、コンパイラに参照がお互いにどう関係しているかの情報を与える一種のジェネリクスです。
-ライフタイムのおかげでコンパイラに参照が有効であることを確認してもらうことを可能にしつつ、多くの場面で値を借用できます。</p>
+ライフタイムを利用することで、借用された値についての十分な情報をコンパイラに渡すことができ、
+プログラマの支援がなくてもできる範囲よりもより多くの場面で、参照が有効であることを保証できます。</p>
 <!--
 ## Removing Duplication by Extracting a Function
 -->
 <h2 id="関数を抽出することで重複を取り除く"><a class="header" href="#関数を抽出することで重複を取り除く">関数を抽出することで重複を取り除く</a></h2>
 <!--
-Before diving into generics syntax, let’s first look at how to remove
-duplication that doesn’t involve generic types by extracting a function. Then
-we’ll apply this technique to extract a generic function! In the same way that
-you recognize duplicated code to extract into a function, you’ll start to
-recognize duplicated code that can use generics.
+Generics allow us to replace specific types with a placeholder that represents
+multiple types to remove code duplication. Before diving into generics syntax,
+then, let’s first look at how to remove duplication in a way that doesn’t
+involve generic types by extracting a function that replaces specific values
+with a placeholder that represents multiple values. Then we’ll apply the same
+technique to extract a generic function! By looking at how to recognize
+duplicated code you can extract into a function, you’ll start to recognize
+duplicated code that can use generics.
 -->
-<p>ジェネリクスの記法に飛び込む前にまずは、関数を抽出することでジェネリックな型が関わらない重複を取り除く方法を見ましょう。
-そして、このテクニックを適用してジェネリックな関数を抽出するのです！重複したコードを認識して関数に抽出できるのと同じように、
-ジェネリクスを使用できる重複コードも認識し始めるでしょう。</p>
+<p>ジェネリクスを使用すると、複数の型を表現するプレースホルダで特定の型を置き換えることで、コードの重複を取り除くことができます。
+ジェネリクスの記法に飛び込む前にまずは、複数の値を表現するプレースホルダで特定の値を置き換えて関数を抽出することで、ジェネリックな型が関わらない重複を取り除く方法を見ましょう。
+そして、同じテクニックを適用してジェネリックな関数を抽出するのです！
+関数に抽出できる重複したコードを認識する方法を見てみることで、ジェネリクスを使用できる重複コードも認識できるようになるでしょう。</p>
 <!--
-Consider a short program that finds the largest number in a list, as shown in
-Listing 10-1.
+We begin with the short program in Listing 10-1 that finds the largest number
+in a list.
 -->
-<p>リスト10-1に示したように、リスト内の最大値を求める短いプログラムを考えてください。</p>
+<p>リスト10-1の、リスト内の最大値を求める短いプログラムで始めましょう。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -16264,45 +16271,45 @@ Listing 10-1.
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let number_list = vec![34, 50, 25, 100, 65];
 
-    let mut largest = number_list[0];
+    let mut largest = &amp;number_list[0];
 
-    for number in number_list {
+    for number in &amp;number_list {
         if number &gt; largest {
             largest = number;
         }
     }
 
-    // 最大値は{}です
+    //       &quot;最大値は{}です&quot;
     println!(&quot;The largest number is {}&quot;, largest);
-<span class="boring"> assert_eq!(largest, 100);
+<span class="boring">    assert_eq!(*largest, 100);
 </span>}</code></pre></pre>
 <!--
-<span class="caption">Listing 10-1: Code to find the largest number in a list
-of numbers</span>
+<span class="caption">Listing 10-1: Finding the largest number in a list of
+numbers</span>
 -->
-<p><span class="caption">リスト10-1: 数字のリストから最大値を求めるコード</span></p>
+<p><span class="caption">リスト10-1: 数字のリストから最大値を求める</span></p>
 <!--
-This code stores a list of integers in the variable `number_list` and places
-the first number in the list in a variable named `largest`. Then it iterates
+We store a list of integers in the variable `number_list` and place a reference
+to the first number in the list in a variable named `largest`. We then iterate
 through all the numbers in the list, and if the current number is greater than
-the number stored in `largest`, it replaces the number in that variable.
-However, if the current number is less than the largest number seen so far, the
-variable doesn’t change, and the code moves on to the next number in the list.
-After considering all the numbers in the list, `largest` should hold the
-largest number, which in this case is 100.
+the number stored in `largest`, replace the reference in that variable.
+However, if the current number is less than or equal to the largest number seen
+so far, the variable doesn’t change, and the code moves on to the next number
+in the list. After considering all the numbers in the list, `largest` should
+refer to the largest number, which in this case is 100.
 -->
-<p>このコードは、整数のリストを変数<code>number_list</code>に格納し、リストの最初の数字を<code>largest</code>という変数に配置しています。
-それからリストの数字全部を走査し、現在の数字が<code>largest</code>に格納された数値よりも大きければ、
-その変数の値を置き換えます。ですが、現在の数値が今まで見た最大値よりも小さければ、
+<p>このコードは、整数のリストを変数<code>number_list</code>に格納し、リストの最初の数への参照を<code>largest</code>という変数に配置しています。
+それからリストの数全部を走査し、現在の数が<code>largest</code>に格納された数値よりも大きければ、
+その変数に代入されている参照を置き換えます。ですが、現在の数値が今まで見た最大値以下であれば、
 変数は変わらず、コードはリストの次の数値に移っていきます。リストの数値全てを吟味した後、
-<code>largest</code>は最大値を保持しているはずで、今回は100になります。</p>
+<code>largest</code>は最大値を参照しているはずで、今回は100になります。</p>
 <!--
-To find the largest number in two different lists of numbers, we can duplicate
-the code in Listing 10-1 and use the same logic at two different places in the
-program, as shown in Listing 10-2.
+We've now been tasked with finding the largest number in two different lists of
+numbers. To do so, we can choose to duplicate the code in Listing 10-1 and use
+the same logic at two different places in the program, as shown in Listing 10-2.
 -->
-<p>2つの異なる数値のリストから最大値を発見するには、リスト10-1のコードを複製し、
-プログラムの異なる2箇所で同じロジックを使用できます。リスト10-2のようにですね。</p>
+<p>次は2つの異なる数値のリストから最大値を発見するタスクが課されました。
+これを行うために、リスト10-1のコードを複製し、プログラムの異なる2箇所で同じロジックを使用するという手があります。リスト10-2のようにですね。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -16310,9 +16317,9 @@ program, as shown in Listing 10-2.
 <pre><pre class="playground"><code class="language-rust">fn main() {
     let number_list = vec![34, 50, 25, 100, 65];
 
-    let mut largest = number_list[0];
+    let mut largest = &amp;number_list[0];
 
-    for number in number_list {
+    for number in &amp;number_list {
         if number &gt; largest {
             largest = number;
         }
@@ -16322,9 +16329,9 @@ program, as shown in Listing 10-2.
 
     let number_list = vec![102, 34, 6000, 89, 54, 2, 43, 8];
 
-    let mut largest = number_list[0];
+    let mut largest = &amp;number_list[0];
 
-    for number in number_list {
+    for number in &amp;number_list {
         if number &gt; largest {
             largest = number;
         }
@@ -16339,34 +16346,36 @@ lists of numbers</span>
 <p><span class="caption">リスト10-2: <em>2つ</em>の数値のリストから最大値を探すコード</span></p>
 <!--
 Although this code works, duplicating code is tedious and error prone. We also
-have to update the code in multiple places when we want to change it.
+have to remember to update the code in multiple places when we want to change
+it.
 -->
-<p>このコードは動くものの、コードを複製することは退屈ですし、間違いも起きやすいです。また、
-コードを変更したい時に複数箇所、更新しなければなりません。</p>
+<p>このコードは動くものの、コードを複製することは退屈ですし、間違いも起きやすいです。
+また、コードを変更したい時には、複数箇所更新することを覚えておかなくてはなりません。</p>
 <!--
-To eliminate this duplication, we can create an abstraction by defining a
-function that operates on any list of integers given to it in a parameter. This
+To eliminate this duplication, we’ll create an abstraction by defining a
+function that operates on any list of integers passed in a parameter. This
 solution makes our code clearer and lets us express the concept of finding the
 largest number in a list abstractly.
 -->
-<p>この重複を排除するには、引数で与えられた整数のどんなリストに対しても処理が行える関数を定義して抽象化できます。
+<p>この重複を排除するには、引数で与えられた整数のどんなリストに対しても処理が行える関数を定義して抽象化しましょう。
 この解決策によりコードがより明確になり、リストの最大値を探すという概念を抽象的に表現させてくれます。</p>
 <!--
-In Listing 10-3, we extracted the code that finds the largest number into a
-function named `largest`. Unlike the code in Listing 10-1, which can find the
-largest number in only one particular list, this program can find the largest
-number in two different lists.
+In Listing 10-3, we extract the code that finds the largest number into a
+function named `largest`. Then we call the function to find the largest number
+in the two lists from Listing 10-2. We could also use the function on any other
+list of `i32` values we might have in the future.
 -->
-<p>リスト10-3では、最大値を探すコードを<code>largest</code>という関数に抽出しました。リスト10-1のコードは、
-たった1つの特定のリストからだけ最大値を探せますが、それとは異なり、このプログラムは2つの異なるリストから最大値を探せます。</p>
+<p>リスト10-3では、最大値を探すコードを<code>largest</code>という関数に抽出しています。
+そして、リスト10-2の2つのリストから最大値を探すために、この関数を呼んでいます。
+将来持つことになるかもしれない他のどんな<code>i32</code>値のリストに対しても、この関数を使用することができます。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">fn largest(list: &amp;[i32]) -&gt; i32 {
-    let mut largest = list[0];
+<pre><pre class="playground"><code class="language-rust">fn largest(list: &amp;[i32]) -&gt; &amp;i32 {
+    let mut largest = &amp;list[0];
 
-    for &amp;item in list.iter() {
+    for item in list {
         if item &gt; largest {
             largest = item;
         }
@@ -16380,13 +16389,13 @@ fn main() {
 
     let result = largest(&amp;number_list);
     println!(&quot;The largest number is {}&quot;, result);
-<span class="boring">   assert_eq!(result, 100);
+<span class="boring">    assert_eq!(*result, 100);
 </span>
     let number_list = vec![102, 34, 6000, 89, 54, 2, 43, 8];
 
     let result = largest(&amp;number_list);
     println!(&quot;The largest number is {}&quot;, result);
-<span class="boring">   assert_eq!(result, 6000);
+<span class="boring">    assert_eq!(*result, 6000);
 </span>}</code></pre></pre>
 <!--
 <span class="caption">Listing 10-3: Abstracted code to find the largest number
@@ -16395,21 +16404,21 @@ in two lists</span>
 <p><span class="caption">リスト10-3: 2つのリストから最大値を探す抽象化されたコード</span></p>
 <!--
 The `largest` function has a parameter called `list`, which represents any
-concrete slice of `i32` values that we might pass into the function. As a
-result, when we call the function, the code runs on the specific values that we
-pass in.
+concrete slice of `i32` values we might pass into the function. As a result,
+when we call the function, the code runs on the specific values that we pass
+in.
 -->
 <p><code>largest</code>関数には<code>list</code>と呼ばれる引数があり、これは、関数に渡す可能性のある、あらゆる<code>i32</code>値の具体的なスライスを示します。
 結果的に、関数呼び出しの際、コードは渡した特定の値に対して走るのです。</p>
 <!--
-In sum, here are the steps we took to change the code from Listing 10-2 to
+In summary, here are the steps we took to change the code from Listing 10-2 to
 Listing 10-3:
 -->
 <p>まとめとして、こちらがリスト10-2のコードからリスト10-3に変更するのに要したステップです:</p>
 <!--
 1. Identify duplicate code.
 2. Extract the duplicate code into the body of the function and specify the
-inputs and return values of that code in the function signature.
+   inputs and return values of that code in the function signature.
 3. Update the two instances of duplicated code to call the function instead.
 -->
 <ol>
@@ -16418,12 +16427,11 @@ inputs and return values of that code in the function signature.
 <li>重複したコードの2つの実体を代わりに関数を呼び出すように更新する。</li>
 </ol>
 <!--
-Next, we’ll use these same steps with generics to reduce code duplication in
-different ways. In the same way that the function body can operate on an
-abstract `list` instead of specific values, generics allow code to operate on
-abstract types.
+Next, we’ll use these same steps with generics to reduce code duplication. In
+the same way that the function body can operate on an abstract `list` instead
+of specific values, generics allow code to operate on abstract types.
 -->
-<p>次は、この同じ手順をジェネリクスでも踏んで異なる方法でコードの重複を減らします。
+<p>次は、この同じ手順をジェネリクスでも踏んでコードの重複を減らします。
 関数本体が特定の値ではなく抽象的な<code>list</code>に対して処理できたのと同様に、
 ジェネリクスは抽象的な型に対して処理するコードを可能にしてくれます。</p>
 <!--
@@ -16438,7 +16446,7 @@ values. How would we eliminate that duplication? Let’s find out!
 -->
 <h2 id="ジェネリックなデータ型"><a class="header" href="#ジェネリックなデータ型">ジェネリックなデータ型</a></h2>
 <!--
-We can use generics to create definitions for items like function signatures or
+We use generics to create definitions for items like function signatures or
 structs, which we can then use with many different concrete data types. Let’s
 first look at how to define functions, structs, enums, and methods using
 generics. Then we’ll discuss how generics affect code performance.
@@ -16461,17 +16469,19 @@ more functionality to callers of our function while preventing code duplication.
 そうすることでコードがより柔軟になり、コードの重複を阻止しつつ、関数の呼び出し元により多くの機能を提供します。</p>
 <!--
 Continuing with our `largest` function, Listing 10-4 shows two functions that
-both find the largest value in a slice.
+both find the largest value in a slice. We'll then combine these into a single
+function that uses generics.
 -->
-<p><code>largest</code>関数を続けます。リスト10-4はどちらもスライスから最大値を探す2つの関数を示しています。</p>
+<p><code>largest</code>関数を続けます。リスト10-4はどちらもスライスから最大値を探す2つの関数を示しています。
+ここから、これらをジェネリクスを使用する単一の関数にまとめます。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">fn largest_i32(list: &amp;[i32]) -&gt; i32 {
-    let mut largest = list[0];
+<pre><pre class="playground"><code class="language-rust">fn largest_i32(list: &amp;[i32]) -&gt; &amp;i32 {
+    let mut largest = &amp;list[0];
 
-    for &amp;item in list.iter() {
+    for item in list {
         if item &gt; largest {
             largest = item;
         }
@@ -16480,10 +16490,10 @@ both find the largest value in a slice.
     largest
 }
 
-fn largest_char(list: &amp;[char]) -&gt; char {
-    let mut largest = list[0];
+fn largest_char(list: &amp;[char]) -&gt; &amp;char {
+    let mut largest = &amp;list[0];
 
-    for &amp;item in list.iter() {
+    for item in list {
         if item &gt; largest {
             largest = item;
         }
@@ -16497,13 +16507,13 @@ fn main() {
 
     let result = largest_i32(&amp;number_list);
     println!(&quot;The largest number is {}&quot;, result);
-<span class="boring">   assert_eq!(result, 100);
+<span class="boring">    assert_eq!(*result, 100);
 </span>
     let char_list = vec!['y', 'm', 'a', 'q'];
 
     let result = largest_char(&amp;char_list);
     println!(&quot;The largest char is {}&quot;, result);
-<span class="boring">   assert_eq!(result, 'y');
+<span class="boring">    assert_eq!(*result, 'y');
 </span>}</code></pre></pre>
 <!--
 <span class="caption">Listing 10-4: Two functions that differ only in their
@@ -16520,16 +16530,16 @@ the duplication by introducing a generic type parameter in a single function.
 <code>largest_char</code>関数は、スライスから最大の<code>char</code>を探します。関数本体には同じコードがあるので、
 単独の関数にジェネリックな型引数を導入してこの重複を排除しましょう。</p>
 <!--
-To parameterize the types in the new function we’ll define, we need to name the
-type parameter, just as we do for the value parameters to a function. You can
-use any identifier as a type parameter name. But we’ll use `T` because, by
-convention, parameter names in Rust are short, often just a letter, and Rust’s
-type-naming convention is CamelCase. Short for “type,” `T` is the default
-choice of most Rust programmers.
+To parameterize the types in a new single function, we need to name the type
+parameter, just as we do for the value parameters to a function. You can use
+any identifier as a type parameter name. But we’ll use `T` because, by
+convention, type parameter names in Rust are short, often just a letter, and
+Rust’s type-naming convention is UpperCamelCase. Short for “type,” `T` is the
+default choice of most Rust programmers.
 -->
-<p>これから定義する新しい関数の型を引数にするには、ちょうど関数の値引数のように型引数に名前をつける必要があります。
+<p>新しい単一の関数の型を引数にするには、ちょうど関数の値引数のように型引数に名前をつける必要があります。
 型引数の名前にはどんな識別子も使用できますが、<code>T</code>を使用します。というのも、慣習では、
-Rustの引数名は短く(しばしばたった1文字になります)、Rustの型の命名規則がキャメルケースだからです。
+Rustの型引数名は短く(しばしばたった1文字になります)、Rustの型の命名規則がアッパーキャメルケースだからです。
 &quot;type&quot;の省略形なので、<code>T</code>が多くのRustプログラマの既定の選択なのです。</p>
 <!--
 When we use a parameter in the body of the function, we have to declare the
@@ -16543,15 +16553,16 @@ between the name of the function and the parameter list, like this:
 同様に、型引数名を関数シグニチャで使用する際には、使用する前に型引数名を宣言しなければなりません。
 ジェネリックな<code>largest</code>関数を定義するために、型名宣言を山カッコ(<code>&lt;&gt;</code>)内、関数名と引数リストの間に配置してください。
 こんな感じに:</p>
-<pre><code class="language-rust ignore">fn largest&lt;T&gt;(list: &amp;[T]) -&gt; T {</code></pre>
+<pre><code class="language-rust ignore">fn largest&lt;T&gt;(list: &amp;[T]) -&gt; &amp;T {</code></pre>
 <!--
 We read this definition as: the function `largest` is generic over some type
 `T`. This function has one parameter named `list`, which is a slice of values
-of type `T`. The `largest` function will return a value of the same type `T`.
+of type `T`. The `largest` function will return a reference to a value of the
+same type `T`.
 -->
 <p>この定義は以下のように解読します: 関数<code>largest</code>は、なんらかの型<code>T</code>に関してジェネリックであると。
 この関数には<code>list</code>という引数が1つあり、これは型<code>T</code>の値のスライスです。
-<code>largest</code>関数は同じ<code>T</code>型の値を返します。</p>
+<code>largest</code>関数は同じ<code>T</code>型の値への参照を返します。</p>
 <!--
 Listing 10-5 shows the combined `largest` function definition using the generic
 data type in its signature. The listing also shows how we can call the function
@@ -16565,10 +16576,10 @@ compile yet, but we’ll fix it later in this chapter.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn largest&lt;T&gt;(list: &amp;[T]) -&gt; T {
-    let mut largest = list[0];
+<pre><code class="language-rust ignore does_not_compile">fn largest&lt;T&gt;(list: &amp;[T]) -&gt; &amp;T {
+    let mut largest = &amp;list[0];
 
-    for &amp;item in list.iter() {
+    for item in list {
         if item &gt; largest {
             largest = item;
         }
@@ -16589,52 +16600,63 @@ fn main() {
     println!(&quot;The largest char is {}&quot;, result);
 }</code></pre>
 <!--
-<span class="caption">Listing 10-5: A definition of the `largest` function that
-uses generic type parameters but doesn’t compile yet</span>
+<span class="caption">Listing 10-5: The `largest` function using generic type
+parameters; this doesn’t yet compile</span>
 -->
-<p><span class="caption">リスト10-5: ジェネリックな型引数を使用するものの、まだコンパイルできない<code>largest</code>関数の定義</span></p>
+<p><span class="caption">リスト10-5: ジェネリックな型引数を使用する<code>largest</code>関数; まだコンパイルできません</span></p>
 <!--
 If we compile this code right now, we’ll get this error:
 -->
 <p>直ちにこのコードをコンパイルしたら、以下のようなエラーが出ます:</p>
-<pre><code class="language-text">error[E0369]: binary operation `&gt;` cannot be applied to type `T`
-(エラー: 2項演算`&gt;`は、型`T`に適用できません)
- --&gt; src/main.rs:5:12
+<pre><code class="language-console">$ cargo run
+   Compiling chapter10 v0.1.0 (file:///projects/chapter10)
+error[E0369]: binary operation `&gt;` cannot be applied to type `&amp;T`
+(エラー: 2項演算`&gt;`は、型`&amp;T`に適用できません)
+ --&gt; src/main.rs:5:17
   |
 5 |         if item &gt; largest {
-  |            ^^^^^^^^^^^^^^
+  |            ---- ^ ------- &amp;T
+  |            |
+  |            &amp;T
   |
-  = note: an implementation of `std::cmp::PartialOrd` might be missing for `T`
-  (注釈: `std::cmp::PartialOrd`の実装が`T`に対して存在しない可能性があります)
+help: consider restricting type parameter `T`
+(ヘルプ: 型引数`T`を制約することを考慮してください)
+  |
+1 | fn largest&lt;T: std::cmp::PartialOrd&gt;(list: &amp;[T]) -&gt; &amp;T {
+  |             ++++++++++++++++++++++
+
+For more information about this error, try `rustc --explain E0369`.
+error: could not compile `chapter10` (bin &quot;chapter10&quot;) due to 1 previous error
 </code></pre>
 <!--
-The note mentions `std::cmp::PartialOrd`, which is a *trait*. We’ll talk about
-traits in the next section. For now, this error states that the body of
-`largest` won’t work for all possible types that `T` could be. Because we want
-to compare values of type `T` in the body, we can only use types whose values
-can be ordered. To enable comparisons, the standard library has the
-`std::cmp::PartialOrd` trait that you can implement on types (see Appendix C
-for more on this trait). You’ll learn how to specify that a generic type has a
-particular trait in the “Trait Bounds” section, but let’s first explore other
-ways of using generic type parameters.
+The help text mentions `std::cmp::PartialOrd`, which is a *trait*, and we’re
+going to talk about traits in the next section. For now, know that this error
+states that the body of `largest` won’t work for all possible types that `T`
+could be. Because we want to compare values of type `T` in the body, we can
+only use types whose values can be ordered. To enable comparisons, the standard
+library has the `std::cmp::PartialOrd` trait that you can implement on types
+(see Appendix C for more on this trait). By following the help text's
+suggestion, we restrict the types valid for `T` to only those that implement
+`PartialOrd` and this example will compile, because the standard library
+implements `PartialOrd` on both `i32` and `char`.
 -->
-<p>注釈が<code>std::cmp::PartialOrd</code>に触れています。これは、<em>トレイト</em>です。トレイトについては、次の節で語ります。
-とりあえず、このエラーは、<code>largest</code>の本体は、<code>T</code>がなりうる全ての可能性のある型に対して動作しないと述べています。
+<p>ヘルプメッセージが<code>std::cmp::PartialOrd</code>に触れています。これは、<em>トレイト</em>です。トレイトについては、次の節で語ります。
+今のところは、このエラーは、<code>largest</code>の本体は、<code>T</code>がなりうる可能性のある全ての型に対して動作するとは限らないと主張している、と理解してください。
 本体で型<code>T</code>の値を比較したいので、値が順序付け可能な型のみしか使用できないのです。比較を可能にするために、
 標準ライブラリには型に実装できる<code>std::cmp::PartialOrd</code>トレイトがあります(このトレイトについて詳しくは付録Cを参照されたし)。
-ジェネリックな型が特定のトレイトを持つと指定する方法は「トレイト境界」節で習うでしょうが、
-先にジェネリックな型引数を使用する他の方法を探究しましょう。</p>
+ヘルプメッセージの提案に従うことで、<code>T</code>として有効な型を<code>PartialOrd</code>を実装するもののみに制限することができ、
+そうすると、標準ライブラリは<code>i32</code>と<code>char</code>の両方に<code>PartialOrd</code>を実装しているので、この例はコンパイルできるようになるでしょう。</p>
 <!--
 ### In Struct Definitions
 -->
 <h3 id="構造体定義では"><a class="header" href="#構造体定義では">構造体定義では</a></h3>
 <!--
 We can also define structs to use a generic type parameter in one or more
-fields using the `<>` syntax. Listing 10-6 shows how to define a `Point<T>`
-struct to hold `x` and `y` coordinate values of any type.
+fields using the `<>` syntax. Listing 10-6 defines a `Point<T>` struct to hold
+`x` and `y` coordinate values of any type.
 -->
 <p>構造体を定義して<code>&lt;&gt;</code>記法で1つ以上のフィールドにジェネリックな型引数を使用することもできます。
-リスト10-6は、<code>Point&lt;T&gt;</code>構造体を定義してあらゆる型の<code>x</code>と<code>y</code>座標を保持する方法を示しています。</p>
+リスト10-6は、<code>Point&lt;T&gt;</code>構造体を定義してあらゆる型の<code>x</code>と<code>y</code>座標を保持しています。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -16656,12 +16678,12 @@ values of type `T`</span>
 <!--
 The syntax for using generics in struct definitions is similar to that used in
 function definitions. First, we declare the name of the type parameter inside
-angle brackets just after the name of the struct. Then we can use the generic
-type in the struct definition where we would otherwise specify concrete data
-types.
+angle brackets just after the name of the struct. Then we use the generic type
+in the struct definition where we would otherwise specify concrete data types.
 -->
-<p>構造体定義でジェネリクスを使用する記法は、関数定義のものと似ています。まず、山カッコ内に型引数の名前を構造体名の直後に宣言します。
-そうすると、本来具体的なデータ型を記述する構造体定義の箇所に、ジェネリックな型を使用できます。</p>
+<p>構造体定義でジェネリクスを使用する記法は、関数定義のものと似ています。
+まず、山カッコ内に型引数の名前を構造体名の直後に宣言します。
+そして、本来具体的なデータ型を記述する構造体定義の箇所に、ジェネリックな型を使用します。</p>
 <!--
 Note that because we’ve used only one generic type to define `Point<T>`, this
 definition says that the `Point<T>` struct is generic over some type `T`, and
@@ -16676,7 +16698,7 @@ Listing 10-7, our code won’t compile.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">struct Point&lt;T&gt; {
+<pre><code class="language-rust ignore does_not_compile">struct Point&lt;T&gt; {
     x: T,
     y: T,
 }
@@ -16690,28 +16712,30 @@ type because both have the same generic data type `T`.</span>
 -->
 <p><span class="caption">リスト10-7: どちらも同じジェネリックなデータ型<code>T</code>なので、<code>x</code>と<code>y</code>というフィールドは同じ型でなければならない</span></p>
 <!--
-In this example, when we assign the integer value 5 to `x`, we let the
-compiler know that the generic type `T` will be an integer for this instance of
+In this example, when we assign the integer value 5 to `x`, we let the compiler
+know that the generic type `T` will be an integer for this instance of
 `Point<T>`. Then when we specify 4.0 for `y`, which we’ve defined to have the
 same type as `x`, we’ll get a type mismatch error like this:
 -->
 <p>この例で、<code>x</code>に整数値5を代入すると、この<code>Point&lt;T&gt;</code>のインスタンスに対するジェネリックな型<code>T</code>は整数になるとコンパイラに知らせます。
 それから<code>y</code>に4.0を指定する時に、このフィールドは<code>x</code>と同じ型と定義したはずなので、このように型不一致エラーが出ます:</p>
-<pre><code class="language-text">error[E0308]: mismatched types
+<pre><code class="language-console">$ cargo run
+   Compiling chapter10 v0.1.0 (file:///projects/chapter10)
+error[E0308]: mismatched types
+(エラー: 型が合いません)
  --&gt; src/main.rs:7:38
   |
 7 |     let wont_work = Point { x: 5, y: 4.0 };
-  |                                      ^^^ expected integral variable, found
-floating-point variable
-  |
-  = note: expected type `{integer}`
-             found type `{float}`
+  |                                      ^^^ expected integer, found floating-point number
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `chapter10` (bin &quot;chapter10&quot;) due to 1 previous error
 </code></pre>
 <!--
 To define a `Point` struct where `x` and `y` are both generics but could have
 different types, we can use multiple generic type parameters. For example, in
-Listing 10-8, we can change the definition of `Point` to be generic over types
-`T` and `U` where `x` is of type `T` and `y` is of type `U`.
+Listing 10-8, we change the definition of `Point` to be generic over types `T`
+and `U` where `x` is of type `T` and `y` is of type `U`.
 -->
 <p><code>x</code>と<code>y</code>が両方ジェネリックだけれども、異なる型になり得る<code>Point</code>構造体を定義するには、
 複数のジェネリックな型引数を使用できます。例えば、リスト10-8では、<code>Point</code>の定義を変更して、
@@ -16738,11 +16762,12 @@ that `x` and `y` can be values of different types</span>
 <!--
 Now all the instances of `Point` shown are allowed! You can use as many generic
 type parameters in a definition as you want, but using more than a few makes
-your code hard to read. When you need lots of generic types in your code, it
-could indicate that your code needs restructuring into smaller pieces.
+your code hard to read. If you're finding you need lots of generic types in
+your code, it could indicate that your code needs restructuring into smaller
+pieces.
 -->
 <p>これで、示された<code>Point</code>インスタンスは全部使用可能です！所望の数だけ定義でジェネリックな型引数を使用できますが、
-数個以上使用すると、コードが読みづらくなります。コードで多くのジェネリックな型が必要な時は、
+数個以上使用すると、コードが読みづらくなります。コードで多くのジェネリックな型が必要になることに気づいた時は、
 コードの小分けが必要なサインかもしれません。</p>
 <!--
 ### In Enum Definitions
@@ -16763,14 +16788,14 @@ library provides, which we used in Chapter 6:
 }
 <span class="boring">}</span></code></pre></pre>
 <!--
-This definition should now make more sense to you. As you can see, `Option<T>`
-is an enum that is generic over type `T` and has two variants: `Some`, which
+This definition should now make more sense to you. As you can see, the
+`Option<T>` enum is generic over type `T` and has two variants: `Some`, which
 holds one value of type `T`, and a `None` variant that doesn’t hold any value.
-By using the `Option<T>` enum, we can express the abstract concept of having an
+By using the `Option<T>` enum, we can express the abstract concept of an
 optional value, and because `Option<T>` is generic, we can use this abstraction
 no matter what the type of the optional value is.
 -->
-<p>この定義はもう、あなたにとってより道理が通っているはずです。ご覧の通り、<code>Option&lt;T&gt;</code>は、
+<p>この定義はもう、あなたにとってより道理が通っているはずです。ご覧の通り、<code>Option&lt;T&gt;</code> enumは、
 型<code>T</code>に関してジェネリックで2つの列挙子のあるenumです: その列挙子は、型<code>T</code>の値を保持する<code>Some</code>と、
 値を何も保持しない<code>None</code>です。<code>Option&lt;T&gt;</code> enumを使用することで、オプショナルな値があるという抽象的な概念を表現でき、
 <code>Option&lt;T&gt;</code>はジェネリックなので、オプショナルな値の型に関わらず、この抽象を使用できます。</p>
@@ -16851,26 +16876,44 @@ to the data in the field `x`.
 -->
 <p>ここで、フィールド<code>x</code>のデータへの参照を返す<code>x</code>というメソッドを<code>Point&lt;T&gt;</code>に定義しました。</p>
 <!--
-Note that we have to declare `T` just after `impl` so we can use it to specify
+Note that we have to declare `T` just after `impl` so we can use `T` to specify
 that we’re implementing methods on the type `Point<T>`. By declaring `T` as a
 generic type after `impl`, Rust can identify that the type in the angle
-brackets in `Point` is a generic type rather than a concrete type.
+brackets in `Point` is a generic type rather than a concrete type. We could
+have chosen a different name for this generic parameter than the generic
+parameter declared in the struct definition, but using the same name is
+conventional. Methods written within an `impl` that declares the generic type
+will be defined on any instance of the type, no matter what concrete type ends
+up substituting for the generic type.
 -->
 <p><code>impl</code>の直後に<code>T</code>を宣言しなければならないことに注意してください。こうすることで、型<code>Point&lt;T&gt;</code>にメソッドを実装していることを指定するために、<code>T</code>を使用することができます。
 <code>impl</code>の後に<code>T</code>をジェネリックな型として宣言することで、コンパイラは、<code>Point</code>の山カッコ内の型が、
-具体的な型ではなくジェネリックな型であることを認識できるのです。</p>
+具体的な型ではなくジェネリックな型であることを認識できるのです。
+このジェネリック引数には、構造体定義内で宣言したジェネリック引数とは異なる名前を選択することもできますが、
+同じ名前を使用するのが慣用的です。
+ジェネリック型を宣言する<code>impl</code>内に書かれたメソッドは、そのジェネリック型を置き換えることになる具体型が何であっても、その型のインスタンスの任意の値に対して定義されます。</p>
 <!--
-We could, for example, implement methods only on `Point<f32>` instances rather
-than on `Point<T>` instances with any generic type. In Listing 10-10 we use the
-concrete type `f32`, meaning we don’t declare any types after `impl`.
+We can also specify constraints on generic types when defining methods on the
+type. We could, for example, implement methods only on `Point<f32>` instances
+rather than on `Point<T>` instances with any generic type. In Listing 10-10 we
+use the concrete type `f32`, meaning we don’t declare any types after `impl`.
 -->
-<p>例えば、ジェネリックな型を持つ<code>Point&lt;T&gt;</code>インスタンスではなく、<code>Point&lt;f32&gt;</code>だけにメソッドを実装することもできるでしょう。
+<p>型にメソッドを定義するときに、ジェネリック型に制約を指定することもできます。
+例えば、ジェネリックな型を持つ<code>Point&lt;T&gt;</code>インスタンスではなく、<code>Point&lt;f32&gt;</code>だけにメソッドを実装することもできるでしょう。
 リスト10-10では、具体的な型<code>f32</code>を使用しています。つまり、<code>impl</code>の後に型を宣言しません。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">struct Point&lt;T&gt; {
+<!--
+<span class="filename">Filename: src/main.rs</span>
+-->
+<p><span class="filename">ファイル名: src/main.rs</span></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">struct Point&lt;T&gt; {
 </span><span class="boring">    x: T,
 </span><span class="boring">    y: T,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl&lt;T&gt; Point&lt;T&gt; {
+</span><span class="boring">    fn x(&amp;self) -&gt; &amp;T {
+</span><span class="boring">        &amp;self.x
+</span><span class="boring">    }
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Point&lt;f32&gt; {
@@ -16878,47 +16921,51 @@ concrete type `f32`, meaning we don’t declare any types after `impl`.
         (self.x.powi(2) + self.y.powi(2)).sqrt()
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let p = Point { x: 5, y: 10 };
+</span><span class="boring">
+</span><span class="boring">    println!(&quot;p.x = {}&quot;, p.x());
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 10-10: An `impl` block that only applies to a
 struct with a particular concrete type for the generic type parameter `T`</span>
 -->
 <p><span class="caption">リスト10-10: ジェネリックな型引数<code>T</code>に対して特定の具体的な型がある構造体にのみ適用される<code>impl</code>ブロック</span></p>
 <!--
-This code means the type `Point<f32>` will have a method named
-`distance_from_origin` and other instances of `Point<T>` where `T` is not of
-type `f32` will not have this method defined. The method measures how far our
-point is from the point at coordinates (0.0, 0.0) and uses mathematical
-operations that are available only for floating point types.
+This code means the type `Point<f32>` will have a `distance_from_origin`
+method; other instances of `Point<T>` where `T` is not of type `f32` will not
+have this method defined. The method measures how far our point is from the
+point at coordinates (0.0, 0.0) and uses mathematical operations that are
+available only for floating point types.
 -->
-<p>このコードは、<code>Point&lt;f32&gt;</code>には<code>distance_from_origin</code>というメソッドが存在するが、
+<p>このコードは、<code>Point&lt;f32&gt;</code>には<code>distance_from_origin</code>メソッドが存在するが、
 <code>T</code>が<code>f32</code>ではない<code>Point&lt;T&gt;</code>の他のインスタンスにはこのメソッドが定義されないことを意味します。
 このメソッドは、この点が座標(0.0, 0.0)の点からどれだけ離れているかを測定し、
 浮動小数点数にのみ利用可能な数学的処理を使用します。</p>
 <!--
 Generic type parameters in a struct definition aren’t always the same as those
-you use in that struct’s method signatures. For example, Listing 10-11 defines
-the method `mixup` on the `Point<T, U>` struct from Listing 10-8. The method
-takes another `Point` as a parameter, which might have different types than the
-`self` `Point` we’re calling `mixup` on. The method creates a new `Point`
-instance with the `x` value from the `self` `Point` (of type `T`) and the `y`
-value from the passed-in `Point` (of type `W`).
+you use in that same struct’s method signatures. Listing 10-11 uses the generic
+types `X1` and `Y1` for the `Point` struct and `X2` `Y2` for the `mixup` method
+signature to make the example clearer. The method creates a new `Point`
+instance with the `x` value from the `self` `Point` (of type `X1`) and the `y`
+value from the passed-in `Point` (of type `Y2`).
 -->
 <p>構造体定義のジェネリックな型引数は、必ずしもその構造体のメソッドシグニチャで使用するものと同じにはなりません。
-例を挙げれば、リスト10-11は、リスト10-8の<code>Point&lt;T, U&gt;</code>にメソッド<code>mixup</code>を定義しています。
-このメソッドは、他の<code>Point</code>を引数として取り、この引数は<code>mixup</code>を呼び出している<code>self</code>の<code>Point</code>とは異なる型の可能性があります。
-このメソッドは、(型<code>T</code>の)<code>self</code>の<code>Point</code>の<code>x</code>値と渡した(型<code>W</code>の)<code>Point</code>の<code>y</code>値から新しい<code>Point</code>インスタンスを生成します。</p>
+リスト10-11では、例をより見通しよくするために、<code>Point</code>構造体に対してはジェネリック型<code>X1</code>と<code>Y1</code>を使用し、
+<code>mixup</code>メソッドのシグネチャに対しては<code>X2</code>と<code>Y2</code>を使用しています。
+このメソッドは、(型<code>X1</code>の)<code>self</code>の<code>Point</code>の<code>x</code>値と渡した(型<code>Y2</code>の)<code>Point</code>の<code>y</code>値から新しい<code>Point</code>インスタンスを生成します。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">struct Point&lt;T, U&gt; {
-    x: T,
-    y: U,
+<pre><pre class="playground"><code class="language-rust">struct Point&lt;X1, Y1&gt; {
+    x: X1,
+    y: Y1,
 }
 
-impl&lt;T, U&gt; Point&lt;T, U&gt; {
-    fn mixup&lt;V, W&gt;(self, other: Point&lt;V, W&gt;) -&gt; Point&lt;T, W&gt; {
+impl&lt;X1, Y1&gt; Point&lt;X1, Y1&gt; {
+    fn mixup&lt;X2, Y2&gt;(self, other: Point&lt;X2, Y2&gt;) -&gt; Point&lt;X1, Y2&gt; {
         Point {
             x: self.x,
             y: other.y,
@@ -16928,15 +16975,15 @@ impl&lt;T, U&gt; Point&lt;T, U&gt; {
 
 fn main() {
     let p1 = Point { x: 5, y: 10.4 };
-    let p2 = Point { x: &quot;Hello&quot;, y: 'c'};
+    let p2 = Point { x: &quot;Hello&quot;, y: 'c' };
 
     let p3 = p1.mixup(p2);
 
     println!(&quot;p3.x = {}, p3.y = {}&quot;, p3.x, p3.y);
 }</code></pre></pre>
 <!--
-<span class="caption">Listing 10-11: A method that uses different generic types
-than its struct’s definition</span>
+<span class="caption">Listing 10-11: A method that uses generic types different
+from its struct’s definition</span>
 -->
 <p><span class="caption">リスト10-11: 構造体定義とは異なるジェネリックな型を使用するメソッド</span></p>
 <!--
@@ -16956,48 +17003,46 @@ call will print `p3.x = 5, p3.y = c`.
 <!--
 The purpose of this example is to demonstrate a situation in which some generic
 parameters are declared with `impl` and some are declared with the method
-definition. Here, the generic parameters `T` and `U` are declared after `impl`,
-because they go with the struct definition. The generic parameters `V` and `W`
-are declared after `fn mixup`, because they’re only relevant to the method.
+definition. Here, the generic parameters `X1` and `Y1` are declared after
+`impl` because they go with the struct definition. The generic parameters `X2`
+and `Y2` are declared after `fn mixup`, because they’re only relevant to the
+method.
 -->
 <p>この例の目的は、一部のジェネリックな引数は<code>impl</code>で宣言され、他の一部はメソッド定義で宣言される場面をデモすることです。
-ここで、ジェネリックな引数<code>T</code>と<code>U</code>は<code>impl</code>の後に宣言されています。構造体定義にはまるからです。
-ジェネリックな引数<code>V</code>と<code>W</code>は<code>fn mixup</code>の後に宣言されています。何故なら、このメソッドにしか関係ないからです。</p>
+ここで、ジェネリックな引数<code>X1</code>と<code>Y1</code>は<code>impl</code>の後に宣言されています。構造体定義にはまるからです。
+ジェネリックな引数<code>X2</code>と<code>Y2</code>は<code>fn mixup</code>の後に宣言されています。何故なら、このメソッドにしか関係ないからです。</p>
 <!--
 ### Performance of Code Using Generics
 -->
 <h3 id="ジェネリクスを使用したコードのパフォーマンス"><a class="header" href="#ジェネリクスを使用したコードのパフォーマンス">ジェネリクスを使用したコードのパフォーマンス</a></h3>
 <!--
-You might be wondering whether there is a runtime cost when you’re using
-generic type parameters. The good news is that Rust implements generics in such
-a way that your code doesn’t run any slower using generic types than it would
-with concrete types.
+You might be wondering whether there is a runtime cost when using generic type
+parameters. The good news is that using generic types won't make your program run
+any slower than it would with concrete types.
 -->
 <p>ジェネリックな型引数を使用すると、実行時にコストが発生するのかな、と思うかもしれません。
-嬉しいことにRustでは、ジェネリクスを、具体的な型があるコードよりもジェネリックな型を使用したコードを実行するのが遅くならないように実装しています。</p>
+嬉しいことに、ジェネリックな型を使用したからといって、具体的な型を使って同じことを行う場合よりもプログラムの実行が遅くなることはありません。</p>
 <!--
-Rust accomplishes this by performing monomorphization of the code that is using
+Rust accomplishes this by performing monomorphization of the code using
 generics at compile time. *Monomorphization* is the process of turning generic
 code into specific code by filling in the concrete types that are used when
-compiled.
+compiled. In this process, the compiler does the opposite of the steps we used
+to create the generic function in Listing 10-5: the compiler looks at all the
+places where generic code is called and generates code for the concrete types
+the generic code is called with.
+
 -->
 <p>コンパイラはこれを、ジェネリクスを使用しているコードの単相化をコンパイル時に行うことで達成しています。
 <em>単相化</em>(monomorphization)は、コンパイル時に使用されている具体的な型を入れることで、
-ジェネリックなコードを特定のコードに変換する過程のことです。</p>
-<!--
-In this process, the compiler does the opposite of the steps we used to create
-the generic function in Listing 10-5: the compiler looks at all the places
-where generic code is called and generates code for the concrete types the
-generic code is called with.
--->
-<p>この過程において、コンパイラは、リスト10-5でジェネリックな関数を生成するために使用した手順と真逆のことをしています:
+ジェネリックなコードを特定のコードに変換する過程のことです。
+この過程において、コンパイラは、リスト10-5でジェネリックな関数を生成するために使用した手順と真逆のことをしています:
 コンパイラは、ジェネリックなコードが呼び出されている箇所全部を見て、
 ジェネリックなコードが呼び出されている具体的な型のコードを生成するのです。</p>
 <!--
-Let’s look at how this works with an example that uses the standard library’s
+Let’s look at how this works by using the standard library’s generic
 `Option<T>` enum:
 -->
-<p>標準ライブラリの<code>Option&lt;T&gt;</code> enumを使用する例でこれが動作する方法を見ましょう:</p>
+<p>標準ライブラリのジェネリックな<code>Option&lt;T&gt;</code> enumを使用して、これがどう機能するのか見てみましょう:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let integer = Some(5);
@@ -17007,20 +17052,20 @@ let float = Some(5.0);
 When Rust compiles this code, it performs monomorphization. During that
 process, the compiler reads the values that have been used in `Option<T>`
 instances and identifies two kinds of `Option<T>`: one is `i32` and the other
-is `f64`. As such, it expands the generic definition of `Option<T>` into
-`Option_i32` and `Option_f64`, thereby replacing the generic definition with
-the specific ones.
+is `f64`. As such, it expands the generic definition of `Option<T>` into two
+definitions specialized to `i32` and `f64`, thereby replacing the generic
+definition with the specific ones.
 -->
 <p>コンパイラがこのコードをコンパイルすると、単相化を行います。その過程で、コンパイラは<code>Option&lt;T&gt;</code>のインスタンスに使用された値を読み取り、
 2種類の<code>Option&lt;T&gt;</code>を識別します: 一方は<code>i32</code>で、もう片方は<code>f64</code>です。そのように、
-コンパイラは、<code>Option&lt;T&gt;</code>のジェネリックな定義を<code>Option_i32</code>と<code>Option_f64</code>に展開し、
+コンパイラは、<code>Option&lt;T&gt;</code>のジェネリックな定義を<code>i32</code>と<code>f64</code>に特化した2つの定義に展開し、
 それにより、ジェネリックな定義を特定の定義と置き換えます。</p>
 <!--
-The monomorphized version of the code looks like the following. The generic
-`Option<T>` is replaced with the specific definitions created by the compiler:
+The monomorphized version of the code looks similar to the following (the
+compiler uses different names than what we’re using here for illustration):
 -->
-<p>単相化されたバージョンのコードは、以下のようになります。ジェネリックな<code>Option&lt;T&gt;</code>が、
-コンパイラが生成した特定の定義に置き換えられています:</p>
+<p>単相化されたバージョンのコードは、以下のようなものになります
+(コンパイラは、ここで説明のために使用しているものとは異なる名前を使用します):</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -17040,13 +17085,15 @@ fn main() {
     let float = Option_f64::Some(5.0);
 }</code></pre></pre>
 <!--
-Because Rust compiles generic code into code that specifies the type in each
-instance, we pay no runtime cost for using generics. When the code runs, it
-performs just as it would if we had duplicated each definition by hand. The
-process of monomorphization makes Rust’s generics extremely efficient at
-runtime.
+The generic `Option<T>` is replaced with the specific definitions created by
+the compiler. Because Rust compiles generic code into code that specifies the
+type in each instance, we pay no runtime cost for using generics. When the code
+runs, it performs just as it would if we had duplicated each definition by
+hand. The process of monomorphization makes Rust’s generics extremely efficient
+at runtime.
 -->
-<p>Rustでは、ジェネリックなコードを各インスタンスで型を指定したコードにコンパイルするので、
+<p>ジェネリックな<code>Option&lt;T&gt;</code>は、コンパイラによって生成される特化された定義で置き換えられます。
+Rustでは、ジェネリックなコードを各インスタンスで型を指定したコードにコンパイルするので、
 ジェネリクスを使用することに対して実行時コストを払うことはありません。コードを実行すると、
 それぞれの定義を手作業で複製した時のように振る舞います。単相化の過程により、
 Rustのジェネリクスは実行時に究極的に効率的になるのです。</p>
@@ -17055,14 +17102,14 @@ Rustのジェネリクスは実行時に究極的に効率的になるのです�
 -->
 <h2 id="トレイト-共通の振る舞いを定義する"><a class="header" href="#トレイト-共通の振る舞いを定義する">トレイト: 共通の振る舞いを定義する</a></h2>
 <!--
-A *trait* tells the Rust compiler about functionality a particular type has and
-can share with other types. We can use traits to define shared behavior in an
-abstract way. We can use trait bounds to specify that a generic can be any type
-that has certain behavior.
+A *trait* defines functionality a particular type has and can share with other
+types. We can use traits to define shared behavior in an abstract way. We can
+use *trait bounds* to specify that a generic type can be any type that has
+certain behavior.
 -->
-<p><em>トレイト</em>は、Rustコンパイラに、特定の型に存在し、他の型と共有できる機能について知らせます。
-トレイトを使用すると、共通の振る舞いを抽象的に定義できます。トレイト境界を使用すると、
-あるジェネリックが、特定の振る舞いをもつあらゆる型になり得ることを指定できます。</p>
+<p><em>トレイト</em>は、特定の型に存在し、他の型と共有できる機能を定義します。
+トレイトを使用すると、共通の振る舞いを抽象的に定義できます。<em>トレイト境界</em>を使用すると、
+あるジェネリック型が、特定の振る舞いをもつあらゆる型になり得ることを指定できます。</p>
 <!--
 > Note: Traits are similar to a feature often called *interfaces* in other
 > languages, although with some differences.
@@ -17092,25 +17139,22 @@ to another tweet.
 <p>例えば、いろんな種類や量のテキストを保持する複数の構造体があるとしましょう: 特定の場所から送られる新しいニュースを保持する<code>NewsArticle</code>と、
 新規ツイートか、リツイートか、はたまた他のツイートへのリプライなのかを示すメタデータを伴う最大で280文字までの<code>Tweet</code>です。</p>
 <!--
-We want to make a media aggregator library that can display summaries of data
-that might be stored in a `NewsArticle` or `Tweet` instance. To do this, we
-need a summary from each type, and we need to request that summary by calling a
-`summarize` method on an instance. Listing 10-12 shows the definition of a
-`Summary` trait that expresses this behavior.
+We want to make a media aggregator library crate named `aggregator` that can
+display summaries of data that might be stored in a `NewsArticle` or `Tweet`
+instance. To do this, we need a summary from each type, and we’ll request
+that summary by calling a `summarize` method on an instance. Listing 10-12
+shows the definition of a public `Summary` trait that expresses this behavior.
 -->
-<p><code>NewsArticle</code> または <code>Tweet</code> インスタンスに保存されているデータのサマリーを表示できるメディア アグリゲータ ライブラリを作成します。
-これをするには、各型のサマリーが必要で、インスタンスで <code>summarize</code> メソッドを呼び出してサマリーを要求する必要があります。
-リスト10-12は、この振る舞いを表現する<code>Summary</code>トレイトの定義を表示しています。</p>
+<p><code>NewsArticle</code> または <code>Tweet</code> インスタンスに保存されているデータのサマリーを表示できる<code>aggregator</code>という名前のメディア アグリゲータ ライブラリ クレートを作成します。
+これをするには、各型のサマリーが必要で、インスタンスで <code>summarize</code> メソッドを呼び出してサマリーを要求することになるでしょう。
+リスト10-12は、この振る舞いを表現する公開の<code>Summary</code>トレイトの定義を表示しています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait Summary {
+<pre><code class="language-rust noplayground">pub trait Summary {
     fn summarize(&amp;self) -&gt; String;
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 10-12: A `Summary` trait that consists of the
 behavior provided by a `summarize` method</span>
@@ -17118,12 +17162,16 @@ behavior provided by a `summarize` method</span>
 <p><span class="caption">リスト10-12: <code>summarize</code>メソッドで提供される振る舞いからなる<code>Summary</code>トレイト</span></p>
 <!--
 Here, we declare a trait using the `trait` keyword and then the trait’s name,
-which is `Summary` in this case. Inside the curly brackets, we declare the
-method signatures that describe the behaviors of the types that implement this
-trait, which in this case is `fn summarize(&self) -> String`.
+which is `Summary` in this case. We’ve also declared the trait as `pub` so that
+crates depending on this crate can make use of this trait too, as we’ll see in
+a few examples. Inside the curly brackets, we declare the method signatures
+that describe the behaviors of the types that implement this trait, which in
+this case is `fn summarize(&self) -> String`.
 -->
-<p>ここでは、<code>trait</code>キーワード、それからトレイト名を使用してトレイトを定義していて、その名前は今回の場合、
-<code>Summary</code>です。波括弧の中にこのトレイトを実装する型の振る舞いを記述するメソッドシグニチャを定義し、
+<p>ここでは、<code>trait</code>キーワード、それからトレイト名を使用してトレイトを宣言していて、その名前は今回の場合、
+<code>Summary</code>です。
+また、いくつかの例で見ていきますが、このクレートに依存するクレートがこのトレイトを利用できるように、トレイトを<code>pub</code>として宣言しています。
+波括弧の中にこのトレイトを実装する型の振る舞いを記述するメソッドシグニチャを定義し、
 今回の場合は、<code>fn summarize(&amp;self) -&gt; String</code>です。</p>
 <!--
 After the method signature, instead of providing an implementation within curly
@@ -17147,24 +17195,22 @@ one per line and each line ends in a semicolon.
 -->
 <h3 id="トレイトを型に実装する"><a class="header" href="#トレイトを型に実装する">トレイトを型に実装する</a></h3>
 <!--
-Now that we’ve defined the desired behavior using the `Summary` trait, we can
-implement it on the types in our media aggregator. Listing 10-13 shows an
-implementation of the `Summary` trait on the `NewsArticle` struct that uses the
-headline, the author, and the location to create the return value of
+Now that we’ve defined the desired signatures of the `Summary` trait’s methods,
+we can implement it on the types in our media aggregator. Listing 10-13 shows
+an implementation of the `Summary` trait on the `NewsArticle` struct that uses
+the headline, the author, and the location to create the return value of
 `summarize`. For the `Tweet` struct, we define `summarize` as the username
 followed by the entire text of the tweet, assuming that tweet content is
 already limited to 280 characters.
 -->
-<p>今や <code>Summary</code> トレイトを使用して目的の動作を定義できたので、メディア アグリゲータでこれを型に実装できます。
+<p>これで <code>Summary</code> トレイトのメソッドのシグネチャを希望通りに定義できたので、メディア アグリゲータ内の型に対してこれを実装できます。
 リスト10-13は、 <code>Summary</code> トレイトを <code>NewsArticle</code> 構造体上に実装したもので、ヘッドライン、著者、そして地域情報を使って<code>summarize</code> の戻り値を作っています。
 <code>Tweet</code> 構造体に関しては、ツイートの内容が既に280文字に制限されていると仮定して、ユーザー名の後にツイートのテキスト全体が続くものとして <code>summarize</code> を定義します。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub trait Summary {
+<pre><code class="language-rust noplayground"><span class="boring">pub trait Summary {
 </span><span class="boring">    fn summarize(&amp;self) -&gt; String;
 </span><span class="boring">}
 </span><span class="boring">
@@ -17192,8 +17238,7 @@ impl Summary for Tweet {
     fn summarize(&amp;self) -&gt; String {
         format!(&quot;{}: {}&quot;, self.username, self.content)
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 10-13: Implementing the `Summary` trait on the
 `NewsArticle` and `Tweet` types</span>
@@ -17201,28 +17246,32 @@ impl Summary for Tweet {
 <p><span class="caption">リスト10-13: <code>Summary</code>トレイトを<code>NewsArticle</code>と<code>Tweet</code>型に実装する</span></p>
 <!--
 Implementing a trait on a type is similar to implementing regular methods. The
-difference is that after `impl`, we put the trait name that we want to
-implement, then use the `for` keyword, and then specify the name of the type we
-want to implement the trait for. Within the `impl` block, we put the method
-signatures that the trait definition has defined. Instead of adding a semicolon
-after each signature, we use curly brackets and fill in the method body with
-the specific behavior that we want the methods of the trait to have for the
-particular type.
+difference is that after `impl`, we put the trait name we want to implement,
+then use the `for` keyword, and then specify the name of the type we want to
+implement the trait for. Within the `impl` block, we put the method signatures
+that the trait definition has defined. Instead of adding a semicolon after each
+signature, we use curly brackets and fill in the method body with the specific
+behavior that we want the methods of the trait to have for the particular type.
 -->
 <p>型にトレイトを実装することは、普通のメソッドを実装することに似ています。違いは、<code>impl</code>の後に、
 実装したいトレイトの名前を置き、それから<code>for</code>キーワード、さらにトレイトの実装対象の型の名前を指定することです。
 <code>impl</code>ブロック内に、トレイト定義で定義したメソッドシグニチャを置きます。各シグニチャの後にセミコロンを追記するのではなく、
 波括弧を使用し、メソッド本体に特定の型のトレイトのメソッドに欲しい特定の振る舞いを入れます。</p>
 <!--
-After implementing the trait, we can call the methods on instances of
-`NewsArticle` and `Tweet` in the same way we call regular methods, like this:
+Now that the library has implemented the `Summary` trait on `NewsArticle` and
+`Tweet`, users of the crate can call the trait methods on instances of
+`NewsArticle` and `Tweet` in the same way we call regular methods. The only
+difference is that the user must bring the trait into scope as well as the
+types. Here’s an example of how a binary crate could use our `aggregator`
+library crate:
 -->
-<p>トレイトを実装後、普通のメソッド同様に<code>NewsArticle</code>や<code>Tweet</code>のインスタンスに対してこのメソッドを呼び出せます。
-こんな感じで:</p>
-<pre><code class="language-rust ignore"><span class="boring">use chapter10::{self, Summary, Tweet};
-</span><span class="boring">
-</span><span class="boring">fn main() {
-</span>    let tweet = Tweet {
+<p>これでライブラリは<code>NewsArticle</code>と<code>Tweet</code>に対して<code>Summary</code>トレイトを実装できたので、クレートの利用者は普通のメソッド同様に<code>NewsArticle</code>や<code>Tweet</code>のインスタンスに対してこのトレイトメソッドを呼び出せます。
+唯一の違いは、ユーザは型だけではなくトレイトもスコープ内に持ち込まなくてはならないということです。
+以下は、バイナリクレートが私たちの<code>aggregator</code>ライブラリクレートをどうやって使用できるかの例です:</p>
+<pre><code class="language-rust ignore">use aggregator::{Summary, Tweet};
+
+fn main() {
+    let tweet = Tweet {
         username: String::from(&quot;horse_ebooks&quot;),
         content: String::from(
             // もちろん、ご存知かもしれませんがね、みなさん
@@ -17233,41 +17282,25 @@ After implementing the trait, we can call the methods on instances of
     };
 
     println!(&quot;1 new tweet: {}&quot;, tweet.summarize());
-<span class="boring">}</span></code></pre>
+}</code></pre>
 <!--
 This code prints `1 new tweet: horse_ebooks: of course, as you probably already
 know, people`.
 -->
 <p>このコードは、<code>1 new tweet: horse_ebooks: of course, as you probably already know, people</code>と出力します。</p>
 <!--
-Note that because we defined the `Summary` trait and the `NewsArticle` and
-`Tweet` types in the same *lib.rs* in Listing 10-13, they’re all in the same
-scope. Let’s say this *lib.rs* is for a crate we’ve called `aggregator` and
-someone else wants to use our crate’s functionality to implement the `Summary`
-trait on a struct defined within their library’s scope. They would need to
-bring the trait into their scope first. They would do so by specifying `use
-aggregator::Summary;`, which then would enable them to implement `Summary` for
-their type. The `Summary` trait would also need to be a public trait for
-another crate to implement it, which it is because we put the `pub` keyword
-before `trait` in Listing 10-12.
+Other crates that depend on the `aggregator` crate can also bring the `Summary`
+trait into scope to implement `Summary` on their own types. One restriction to
+note is that we can implement a trait on a type only if at least one of the
+trait or the type is local to our crate. For example, we can implement standard
+library traits like `Display` on a custom type like `Tweet` as part of our
+`aggregator` crate functionality, because the type `Tweet` is local to our
+`aggregator` crate. We can also implement `Summary` on `Vec<T>` in our
+`aggregator` crate, because the trait `Summary` is local to our `aggregator`
+crate.
 -->
-<p>リスト10-13で<code>Summary</code>トレイトと<code>NewArticle</code>、<code>Tweet</code>型を同じ<em>lib.rs</em>に定義したので、
-全部同じスコープにあることに注目してください。この<em>lib.rs</em>を<code>aggregator</code>と呼ばれるクレート専用にして、
-誰か他の人が私たちのクレートの機能を活用して自分のライブラリのスコープに定義された構造体に<code>Summary</code>トレイトを実装したいとしましょう。
-まず、トレイトをスコープに取り込む必要があるでしょう。<code>use aggregator::Summary;</code>と指定してそれを行えば、
-これにより、自分の型に<code>Summary</code>を実装することが可能になるでしょう。<code>Summary</code>トレイトは、
-他のクレートが実装するためには、公開トレイトである必要があり、ここでは、リスト10-12の<code>trait</code>の前に、
-<code>pub</code>キーワードを置いたのでそうなっています。</p>
-<!--
-One restriction to note with trait implementations is that we can implement a
-trait on a type only if either the trait or the type is local to our crate.
-For example, we can implement standard library traits like `Display` on a
-custom type like `Tweet` as part of our `aggregator` crate functionality,
-because the type `Tweet` is local to our `aggregator` crate. We can also
-implement `Summary` on `Vec<T>` in our `aggregator` crate, because the
-trait `Summary` is local to our `aggregator` crate.
--->
-<p>トレイト実装で注意すべき制限の1つは、トレイトか対象の型が自分のクレートに固有(local)である時のみ、
+<p><code>aggregator</code>クレートに依存する他のクレートも、自身の型に対して<code>Summary</code>を実装するために、<code>Summary</code>トレイトをスコープに持ち込むことができます。
+注意すべき制限の1つは、トレイトか、対象の型のうち、少なくとも一方が自分のクレートに固有(local)である時のみ、
 型に対してトレイトを実装できるということです。例えば、<code>Display</code>のような標準ライブラリのトレイトを<code>aggregator</code>クレートの機能の一部として、
 <code>Tweet</code>のような独自の型に実装できます。型<code>Tweet</code>が<code>aggregator</code>クレートに固有だからです。
 また、<code>Summary</code>を<code>aggregator</code>クレートで<code>Vec&lt;T&gt;</code>に対して実装することもできます。
@@ -17275,18 +17308,18 @@ trait `Summary` is local to our `aggregator` crate.
 <!--
 But we can’t implement external traits on external types. For example, we can’t
 implement the `Display` trait on `Vec<T>` within our `aggregator` crate,
-because `Display` and `Vec<T>` are defined in the standard library and aren’t
-local to our `aggregator` crate. This restriction is part of a property of
-programs called *coherence*, and more specifically the *orphan rule*, so named
-because the parent type is not present. This rule ensures that other people’s
-code can’t break your code and vice versa. Without the rule, two crates could
+because `Display` and `Vec<T>` are both defined in the standard library and
+aren’t local to our `aggregator` crate. This restriction is part of a property
+called *coherence*, and more specifically the *orphan rule*, so named because
+the parent type is not present. This rule ensures that other people’s code
+can’t break your code and vice versa. Without the rule, two crates could
 implement the same trait for the same type, and Rust wouldn’t know which
 implementation to use.
 -->
 <p>しかし、外部のトレイトを外部の型に対して実装することはできません。例として、
 <code>aggregator</code>クレート内で<code>Vec&lt;T&gt;</code>に対して<code>Display</code>トレイトを実装することはできません。
-<code>Display</code>と<code>Vec&lt;T&gt;</code>は標準ライブラリで定義され、<code>aggregator</code>クレートに固有ではないからです。
-この制限は、<em>コヒーレンス</em>(coherence)、特に<em>孤児のルール</em>(orphan rule)と呼ばれるプログラムの特性の一部で、
+<code>Display</code>と<code>Vec&lt;T&gt;</code>はどちらも標準ライブラリで定義され、<code>aggregator</code>クレートに固有ではないからです。
+この制限は、<em>コヒーレンス</em>(coherence)、特に<em>孤児のルール</em>(orphan rule)と呼ばれる特性の一部で、
 親の型が存在しないためにそう命名されました。この規則により、他の人のコードが自分のコードを壊したり、
 その逆が起きないことを保証してくれます。この規則がなければ、2つのクレートが同じ型に対して同じトレイトを実装できてしまい、
 コンパイラはどちらの実装を使うべきかわからなくなってしまうでしょう。</p>
@@ -17303,19 +17336,17 @@ each method’s default behavior.
 <p>時として、全ての型の全メソッドに対して実装を要求するのではなく、トレイトの全てあるいは一部のメソッドに対してデフォルトの振る舞いがあると有用です。
 そうすれば、特定の型にトレイトを実装する際、各メソッドのデフォルト実装を保持するかオーバーライドするか選べるわけです。</p>
 <!--
-Listing 10-14 shows how to specify a default string for the `summarize` method
-of the `Summary` trait instead of only defining the method signature, as we did
-in Listing 10-12.
+In Listing 10-14 we specify a default string for the `summarize` method of the
+`Summary` trait instead of only defining the method signature, as we did in
+Listing 10-12.
 -->
-<p>リスト10-14は、リスト10-12のように、メソッドシグニチャだけを定義するのではなく、
-<code>Summary</code>トレイトの<code>summarize</code>メソッドにデフォルトの文字列を指定する方法を示しています。</p>
+<p>リスト10-14では、リスト10-12のように、メソッドシグニチャだけを定義するのではなく、
+<code>Summary</code>トレイトの<code>summarize</code>メソッドにデフォルトの文字列を指定しています。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait Summary {
+<pre><code class="language-rust noplayground">pub trait Summary {
     fn summarize(&amp;self) -&gt; String {
         // &quot;（もっと読む）&quot;
         String::from(&quot;(Read more...)&quot;)
@@ -17342,19 +17373,17 @@ in Listing 10-12.
 </span><span class="boring">    fn summarize(&amp;self) -&gt; String {
 </span><span class="boring">        format!(&quot;{}: {}&quot;, self.username, self.content)
 </span><span class="boring">    }
-</span><span class="boring">}
-</span><span class="boring">}</span></code></pre></pre>
+</span><span class="boring">}</span></code></pre>
 <!--
-<span class="caption">Listing 10-14: Definition of a `Summary` trait with a
-default implementation of the `summarize` method</span>
+<span class="caption">Listing 10-14: Defining a `Summary` trait with a default
+implementation of the `summarize` method</span>
 -->
-<p><span class="caption">リスト10-14: <code>summarize</code>メソッドのデフォルト実装がある<code>Summary</code>トレイトの定義</span></p>
+<p><span class="caption">リスト10-14: <code>summarize</code>メソッドのデフォルト実装がある<code>Summary</code>トレイトを定義する</span></p>
 <!--
-To use a default implementation to summarize instances of `NewsArticle` instead
-of defining a custom implementation, we specify an empty `impl` block with
-`impl Summary for NewsArticle {}`.
+To use a default implementation to summarize instances of `NewsArticle`, we
+specify an empty `impl` block with `impl Summary for NewsArticle {}`.
 -->
-<p>独自の実装を定義するのではなく、デフォルト実装を利用して<code>NewsArticle</code>のインスタンスをまとめるには、
+<p>デフォルト実装を利用して<code>NewsArticle</code>のインスタンスをまとめるには、
 <code>impl Summary for NewsArticle {}</code>と空の<code>impl</code>ブロックを指定します。</p>
 <!--
 Even though we’re no longer defining the `summarize` method on `NewsArticle`
@@ -17366,7 +17395,7 @@ the `summarize` method on an instance of `NewsArticle`, like this:
 <code>NewsArticle</code>は<code>Summary</code>トレイトを実装すると指定しました。そのため、
 <code>NewsArticle</code>のインスタンスに対して<code>summarize</code>メソッドを同じように呼び出すことができます。
 このように:</p>
-<pre><code class="language-rust ignore"><span class="boring">use chapter10::{self, NewsArticle, Summary};
+<pre><code class="language-rust ignore"><span class="boring">use aggregator::{self, NewsArticle, Summary};
 </span><span class="boring">
 </span><span class="boring">fn main() {
 </span>    let article = NewsArticle {
@@ -17390,13 +17419,12 @@ This code prints `New article available! (Read more...)`.
 -->
 <p>このコードは、<code>New article available! (Read more...)</code>（<code>新しい記事があります！（もっと読む）</code>）と出力します。</p>
 <!--
-Creating a default implementation for `summarize` doesn’t require us to change
-anything about the implementation of `Summary` on `Tweet` in Listing 10-13. The
-reason is that the syntax for overriding a default implementation is the same
-as the syntax for implementing a trait method that doesn’t have a default
-implementation.
+Creating a default implementation doesn’t require us to change anything about
+the implementation of `Summary` on `Tweet` in Listing 10-13. The reason is that
+the syntax for overriding a default implementation is the same as the syntax
+for implementing a trait method that doesn’t have a default implementation.
 -->
-<p><code>summarize</code>にデフォルト実装を用意しても、リスト10-13の<code>Tweet</code>の<code>Summary</code>実装を変える必要はありません。
+<p>デフォルト実装を用意しても、リスト10-13の<code>Tweet</code>の<code>Summary</code>実装を変える必要はありません。
 理由は、デフォルト実装をオーバーライドする記法はデフォルト実装のないトレイトメソッドを実装する記法と同じだからです。</p>
 <!--
 Default implementations can call other methods in the same trait, even if those
@@ -17411,9 +17439,7 @@ a small part of it. For example, we could define the `Summary` trait to have a
 このようにすれば、トレイトは多くの有用な機能を提供しつつ、実装者は僅かな部分しか指定しなくて済むようになります。
 例えば、<code>Summary</code>トレイトを、（実装者が）内容を実装しなければならない<code>summarize_author</code>メソッドを持つように定義し、
 それから<code>summarize_author</code>メソッドを呼び出すデフォルト実装を持つ<code>summarize</code>メソッドを定義することもできます:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait Summary {
+<pre><code class="language-rust noplayground">pub trait Summary {
     fn summarize_author(&amp;self) -&gt; String;
 
     fn summarize(&amp;self) -&gt; String {
@@ -17433,8 +17459,7 @@ a small part of it. For example, we could define the `Summary` trait to have a
 </span><span class="boring">    fn summarize_author(&amp;self) -&gt; String {
 </span><span class="boring">        format!(&quot;@{}&quot;, self.username)
 </span><span class="boring">    }
-</span><span class="boring">}
-</span><span class="boring">}</span></code></pre></pre>
+</span><span class="boring">}</span></code></pre>
 <!--
 To use this version of `Summary`, we only need to define `summarize_author`
 when we implement the trait on a type:
@@ -17472,7 +17497,7 @@ definition of `summarize_author` that we’ve provided. Because we’ve implemen
 <code>summarize</code>のデフォルト実装は、私達が提供した<code>summarize_author</code>の定義を呼び出すでしょう。
 <code>summarize_author</code>を実装したので、追加のコードを書く必要なく、<code>Summary</code>トレイトは、
 <code>summarize</code>メソッドの振る舞いを与えてくれました。</p>
-<pre><code class="language-rust ignore"><span class="boring">use chapter10::{self, Summary, Tweet};
+<pre><code class="language-rust ignore"><span class="boring">use aggregator::{self, Summary, Tweet};
 </span><span class="boring">
 </span><span class="boring">fn main() {
 </span>    let tweet = Tweet {
@@ -17501,19 +17526,16 @@ overriding implementation of that same method.
 <h3 id="引数としてのトレイト"><a class="header" href="#引数としてのトレイト">引数としてのトレイト</a></h3>
 <!--
 Now that you know how to define and implement traits, we can explore how to use
-traits to define functions that accept many different types.
+traits to define functions that accept many different types. We'll use the
+`Summary` trait we implemented on the `NewsArticle` and `Tweet` types in
+Listing 10-13 to define a `notify` function that calls the `summarize` method
+on its `item` parameter, which is of some type that implements the `Summary`
+trait. To do this, we use the `impl Trait` syntax, like this:
 -->
-<p>トレイトを定義し実装する方法はわかったので、トレイトを使っていろんな種類の型を受け付ける関数を定義する方法を学んでいきましょう。</p>
-<!--
-For example, in Listing 10-13, we implemented the `Summary` trait on the
-`NewsArticle` and `Tweet` types. We can define a `notify` function that calls
-the `summarize` method on its `item` parameter, which is of some type that
-implements the `Summary` trait. To do this, we can use the `impl Trait`
-syntax, like this:
--->
-<p>たとえば、Listing 10-13では、<code>NewsArticle</code>と<code>Tweet</code>型に<code>Summary</code>トレイトを実装しました。
-ここで、引数の<code>item</code>の<code>summarize</code>メソッドを呼ぶ関数<code>notify</code>を定義することができます。ただし、引数<code>item</code>は<code>Summary</code>トレイトを実装しているような何らかの型であるとします。
-このようなことをするためには、<code>impl Trait</code>構文を使うことができます。</p>
+<p>トレイトを定義し実装する方法はわかったので、トレイトを使っていろんな種類の型を受け付ける関数を定義する方法を学んでいきましょう。
+リスト10-13で<code>NewsArticle</code>と<code>Tweet</code>に対して実装した<code>Summary</code>トレイトを使用して、<code>notify</code>関数を定義しましょう。
+この関数は、<code>Summary</code>トレイトを実装する何らかの型を持つ引数<code>item</code>を持ち、それに対して<code>summarize</code>メソッドを呼び出します。
+これを行うためには、このように<code>impl Trait</code>構文を使います:</p>
 <pre><code class="language-rust ignore"><span class="boring">pub trait Summary {
 </span><span class="boring">    fn summarize(&amp;self) -&gt; String;
 </span><span class="boring">}
@@ -17562,16 +17584,19 @@ because those types don’t implement `Summary`.
 私達は、<code>notify</code>を呼びだし、<code>NewsArticle</code>か<code>Tweet</code>のどんなインスタンスでも渡すことができます。
 この関数を呼び出すときに、<code>String</code>や<code>i32</code>のような他の型を渡すようなコードはコンパイルできません。
 なぜなら、これらの型は<code>Summary</code>を実装していないからです。</p>
+<!-- Old headings. Do not remove or links may break. -->
+<!--
+<a id="fixing-the-largest-function-with-trait-bounds"></a>
+-->
 <!--
 #### Trait Bound Syntax
 -->
 <h4 id="トレイト境界構文"><a class="header" href="#トレイト境界構文">トレイト境界構文</a></h4>
 <!--
-The `impl Trait` syntax works for straightforward cases but is actually
-syntax sugar for a longer form, which is called a *trait bound*; it looks like
-this:
+The `impl Trait` syntax works for straightforward cases but is actually syntax
+sugar for a longer form known as a *trait bound*; it looks like this:
 -->
-<p><code>impl Trait</code>構文は単純なケースを解決しますが、実はより長い<em>トレイト境界 (trait bound)</em> と呼ばれる姿の糖衣構文 (syntax sugar) なのです。
+<p><code>impl Trait</code>構文は単純なケースを解決しますが、実はより長い<em>トレイト境界 (trait bound)</em> として知られる姿の糖衣構文 (syntax sugar) なのです。
 それは以下のようなものです：</p>
 <pre><code class="language-rust ignore">pub fn notify&lt;T: Summary&gt;(item: &amp;T) {
 	// 速報！ {}
@@ -17586,23 +17611,23 @@ parameter after a colon and inside angle brackets.
 山カッコの中にジェネリックな型引数の宣言を書き、型引数の後ろにコロンを挟んでトレイト境界を置いています。</p>
 <!--
 The `impl Trait` syntax is convenient and makes for more concise code in simple
-cases. The trait bound syntax can express more complexity in other cases. For
-example, we can have two parameters that implement `Summary`. Using the `impl
-Trait` syntax looks like this:
+cases, while the fuller trait bound syntax can express more complexity in other
+cases. For example, we can have two parameters that implement `Summary`. Doing
+so with the `impl Trait` syntax looks like this:
 -->
-<p>簡単なケースに対し、<code>impl Trait</code>構文は便利で、コードを簡潔にしてくれます。
-そうでないケースの場合、トレイト境界構文を使えば複雑な状態を表現できます。
+<p>簡単なケースでは<code>impl Trait</code>構文は便利で、コードを簡潔にしてくれます。
+一方でそうでないケースでは、完全なトレイト境界構文を使えばより複雑な制約を表現できます。
 たとえば、<code>Summary</code>を実装する2つのパラメータを持つような関数を考えることができます。
-<code>impl Trait</code>構文を使うとこのようになるでしょう：</p>
+<code>impl Trait</code>構文を使ってそうするのはこのようになるでしょう：</p>
 <pre><code class="language-rust ignore">pub fn notify(item1: &amp;impl Summary, item2: &amp;impl Summary) {</code></pre>
 <!--
-If we wanted this function to allow `item1` and `item2` to have different
-types, using `impl Trait` would be appropriate (as long as both types implement
-`Summary`). If we wanted to force both parameters to have the same type, that’s
-only possible to express using a trait bound, like this:
+Using `impl Trait` is appropriate if we want this function to allow `item1` and
+`item2` to have different types (as long as both types implement `Summary`). If
+we want to force both parameters to have the same type, however, we must use a
+trait bound, like this:
 -->
-<p>この関数が受け取る<code>item1</code>と<code>item2</code>の型が（どちらも<code>Summary</code>を実装する限り）異なっても良いとするならば、<code>impl Trait</code>は適切でしょう。
-両方の引数が同じ型であることを強制することは、以下のようにトレイト境界を使ってのみ表現可能です：</p>
+<p>この関数が受け取る<code>item1</code>と<code>item2</code>の型が（どちらも<code>Summary</code>を実装する限り）異なっても良い場合、<code>impl Trait</code>の使用は適切です。
+しかし、両方の引数が同じ型であることを強制したい場合は、次のようにトレイト境界を使用しなくてはなりません:</p>
 <pre><code class="language-rust ignore">pub fn notify&lt;T: Summary&gt;(item1: &amp;T, item2: &amp;T) {</code></pre>
 <!--
 The generic type `T` specified as the type of the `item1` and `item2`
@@ -17617,12 +17642,12 @@ passed as an argument for `item1` and `item2` must be the same.
 <h4 id="複数のトレイト境界を構文で指定する"><a class="header" href="#複数のトレイト境界を構文で指定する">複数のトレイト境界を<code>+</code>構文で指定する</a></h4>
 <!--
 We can also specify more than one trait bound. Say we wanted `notify` to use
-display formatting on `item` as well as the `summarize` method: we specify in
-the `notify` definition that `item` must implement both `Display` and
-`Summary`. We can do so using the `+` syntax:
+display formatting as well as `summarize` on `item`: we specify in the `notify`
+definition that `item` must implement both `Display` and `Summary`. We can do
+so using the `+` syntax:
 -->
 <p>複数のトレイト境界も指定できます。
-たとえば、<code>notify</code>に<code>summarize</code>メソッドに加えて<code>item</code>の画面出力形式（ディスプレイフォーマット）を使わせたいとします。
+たとえば、<code>notify</code>に、<code>item</code>に対する<code>summarize</code>に加えて画面出力形式（ディスプレイフォーマット）も使わせたいとします。
 その場合は、<code>notify</code>の定義に<code>item</code>は<code>Display</code>と<code>Summary</code>の両方を実装していなくてはならないと指定することになります。
 これは、以下のように<code>+</code>構文で行うことができます：</p>
 <pre><code class="language-rust ignore">pub fn notify(item: &amp;(impl Summary + Display)) {</code></pre>
@@ -17659,9 +17684,12 @@ we can use a `where` clause, like this:
 -->
 <p>代わりに、<code>where</code>句を使い、このように書くことができます：</p>
 <pre><code class="language-rust ignore">fn some_function&lt;T, U&gt;(t: &amp;T, u: &amp;U) -&gt; i32
-    where T: Display + Clone,
-          U: Clone + Debug
-{</code></pre>
+where
+    T: Display + Clone,
+    U: Clone + Debug,
+{
+<span class="boring">    unimplemented!()
+</span><span class="boring">}</span></code></pre>
 <!--
 This function’s signature is less cluttered: the function name, parameter list,
 and return type are close together, similar to a function without lots of trait
@@ -17721,17 +17749,17 @@ value of some type that implements a trait, as shown here:
 By using `impl Summary` for the return type, we specify that the
 `returns_summarizable` function returns some type that implements the `Summary`
 trait without naming the concrete type. In this case, `returns_summarizable`
-returns a `Tweet`, but the code calling this function doesn’t know that.
+returns a `Tweet`, but the code calling this function doesn’t need to know that.
 -->
 <p>戻り値の型として<code>impl Summary</code>を使うことにより、具体的な型が何かを言うことなく、<code>returns_summarizable</code>関数は<code>Summary</code>トレイトを実装している何らかの型を返すのだ、と指定することができます。
-今回<code>returns_summarizable</code>は<code>Tweet</code>を返しますが、この関数を呼び出すコードはそのことを知りません。</p>
+今回<code>returns_summarizable</code>は<code>Tweet</code>を返しますが、この関数を呼び出すコードはそのことを知る必要はありません。</p>
 <!--
-The ability to return a type that is only specified by the trait it implements
-is especially useful in the context of closures and iterators, which we cover
-in Chapter 13. Closures and iterators create types that only the compiler knows
-or types that are very long to specify. The `impl Trait` syntax lets you
-concisely specify that a function returns some type that implements the
-`Iterator` trait without needing to write out a very long type.
+The ability to specify a return type only by the trait it implements is
+especially useful in the context of closures and iterators, which we cover in
+Chapter 13. Closures and iterators create types that only the compiler knows or
+types that are very long to specify. The `impl Trait` syntax lets you concisely
+specify that a function returns some type that implements the `Iterator` trait
+without needing to write out a very long type.
 -->
 <p>実装しているトレイトだけで戻り値型を指定できることは、13章で学ぶ、クロージャとイテレータを扱うときに特に便利です。
 クロージャとイテレータの作り出す型は、コンパイラだけが知っているものであったり、指定するには長すぎるものであったりします。
@@ -17802,206 +17830,11 @@ Returning either a `NewsArticle` or a `Tweet` isn’t allowed due to restriction
 around how the `impl Trait` syntax is implemented in the compiler. We’ll cover
 how to write a function with this behavior in the [“Using Trait Objects That
 Allow for Values of Different
-Types”][using-trait-objects-that-allow-for-values-of-different-types] section of Chapter 17.
+Types”][using-trait-objects-that-allow-for-values-of-different-types]
+section of Chapter 17.
 -->
 <p><code>NewsArticle</code>か<code>Tweet</code>を返すというのは、コンパイラの<code>impl Trait</code>構文の実装まわりの制約により許されていません。
-このような振る舞いをする関数を書く方法は、17章の<a href="ch17-02-trait-objects.html#%E3%83%88%E3%83%AC%E3%82%A4%E3%83%88%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%A7%E7%95%B0%E3%81%AA%E3%82%8B%E5%9E%8B%E3%81%AE%E5%80%A4%E3%82%92%E8%A8%B1%E5%AE%B9%E3%81%99%E3%82%8B">トレイトオブジェクトで異なる型の値を許容する</a>節で学びます。</p>
-<!--
-### Fixing the `largest` Function with Trait Bounds
--->
-<h3 id="トレイト境界でlargest関数を修正する"><a class="header" href="#トレイト境界でlargest関数を修正する">トレイト境界で<code>largest</code>関数を修正する</a></h3>
-<!--
-Now that you know how to specify the behavior you want to use using the generic
-type parameter’s bounds, let’s return to Listing 10-5 to fix the definition of
-the `largest` function that uses a generic type parameter! Last time we tried
-to run that code, we received this error:
--->
-<p>ジェネリックな型引数の境界で使用したい振る舞いを指定する方法がわかったので、リスト10-5に戻って、
-ジェネリックな型引数を使用する<code>largest</code>関数の定義を修正しましょう！最後にそのコードを実行しようとした時、
-こんなエラーが出ていました:</p>
-<pre><code class="language-text">$ cargo run
-   Compiling chapter10 v0.1.0 (file:///projects/chapter10)
-error[E0369]: binary operation `&gt;` cannot be applied to type `T`
- --&gt; src/main.rs:5:17
-  |
-5 |         if item &gt; largest {
-  |            ---- ^ ------- T
-  |            |
-  |            T
-  |
-  = note: `T` might need a bound for `std::cmp::PartialOrd`
-
-error: aborting due to previous error
-
-For more information about this error, try `rustc --explain E0369`.
-error: could not compile `chapter10`.
-
-To learn more, run the command again with --verbose.
-</code></pre>
-<!--
-In the body of `largest` we wanted to compare two values of type `T` using the
-greater than (`>`) operator. Because that operator is defined as a default
-method on the standard library trait `std::cmp::PartialOrd`, we need to specify
-`PartialOrd` in the trait bounds for `T` so the `largest` function can work on
-slices of any type that we can compare. We don’t need to bring `PartialOrd`
-into scope because it’s in the prelude. Change the signature of `largest` to
-look like this:
--->
-<p><code>largest</code>の本体で、大なり演算子(<code>&gt;</code>)を使用して型<code>T</code>の2つの値を比較しようとしていました。この演算子は、
-標準ライブラリトレイトの<code>std::cmp::PartialOrd</code>でデフォルトメソッドとして定義されているので、
-<code>largest</code>関数が、比較できるあらゆる型のスライスに対して動くようにするためには、<code>T</code>のトレイト境界に<code>PartialOrd</code>を指定する必要があります。
-<code>PartialOrd</code>はpreludeに含まれているので、これをスコープに導入する必要はありません。
-<code>largest</code>のシグニチャを以下のように変えてください:</p>
-<pre><code class="language-rust ignore">fn largest&lt;T: PartialOrd&gt;(list: &amp;[T]) -&gt; T {
-<span class="boring">    let mut largest = list[0];
-</span><span class="boring">
-</span><span class="boring">    for &amp;item in list {
-</span><span class="boring">        if item &gt; largest {
-</span><span class="boring">            largest = item;
-</span><span class="boring">        }
-</span><span class="boring">    }
-</span><span class="boring">
-</span><span class="boring">    largest
-</span><span class="boring">}
-</span><span class="boring">
-</span><span class="boring">fn main() {
-</span><span class="boring">    let number_list = vec![34, 50, 25, 100, 65];
-</span><span class="boring">
-</span><span class="boring">    let result = largest(&amp;number_list);
-</span><span class="boring">    println!(&quot;The largest number is {}&quot;, result);
-</span><span class="boring">
-</span><span class="boring">    let char_list = vec!['y', 'm', 'a', 'q'];
-</span><span class="boring">
-</span><span class="boring">    let result = largest(&amp;char_list);
-</span><span class="boring">    println!(&quot;The largest char is {}&quot;, result);
-</span><span class="boring">}</span></code></pre>
-<!--
-This time when we compile the code, we get a different set of errors:
--->
-<p>今回のコンパイルでは、別のエラーが出てきます：</p>
-<pre><code class="language-console">$ cargo run
-   Compiling chapter10 v0.1.0 (file:///projects/chapter10)
-error[E0508]: cannot move out of type `[T]`, a non-copy slice
-（エラー[E0508]： 型`[T]`をもつ、非コピーのスライスからのムーブはできません）
- --&gt; src/main.rs:2:23
-  |
-2 |     let mut largest = list[0];
-  |                       ^^^^^^^
-  |                       |
-  |                       cannot move out of here
-  |                       （ここからムーブすることはできません）
-  |                       move occurs because `list[_]` has type `T`, which does not implement the `Copy` trait
-  |                       （ムーブが発生するのは、`list[_]`は`T`という、`Copy`トレイトを実装しない型であるためです）
-  |                       help: consider borrowing here: `&amp;list[0]`
-  |                       （助言：借用するようにしてみてはいかがですか： `&amp;list[0]`）
-
-error[E0507]: cannot move out of a shared reference
-（エラー[E0507]：共有の参照からムーブはできません）
- --&gt; src/main.rs:4:18
-  |
-4 |     for &amp;item in list {
-  |         -----    ^^^^
-  |         ||
-  |         |data moved here
-  |         |（データがここでムーブされています）
-  |         |move occurs because `item` has type `T`, which does not implement the `Copy` trait
-  |         |（ムーブが発生するのは、`item`は`T`という、`Copy`トレイトを実装しない型であるためです）
-  |         help: consider removing the `&amp;`: `item`
-  |         （助言：`&amp;`を取り除いてみてはいかがですか： `item`）
-
-error: aborting due to 2 previous errors
-
-Some errors have detailed explanations: E0507, E0508.
-For more information about an error, try `rustc --explain E0507`.
-error: could not compile `chapter10`.
-
-To learn more, run the command again with --verbose.
-</code></pre>
-<!--
-The key line in this error is `cannot move out of type [T], a non-copy slice`.
-With our non-generic versions of the `largest` function, we were only trying to
-find the largest `i32` or `char`. As discussed in the [“Stack-Only Data:
-Copy”][stack-only-data-copy] section in Chapter 4, types like
-`i32` and `char` that have a known size can be stored on the stack, so they
-implement the `Copy` trait. But when we made the `largest` function generic,
-it became possible for the `list` parameter to have types in it that don’t
-implement the `Copy` trait. Consequently, we wouldn’t be able to move the
-value out of `list[0]` and into the `largest` variable, resulting in this
-error.
--->
-<p>このエラーの鍵となる行は、<code>cannot move out of type [T], a non-copy slice</code>です。
-ジェネリックでないバージョンの<code>largest</code>関数では、最大の<code>i32</code>か<code>char</code>を探そうとするだけでした。
-第4章の<a href="ch04-01-what-is-ownership.html#%E3%82%B9%E3%82%BF%E3%83%83%E3%82%AF%E3%81%AE%E3%81%BF%E3%81%AE%E3%83%87%E3%83%BC%E3%82%BF-%E3%82%B3%E3%83%94%E3%83%BC">スタックのみのデータ: コピー</a>節で議論したように、<code>i32</code>や<code>char</code>のようなサイズが既知の型は
-スタックに格納できるので、<code>Copy</code>トレイトを実装しています。しかし、<code>largest</code>関数をジェネリックにすると、
-<code>list</code>引数が<code>Copy</code>トレイトを実装しない型を含む可能性も出てきたのです。結果として、
-<code>list[0]</code>から値を<code>largest</code>にムーブできず、このエラーに陥ったのです。</p>
-<!--
-To call this code with only those types that implement the `Copy` trait, we can
-add `Copy` to the trait bounds of `T`! Listing 10-15 shows the complete code of
-a generic `largest` function that will compile as long as the types of the
-values in the slice that we pass into the function implement the `PartialOrd`
-*and* `Copy` traits, like `i32` and `char` do.
--->
-<p>このコードを<code>Copy</code>トレイトを実装する型だけを使って呼び出すようにしたいなら、<code>T</code>のトレイト境界に<code>Copy</code>を追加すればよいです！
-リスト10-15は、関数に渡したスライスの値の型が、<code>i32</code>や<code>char</code>などのように<code>PartialOrd</code><em>と</em><code>Copy</code>を実装する限りコンパイルできる、ジェネリックな<code>largest</code>関数の完全なコードを示しています。</p>
-<!--
-<span class="filename">Filename: src/main.rs</span>
--->
-<p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">fn largest&lt;T: PartialOrd + Copy&gt;(list: &amp;[T]) -&gt; T {
-    let mut largest = list[0];
-
-    for &amp;item in list {
-        if item &gt; largest {
-            largest = item;
-        }
-    }
-
-    largest
-}
-
-fn main() {
-    let number_list = vec![34, 50, 25, 100, 65];
-
-    let result = largest(&amp;number_list);
-    println!(&quot;The largest number is {}&quot;, result);
-
-    let char_list = vec!['y', 'm', 'a', 'q'];
-
-    let result = largest(&amp;char_list);
-    println!(&quot;The largest char is {}&quot;, result);
-}</code></pre></pre>
-<!--
-<span class="caption">Listing 10-15: A working definition of the `largest`
-function that works on any generic type that implements the `PartialOrd` and
-`Copy` traits</span>
--->
-<p><span class="caption">リスト10-15: <code>PartialOrd</code>と<code>Copy</code>トレイトを実装するあらゆるジェネリックな型に対して動く、
-<code>largest</code>関数の実際の定義</span></p>
-<!--
-If we don’t want to restrict the `largest` function to the types that implement
-the `Copy` trait, we could specify that `T` has the trait bound `Clone` instead
-of `Copy`. Then we could clone each value in the slice when we want the
-`largest` function to have ownership. Using the `clone` function means we’re
-potentially making more heap allocations in the case of types that own heap
-data like `String`, and heap allocations can be slow if we’re working with
-large amounts of data.
--->
-<p>もし<code>largest</code>関数を<code>Copy</code>を実装する型だけに制限したくなかったら、<code>T</code>が<code>Copy</code>ではなく<code>Clone</code>というトレイト境界を持つと指定することもできます。そうしたら、
-<code>largest</code>関数に所有権が欲しい時にスライスの各値をクローンできます。<code>clone</code>関数を使用するということは、
-<code>String</code>のようなヒープデータを持つ型の場合により多くのヒープ確保が発生する可能性があることを意味します。
-そして、大量のデータを取り扱っていたら、ヒープ確保には時間がかかることもあります。</p>
-<!--
-Another way we could implement `largest` is for the function to return a
-reference to a `T` value in the slice. If we change the return type to `&T`
-instead of `T`, thereby changing the body of the function to return a
-reference, we wouldn’t need the `Clone` or `Copy` trait bounds and we could
-avoid heap allocations. Try implementing these alternate solutions on your own!
--->
-<p><code>largest</code>の別の実装方法は、関数がスライスの<code>T</code>値への参照を返すようにすることです。
-戻り値の型を<code>T</code>ではなく<code>&amp;T</code>に変え、それにより関数の本体を参照を返すように変更したら、
-<code>Clone</code>や<code>Copy</code>トレイト境界は必要なくなり、ヒープ確保も避けられるでしょう。
-これらの代替策をご自身で実装してみましょう！</p>
+このような振る舞いをする関数を書く方法は、17章の<a href="ch17-02-trait-objects.html#%E3%83%88%E3%83%AC%E3%82%A4%E3%83%88%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%A7%E7%95%B0%E3%81%AA%E3%82%8B%E5%9E%8B%E3%81%AE%E5%80%A4%E3%82%92%E8%A8%B1%E5%AE%B9%E3%81%99%E3%82%8B">「トレイトオブジェクトで異なる型の値を許容する」</a>節で学びます。</p>
 <!--
 ### Using Trait Bounds to Conditionally Implement Methods
 -->
@@ -18009,23 +17842,25 @@ avoid heap allocations. Try implementing these alternate solutions on your own!
 <!--
 By using a trait bound with an `impl` block that uses generic type parameters,
 we can implement methods conditionally for types that implement the specified
-traits. For example, the type `Pair<T>` in Listing 10-16 always implements the
-`new` function. But `Pair<T>` only implements the `cmp_display` method if its
-inner type `T` implements the `PartialOrd` trait that enables comparison *and*
-the `Display` trait that enables printing.
+traits. For example, the type `Pair<T>` in Listing 10-15 always implements the
+`new` function to return a new instance of `Pair<T>` (recall from the
+[“Defining Methods”][methods] section of Chapter 5 that `Self`
+is a type alias for the type of the `impl` block, which in this case is
+`Pair<T>`). But in the next `impl` block, `Pair<T>` only implements the
+`cmp_display` method if its inner type `T` implements the `PartialOrd` trait
+that enables comparison *and* the `Display` trait that enables printing.
 -->
 <p>ジェネリックな型引数を持つ<code>impl</code>ブロックにトレイト境界を与えることで、
 特定のトレイトを実装する型に対するメソッド実装を条件分けできます。例えば、
-リスト10-16の型<code>Pair&lt;T&gt;</code>は、常に<code>new</code>関数を実装します。しかし、<code>Pair&lt;T&gt;</code>は、
+リスト10-15の型<code>Pair&lt;T&gt;</code>は、<code>Pair&lt;T&gt;</code>の新しいインスタンスを返す<code>new</code>関数を常に実装します
+（第5章の<a href="ch05-03-method-syntax.html#%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%82%92%E5%AE%9A%E7%BE%A9%E3%81%99%E3%82%8B">「メソッドを定義する」</a>節で学んだ、<code>Self</code>は<code>impl</code>ブロックの型に対する型エイリアスだということを思い出してください、今回は<code>Pair&lt;T&gt;</code>です）。しかし次の<code>impl</code>ブロック内では、<code>Pair&lt;T&gt;</code>は、
 内部の型<code>T</code>が比較を可能にする<code>PartialOrd</code>トレイト<em>と</em>出力を可能にする<code>Display</code>トレイトを実装している時のみ、
 <code>cmp_display</code>メソッドを実装します。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::fmt::Display;
+<pre><code class="language-rust noplayground">use std::fmt::Display;
 
 struct Pair&lt;T&gt; {
     x: T,
@@ -18046,13 +17881,12 @@ impl&lt;T: Display + PartialOrd&gt; Pair&lt;T&gt; {
             println!(&quot;The largest member is y = {}&quot;, self.y);
         }
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
-<span class="caption">Listing 10-16: Conditionally implement methods on a
+<span class="caption">Listing 10-15: Conditionally implementing methods on a
 generic type depending on trait bounds</span>
 -->
-<p><span class="caption">リスト10-16: トレイト境界によってジェネリックな型に対するメソッド実装を条件分けする</span></p>
+<p><span class="caption">リスト10-15: トレイト境界によってジェネリックな型に対するメソッド実装を条件分けする</span></p>
 <!--
 We can also conditionally implement a trait for any type that implements
 another trait. Implementations of a trait on any type that satisfies the trait
@@ -18108,83 +17942,75 @@ generics.
 加えて、コンパイル時に既に確認したので、実行時の振る舞いを確認するコードを書かなくても済みます。
 そうすることで、ジェネリクスの柔軟性を諦めることなくパフォーマンスを向上させます。</p>
 <!--
-Another kind of generic that we’ve already been using is called *lifetimes*.
-Rather than ensuring that a type has the behavior we want, lifetimes ensure
-that references are valid as long as we need them to be. Let’s look at how
-lifetimes do that.
--->
-<p>すでに使っている他のジェネリクスに、ライフタイムと呼ばれるものがあります。
-ライフタイムは、型が欲しい振る舞いを保持していることではなく、必要な間だけ参照が有効であることを保証します。
-ライフタイムがどうやってそれを行うかを見てみましょう。</p>
-<!--
-[stack-only-data-copy]:
-ch04-01-what-is-ownership.html#stack-only-data-copy
-[using-trait-objects-that-allow-for-values-of-different-types]:
-ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types
+[using-trait-objects-that-allow-for-values-of-different-types]: ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types
+[methods]: ch05-03-method-syntax.html#defining-methods
 -->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Validating References with Lifetimes
 -->
 <h2 id="ライフタイムで参照を検証する"><a class="header" href="#ライフタイムで参照を検証する">ライフタイムで参照を検証する</a></h2>
 <!--
+Lifetimes are another kind of generic that we’ve already been using. Rather
+than ensuring that a type has the behavior we want, lifetimes ensure that
+references are valid as long as we need them to be.
+-->
+<p>ライフタイムは、すでに使ってきましたが、もう一つの種類のジェネリクスです。
+ライフタイムは、型が欲しい振る舞いを持つことを保証するのではなく、必要な間だけ参照が有効であることを保証します。</p>
+<!--
 One detail we didn’t discuss in the [“References and
 Borrowing”][references-and-borrowing] section in Chapter 4 is
 that every reference in Rust has a *lifetime*, which is the scope for which
-that reference is valid. Most of the time, lifetimes are implicit and
-inferred, just like most of the time, types are inferred. We must annotate
-types when multiple types are possible. In a similar way, we must annotate
-lifetimes when the lifetimes of references could be related in a few different
-ways. Rust requires us to annotate the relationships using generic lifetime
-parameters to ensure the actual references used at runtime will definitely be
-valid.
+that reference is valid. Most of the time, lifetimes are implicit and inferred,
+just like most of the time, types are inferred. We must only annotate types
+when multiple types are possible. In a similar way, we must annotate lifetimes
+when the lifetimes of references could be related in a few different ways. Rust
+requires us to annotate the relationships using generic lifetime parameters to
+ensure the actual references used at runtime will definitely be valid.
 -->
 <p>第4章の<a href="ch04-02-references-and-borrowing.html#%E5%8F%82%E7%85%A7%E3%81%A8%E5%80%9F%E7%94%A8">「参照と借用」</a>節で議論しなかった詳細の一つに、Rustにおいて参照は全てライフタイムを保持するということがあります。
 ライフタイムとは、その参照が有効になるスコープのことです。多くの場合、型が推論されるように、
-大体の場合、ライフタイムも暗黙的に推論されます。複数の型の可能性があるときには、型を注釈しなければなりません。
+大体の場合、ライフタイムも暗黙的に推論されます。複数の型の可能性があるときにのみ、型を注釈しなければなりません。
 同様に、参照のライフタイムがいくつか異なる方法で関係することがある場合には注釈しなければなりません。
 コンパイラは、ジェネリックライフタイム引数を使用して関係を注釈し、実行時に実際の参照が確かに有効であることを保証することを要求するのです。</p>
 <!--
-The concept of lifetimes is somewhat different from tools in other programming
-languages, arguably making lifetimes Rust’s most distinctive feature. Although
-we won’t cover lifetimes in their entirety in this chapter, we’ll discuss
-common ways you might encounter lifetime syntax so you can become familiar with
-the concepts.
+Annotating lifetimes is not a concept most other programming languages
+have, so this is going to feel unfamiliar. Although we won’t cover lifetimes in
+their entirety in this chapter, we’ll discuss common ways you might encounter
+lifetime syntax so you can get comfortable with the concept.
 -->
-<p>ライフタイムの概念は、他のプログラミング言語の道具とはどこか異なり、間違いなくRustで一番際立った機能になっています。
+<p>ライフタイムの注釈は、他の多くのプログラミング言語にはない概念ですので、馴染みのない気分になるでしょう。
 この章では、ライフタイムの全体を解説することはしませんが、
-ライフタイム記法が必要となる最も一般的な場合について議論しますので、ライフタイムの概念について馴染むことができるでしょう。</p>
+ライフタイム記法に遭遇するよくある場合について議論しますので、ライフタイムの概念について馴染むことができるでしょう。</p>
 <!--
 ### Preventing Dangling References with Lifetimes
 -->
 <h3 id="ライフタイムでダングリング参照を回避する"><a class="header" href="#ライフタイムでダングリング参照を回避する">ライフタイムでダングリング参照を回避する</a></h3>
 <!--
-The main aim of lifetimes is to prevent dangling references, which cause a
+The main aim of lifetimes is to prevent *dangling references*, which cause a
 program to reference data other than the data it’s intended to reference.
-Consider the program in Listing 10-17, which has an outer scope and an inner
+Consider the program in Listing 10-16, which has an outer scope and an inner
 scope.
 -->
-<p>ライフタイムの主な目的は、ダングリング参照を回避することです。ダングリング参照によりプログラムは、
+<p>ライフタイムの主な目的は、<em>ダングリング参照</em>を回避することです。ダングリング参照によりプログラムは、
 参照するつもりだったデータ以外のデータを参照してしまいます。リスト10-17のプログラムを考えてください。
 これには、外側のスコープと内側のスコープが含まれています。</p>
-<pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
-</span>    {
-        let r;
+<pre><code class="language-rust ignore does_not_compile">fn main() {
+    let r;
 
-        {
-            let x = 5;
-            r = &amp;x;
-        }
-
-        println!(&quot;r: {}&quot;, r);
+    {
+        let x = 5;
+        r = &amp;x;
     }
-<span class="boring">}</span></code></pre>
+
+    println!(&quot;r: {}&quot;, r);
+}</code></pre>
 <!--
-<span class="caption">Listing 10-17: An attempt to use a reference whose value
+<span class="caption">Listing 10-16: An attempt to use a reference whose value
 has gone out of scope</span>
 -->
-<p><span class="caption">リスト10-17: 値がスコープを抜けてしまった参照を使用しようとする</span></p>
+<p><span class="caption">リスト10-16: 値がスコープを抜けてしまった参照を使用しようとする</span></p>
 <!--
-> Note: The examples in Listings 10-17, 10-18, and 10-24 declare variables
+> Note: The examples in Listings 10-16, 10-17, and 10-23 declare variables
 > without giving them an initial value, so the variable name exists in the
 > outer scope. At first glance, this might appear to be in conflict with Rust’s
 > having no null values. However, if we try to use a variable before giving it
@@ -18192,7 +18018,7 @@ has gone out of scope</span>
 > not allow null values.
 -->
 <blockquote>
-<p>注釈: リスト10-17や10-18、10-24では、変数に初期値を与えずに宣言しているので、変数名は外側のスコープに存在します。
+<p>注釈: リスト10-16や10-17、10-23では、変数に初期値を与えずに宣言しているので、変数名は外側のスコープに存在します。
 初見では、これはRustにはnull値が存在しないということと衝突しているように見えるかもしれません。
 しかしながら、値を与える前に変数を使用しようとすれば、コンパイルエラーになり、
 確かにRustではnull値は許可されていないことがわかります。</p>
@@ -18202,7 +18028,7 @@ The outer scope declares a variable named `r` with no initial value, and the
 inner scope declares a variable named `x` with the initial value of 5. Inside
 the inner scope, we attempt to set the value of `r` as a reference to `x`. Then
 the inner scope ends, and we attempt to print the value in `r`. This code won’t
-compile because the value `r` is referring to has gone out of scope before we
+compile because what the value `r` is referring to has gone out of scope before we
 try to use it. Here is the error message:
 -->
 <p>外側のスコープで初期値なしの<code>r</code>という変数を宣言し、内側のスコープで初期値5の<code>x</code>という変数を宣言しています。
@@ -18212,26 +18038,25 @@ try to use it. Here is the error message:
 <pre><code class="language-console">$ cargo run
    Compiling chapter10 v0.1.0 (file:///projects/chapter10)
 error[E0597]: `x` does not live long enough
-（エラー[E0597]: `x`の生存期間が短すぎます）
-  --&gt; src/main.rs:7:17
-   |
-7  |             r = &amp;x;
-   |                 ^^ borrowed value does not live long enough
-   |                   (借用された値の生存期間が短すぎます)
-8  |         }
-   |         - `x` dropped here while still borrowed
-   |          (`x`は借用されている間にここでドロップされました)
-9  | 
-10 |         println!(&quot;r: {}&quot;, r);
-   |                           - borrow later used here
-   |                            (その後、借用はここで使われています)
-
-error: aborting due to previous error
+(エラー[E0597]: `x`の生存期間が短すぎます)
+ --&gt; src/main.rs:6:13
+  |
+5 |         let x = 5;
+  |             - binding `x` declared here
+  |              (束縛`x`はここで宣言されています)
+6 |         r = &amp;x;
+  |             ^^ borrowed value does not live long enough
+  |               (借用された値の生存期間が短すぎます)
+7 |     }
+  |     - `x` dropped here while still borrowed
+  |      (`x`は借用されている間にここでドロップされました)
+8 |
+9 |     println!(&quot;r: {}&quot;, r);
+  |                       - borrow later used here
+  |                        (その後、借用はここで使われています)
 
 For more information about this error, try `rustc --explain E0597`.
-error: could not compile `chapter10`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `chapter10` (bin &quot;chapter10&quot;) due to 1 previous error
 </code></pre>
 <!--
 The variable `x` doesn’t “live long enough.” The reason is that `x` will be out
@@ -18253,28 +18078,26 @@ Rustで、このコードが動くことを許可していたら、<code>r</code
 <h3 id="借用精査機"><a class="header" href="#借用精査機">借用精査機</a></h3>
 <!--
 The Rust compiler has a *borrow checker* that compares scopes to determine
-whether all borrows are valid. Listing 10-18 shows the same code as Listing
-10-17 but with annotations showing the lifetimes of the variables.
+whether all borrows are valid. Listing 10-17 shows the same code as Listing
+10-16 but with annotations showing the lifetimes of the variables.
 -->
 <p>Rustコンパイラには、スコープを比較して全ての借用が有効であるかを決定する<em>借用チェッカー</em>があります。
-リスト10-18は、リスト10-17と同じコードを示していますが、変数のライフタイムを表示する注釈が付いています。</p>
-<pre><code class="language-rust ignore does_not_compile"><span class="boring">fn main() {
-</span>    {
-        let r;                // ---------+-- 'a
-                              //          |
-        {                     //          |
-            let x = 5;        // -+-- 'b  |
-            r = &amp;x;           //  |       |
-        }                     // -+       |
-                              //          |
-        println!(&quot;r: {}&quot;, r); //          |
-    }                         // ---------+
-<span class="boring">}</span></code></pre>
+リスト10-17は、リスト10-16と同じコードを示していますが、変数のライフタイムを表示する注釈が付いています。</p>
+<pre><code class="language-rust ignore does_not_compile">fn main() {
+    let r;                // ---------+-- 'a
+                          //          |
+    {                     //          |
+        let x = 5;        // -+-- 'b  |
+        r = &amp;x;           //  |       |
+    }                     // -+       |
+                          //          |
+    println!(&quot;r: {}&quot;, r); //          |
+}                         // ---------+</code></pre>
 <!--
-<span class="caption">Listing 10-18: Annotations of the lifetimes of `r` and
+<span class="caption">Listing 10-17: Annotations of the lifetimes of `r` and
 `x`, named `'a` and `'b`, respectively</span>
 -->
-<p><span class="caption">リスト10-18: それぞれ<code>'a</code>と<code>'b</code>と名付けられた<code>r</code>と<code>x</code>のライフタイムの注釈</span></p>
+<p><span class="caption">リスト10-17: それぞれ<code>'a</code>と<code>'b</code>と名付けられた<code>r</code>と<code>x</code>のライフタイムの注釈</span></p>
 <!--
 Here, we’ve annotated the lifetime of `r` with `'a` and the lifetime of `x`
 with `'b`. As you can see, the inner `'b` block is much smaller than the outer
@@ -18289,25 +18112,23 @@ with a lifetime of `'b`. The program is rejected because `'b` is shorter than
 <code>'b</code>のライフタイムのメモリを参照していると確認します。<code>'b</code>は<code>'a</code>よりも短いので、プログラムは拒否されます:
 参照の対象が参照ほど長生きしないのです。</p>
 <!--
-Listing 10-19 fixes the code so it doesn’t have a dangling reference and
+Listing 10-18 fixes the code so it doesn’t have a dangling reference and
 compiles without any errors.
 -->
-<p>リスト10-19でコードを修正したので、ダングリング参照はなくなり、エラーなくコンパイルできます。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {
-</span>    {
-        let x = 5;            // ----------+-- 'b
-                              //           |
-        let r = &amp;x;           // --+-- 'a  |
-                              //   |       |
-        println!(&quot;r: {}&quot;, r); //   |       |
-                              // --+       |
-    }                         // ----------+
-<span class="boring">}</span></code></pre></pre>
+<p>リスト10-18でコードを修正したので、ダングリング参照はなくなり、エラーなくコンパイルできます。</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    let x = 5;            // ----------+-- 'b
+                          //           |
+    let r = &amp;x;           // --+-- 'a  |
+                          //   |       |
+    println!(&quot;r: {}&quot;, r); //   |       |
+                          // --+       |
+}                         // ----------+</code></pre></pre>
 <!--
-<span class="caption">Listing 10-19: A valid reference because the data has a
+<span class="caption">Listing 10-18: A valid reference because the data has a
 longer lifetime than the reference</span>
 -->
-<p><span class="caption">リスト10-19: データのライフタイムが参照より長いので、有効な参照</span></p>
+<p><span class="caption">リスト10-18: データのライフタイムが参照より長いので、有効な参照</span></p>
 <!--
 Here, `x` has the lifetime `'b`, which in this case is larger than `'a`. This
 means `r` can reference `x` because Rust knows that the reference in `r` will
@@ -18327,14 +18148,14 @@ lifetimes of parameters and return values in the context of functions.
 -->
 <h3 id="関数のジェネリックなライフタイム"><a class="header" href="#関数のジェネリックなライフタイム">関数のジェネリックなライフタイム</a></h3>
 <!--
-Let’s write a function that returns the longer of two string slices. This
-function will take two string slices and return a string slice. After we’ve
-implemented the `longest` function, the code in Listing 10-20 should print `The
-longest string is abcd`.
+We’ll write a function that returns the longer of two string slices. This
+function will take two string slices and return a single string slice. After
+we’ve implemented the `longest` function, the code in Listing 10-19 should
+print `The longest string is abcd`.
 -->
 <p>2つの文字列スライスのうち、長い方を返す関数を書きましょう。この関数は、
 2つの文字列スライスを取り、1つの文字列スライスを返します。<code>longest</code>関数の実装完了後、
-リスト10-20のコードは、<code>The longest string is abcd</code>と出力するはずです。</p>
+リスト10-19のコードは、<code>The longest string is abcd</code>と出力するはずです。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -18348,27 +18169,27 @@ longest string is abcd`.
     println!(&quot;The longest string is {}&quot;, result);
 }</code></pre>
 <!--
-<span class="caption">Listing 10-20: A `main` function that calls the `longest`
+<span class="caption">Listing 10-19: A `main` function that calls the `longest`
 function to find the longer of two string slices</span>
 -->
-<p><span class="caption">リスト10-20: <code>longest</code>関数を呼び出して2つの文字列スライスのうち長い方を探す<code>main</code>関数</span></p>
+<p><span class="caption">リスト10-19: <code>longest</code>関数を呼び出して2つの文字列スライスのうち長い方を探す<code>main</code>関数</span></p>
 <!--
 Note that we want the function to take string slices, which are references,
-because we don’t want the `longest` function to take ownership of its
-parameters. Refer to the [“String Slices as
+rather than strings, because we don’t want the `longest` function to take
+ownership of its parameters. Refer to the [“String Slices as
 Parameters”][string-slices-as-parameters] section in Chapter 4
-for more discussion about why the parameters we use in Listing 10-20 are the
+for more discussion about why the parameters we use in Listing 10-19 are the
 ones we want.
 -->
-<p>関数に取ってほしい引数が文字列スライス、つまり参照であることに注意してください。
+<p>関数に取ってほしい引数が文字列ではなく文字列スライス、つまり参照であることに注意してください。
 何故なら、<code>longest</code>関数に引数の所有権を奪ってほしくないからです。
-リスト10-20で使用している引数が、我々が必要としているものである理由についてもっと詳しい議論は、
+リスト10-19で使用している引数が、我々が必要としているものである理由についてもっと詳しい議論は、
 第4章の<a href="ch04-03-slices.html#%E5%BC%95%E6%95%B0%E3%81%A8%E3%81%97%E3%81%A6%E3%81%AE%E6%96%87%E5%AD%97%E5%88%97%E3%82%B9%E3%83%A9%E3%82%A4%E3%82%B9">「引数としての文字列スライス」</a>節をご参照ください。</p>
 <!--
-If we try to implement the `longest` function as shown in Listing 10-21, it
+If we try to implement the `longest` function as shown in Listing 10-20, it
 won’t compile.
 -->
-<p>リスト10-21に示すように<code>longest</code>関数を実装しようとしたら、コンパイルできないでしょう。</p>
+<p>リスト10-20に示すように<code>longest</code>関数を実装しようとしたら、コンパイルできないでしょう。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -18389,11 +18210,11 @@ won’t compile.
     }
 }</code></pre>
 <!--
-<span class="caption">Listing 10-21: An implementation of the `longest`
+<span class="caption">Listing 10-20: An implementation of the `longest`
 function that returns the longer of two string slices but does not yet
 compile</span>
 -->
-<p><span class="caption">リスト10-21: 2つの文字列スライスのうち長い方を返すけれども、コンパイルできない<code>longest</code>関数の実装</span></p>
+<p><span class="caption">リスト10-20: 2つの文字列スライスのうち長い方を返すけれども、コンパイルできない<code>longest</code>関数の実装</span></p>
 <!--
 Instead, we get the following error that talks about lifetimes:
 -->
@@ -18405,19 +18226,19 @@ error[E0106]: missing lifetime specifier
  --&gt; src/main.rs:9:33
   |
 9 | fn longest(x: &amp;str, y: &amp;str) -&gt; &amp;str {
-  |                                 ^ expected lifetime parameter
-  |                                   (ライフタイム引数があるべきです)
+  |               ----     ----     ^ expected named lifetime parameter
+  |                                  (名前付きライフタイム引数があるべきです)
   |
   = help: this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `x` or `y`
-  (助言: この関数の戻り値型は借用された値を含んでいますが、
-   シグニチャは、それが`x`と`y`どちらから借用されたものなのか宣言していません)
-
-error: aborting due to previous error
+   (ヘルプ: この関数の戻り値型は借用された値を含んでいますが、シグネチャは、それが`x`と`y`どちらから借用されたものなのか宣言していません)
+help: consider introducing a named lifetime parameter
+(ヘルプ: 名前付きライフライム引数の導入を検討してください)
+  |
+9 | fn longest&lt;'a&gt;(x: &amp;'a str, y: &amp;'a str) -&gt; &amp;'a str {
+  |           ++++     ++          ++          ++
 
 For more information about this error, try `rustc --explain E0106`.
-error: could not compile `chapter10`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `chapter10` (bin &quot;chapter10&quot;) due to 1 previous error
 </code></pre>
 <!--
 The help text reveals that the return type needs a generic lifetime parameter
@@ -18435,7 +18256,7 @@ When we’re defining this function, we don’t know the concrete values that wi
 be passed into this function, so we don’t know whether the `if` case or the
 `else` case will execute. We also don’t know the concrete lifetimes of the
 references that will be passed in, so we can’t look at the scopes as we did in
-Listings 10-18 and 10-19 to determine whether the reference we return will
+Listings 10-17 and 10-18 to determine whether the reference we return will
 always be valid. The borrow checker can’t determine this either, because it
 doesn’t know how the lifetimes of `x` and `y` relate to the lifetime of the
 return value. To fix this error, we’ll add generic lifetime parameters that
@@ -18443,7 +18264,7 @@ define the relationship between the references so the borrow checker can
 perform its analysis.
 -->
 <p>この関数を定義する際、この関数に渡される具体的な値がわからないので、<code>if</code>ケースと<code>else</code>ケースのどちらが実行されるかわからないのです。
-また、リスト10-18と10-19で、返す参照が常に有効であるかを決定したときのようにスコープを見ることも、渡される参照の具体的なライフタイムがわからないのでできないのです。
+また、リスト10-17と10-18で、返す参照が常に有効であるかを決定したときのようにスコープを見ることも、渡される参照の具体的なライフタイムがわからないのでできないのです。
 借用チェッカーもこれを決定することはできません。<code>x</code>と<code>y</code>のライフタイムがどう戻り値のライフタイムと関係するかわからないからです。
 このエラーを修正するために、借用チェッカーが解析を実行できるように、参照間の関係を定義するジェネリックなライフタイム引数を追加しましょう。</p>
 <!--
@@ -18451,26 +18272,26 @@ perform its analysis.
 -->
 <h3 id="ライフタイム注釈記法"><a class="header" href="#ライフタイム注釈記法">ライフタイム注釈記法</a></h3>
 <!--
-Lifetime annotations don’t change how long any of the references live. Just
-as functions can accept any type when the signature specifies a generic type
-parameter, functions can accept references with any lifetime by specifying a
-generic lifetime parameter. Lifetime annotations describe the relationships of
-the lifetimes of multiple references to each other without affecting the
-lifetimes.
+Lifetime annotations don’t change how long any of the references live. Rather,
+they describe the relationships of the lifetimes of multiple references to each
+other without affecting the lifetimes. Just as functions can accept any type
+when the signature specifies a generic type parameter, functions can accept
+references with any lifetime by specifying a generic lifetime parameter.
 -->
-<p>ライフタイム注釈は、いかなる参照の生存期間も変えることはありません。シグニチャにジェネリックな型引数を指定された
-関数が、あらゆる型を受け取ることができるのと同様に、ジェネリックなライフタイム引数を指定された関数は、
-あらゆるライフタイムの参照を受け取ることができます。ライフタイム注釈は、ライフタイムに影響することなく、
-複数の参照のライフタイムのお互いの関係を記述します。</p>
+<p>ライフタイム注釈は、いかなる参照の生存期間も変えることはありません。むしろ、ライフタイムに影響することなく、
+複数の参照のライフタイムのお互いの関係を記述します。シグニチャにジェネリックな型引数を指定された関数が、
+あらゆる型を受け取ることができるのと同様に、ジェネリックなライフタイム引数を指定された関数は、
+あらゆるライフタイムの参照を受け取ることができます。</p>
 <!--
 Lifetime annotations have a slightly unusual syntax: the names of lifetime
-parameters must start with an apostrophe (`'`) and are usually all lowercase and
-very short, like generic types. Most people use the name `'a`. We place
-lifetime parameter annotations after the `&` of a reference, using a space to
-separate the annotation from the reference’s type.
+parameters must start with an apostrophe (`'`) and are usually all lowercase
+and very short, like generic types. Most people use the name `'a` for the first
+lifetime annotation. We place lifetime parameter annotations after the `&` of a
+reference, using a space to separate the annotation from the reference’s type.
 -->
 <p>ライフタイム注釈は、少し不自然な記法です: ライフタイム引数の名前はアポストロフィー(<code>'</code>)で始まらなければならず、
-通常全部小文字で、ジェネリック型のようにとても短いです。多くの人は、<code>'a</code>という名前を使います。
+通常全部小文字で、ジェネリック型のようにとても短いです。
+多くの人は、最初のライフライム注釈に対して<code>'a</code>という名前を使います。
 ライフタイム引数注釈は、参照の<code>&amp;</code>の後に配置し、注釈と参照の型を区別するために空白を1つ使用します。</p>
 <!--
 Here are some examples: a reference to an `i32` without a lifetime parameter, a
@@ -18488,35 +18309,34 @@ reference to an `i32` that also has the lifetime `'a`.
 <!--
 One lifetime annotation by itself doesn’t have much meaning, because the
 annotations are meant to tell Rust how generic lifetime parameters of multiple
-references relate to each other. For example, let’s say we have a function with
-the parameter `first` that is a reference to an `i32` with lifetime `'a`. The
-function also has another parameter named `second` that is another reference to
-an `i32` that also has the lifetime `'a`. The lifetime annotations indicate
-that the references `first` and `second` must both live as long as that generic
-lifetime.
+references relate to each other. Let’s examine how the lifetime annotations
+relate to each other in the context of the `longest` function.
 -->
-<p>1つのライフタイム注釈それだけでは、大して意味はありません。注釈は、複数の参照のジェネリックなライフタイム引数が、
-お互いにどう関係するかをコンパイラに指示することを意図しているからです。例えば、
-ライフタイム<code>'a</code>付きの<code>i32</code>への参照となる引数<code>first</code>のある関数があるとしましょう。
-この関数にはさらに、<code>'a</code>のライフタイム付きの<code>i32</code>への別の参照となる<code>second</code>という別の引数もあります。
-ライフタイム注釈は、<code>first</code>と<code>second</code>の参照がどちらもこのジェネリックなライフタイムと同じだけ生きることを示唆します。</p>
+<p>1つのライフタイム注釈それだけでは、大して意味はありません。
+注釈は、複数の参照のジェネリックなライフタイム引数が、お互いにどう関係するかをコンパイラに指示することを意図しているからです。
+<code>longest</code>関数を例に、ライフタイム注釈が互いにどう関連していくのか、詳しく見ていきましょう。</p>
 <!--
 ### Lifetime Annotations in Function Signatures
 -->
 <h3 id="関数シグニチャにおけるライフタイム注釈"><a class="header" href="#関数シグニチャにおけるライフタイム注釈">関数シグニチャにおけるライフタイム注釈</a></h3>
 <!--
-Now let’s examine lifetime annotations in the context of the `longest`
-function. As with generic type parameters, we need to declare generic lifetime
-parameters inside angle brackets between the function name and the parameter
-list. The constraint we want to express in this signature is that all the
-references in the parameters and the return value must have the same lifetime.
-We’ll name the lifetime `'a` and then add it to each reference, as shown in
-Listing 10-22.
+To use lifetime annotations in function signatures, we need to declare the
+generic *lifetime* parameters inside angle brackets between the function name
+and the parameter list, just as we did with generic *type* parameters.
 -->
-<p>さて、<code>longest</code>関数を例にライフタイム注釈を詳しく見ていきましょう。ジェネリックな型引数同様、
-関数名と引数リストの間の山カッコの中にジェネリックなライフタイム引数を宣言します。
-このシグニチャで表現したい制約は、引数の全ての参照と戻り値が同じライフタイムを持つことです。
-リスト10-22に示すように、ライフタイムを<code>'a</code>と名付け、それを各参照に付与します。</p>
+<p>関数シグネチャでライフタイム注釈を使用するには、ジェネリック<em>型</em>引数でやったのとまったく同じように、
+関数名と引数リストの間の山カッコの中にジェネリックな<em>ライフタイム</em>引数を宣言します。</p>
+<!--
+We want the signature to express the following constraint: the returned
+reference will be valid as long as both the parameters are valid. This is the
+relationship between lifetimes of the parameters and the return value. We’ll
+name the lifetime `'a` and then add it to each reference, as shown in Listing
+10-21.
+-->
+<p>このシグニチャで以下の制約を表現したいです:
+返される参照は、両引数が有効である限り、有効になります。
+これが引数と戻り値の間のライフタイムの関係です。
+リスト10-21に示すように、ライフタイムを<code>'a</code>と名付け、それを各参照に付与します。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -18537,24 +18357,33 @@ Listing 10-22.
     }
 }</code></pre></pre>
 <!--
-<span class="caption">Listing 10-22: The `longest` function definition
+<span class="caption">Listing 10-21: The `longest` function definition
 specifying that all the references in the signature must have the same lifetime
 `'a`</span>
 -->
-<p><span class="caption">リスト10-22: シグニチャの全参照が同じライフタイム<code>'a</code>を持つと指定した<code>longest</code>関数の定義</span></p>
+<p><span class="caption">リスト10-21: シグニチャの全参照が同じライフタイム<code>'a</code>を持つと指定した<code>longest</code>関数の定義</span></p>
 <!--
 This code should compile and produce the result we want when we use it with the
-`main` function in Listing 10-20.
+`main` function in Listing 10-19.
 -->
-<p>このコードはコンパイルでき、リスト10-20の<code>main</code>関数とともに使用したら、欲しい結果になるはずです。</p>
+<p>このコードはコンパイルでき、リスト10-19の<code>main</code>関数とともに使用したら、欲しい結果になるはずです。</p>
 <!--
 The function signature now tells Rust that for some lifetime `'a`, the function
 takes two parameters, both of which are string slices that live at least as
 long as lifetime `'a`. The function signature also tells Rust that the string
 slice returned from the function will live at least as long as lifetime `'a`.
 In practice, it means that the lifetime of the reference returned by the
-`longest` function is the same as the smaller of the lifetimes of the
-references passed in. These constraints are what we want Rust to enforce.
+`longest` function is the same as the smaller of the lifetimes of the values
+referred to by the function arguments. These relationships are what we want
+Rust to use when analyzing this code.
+-->
+<p>これで関数シグニチャは、何らかのライフタイム<code>'a</code>に対して、関数は2つの引数を取り、
+どちらも少なくともライフタイム<code>'a</code>と同じだけ生きる文字列スライスであるとコンパイラに教えるようになりました。
+また、この関数シグニチャは、関数から返る文字列スライスも少なくともライフタイム<code>'a</code>と同じだけ生きると、
+コンパイラに教えています。
+実際には、<code>longest</code>関数が返す参照のライフタイムは、関数実引数によって参照される値のうち、小さい方のライフタイムと同じであるという事です。
+これらの関係は、まさに私たちがコンパイラにこのコードを解析するときに使用してほしかったものです。</p>
+<!--
 Remember, when we specify the lifetime parameters in this function signature,
 we’re not changing the lifetimes of any values passed in or returned. Rather,
 we’re specifying that the borrow checker should reject any values that don’t
@@ -18562,29 +18391,28 @@ adhere to these constraints. Note that the `longest` function doesn’t need to
 know exactly how long `x` and `y` will live, only that some scope can be
 substituted for `'a` that will satisfy this signature.
 -->
-<p>これで関数シグニチャは、何らかのライフタイム<code>'a</code>に対して、関数は2つの引数を取り、
-どちらも少なくともライフタイム<code>'a</code>と同じだけ生きる文字列スライスであるとコンパイラに教えるようになりました。
-また、この関数シグニチャは、関数から返る文字列スライスも少なくともライフタイム<code>'a</code>と同じだけ生きると、
-コンパイラに教えています。
-実際には、<code>longest</code>関数が返す参照のライフタイムは、渡された参照のうち、小さい方のライフタイムと同じであるという事です。
-これらの制約は、まさに私たちがコンパイラに保証してほしかったものです。</p>
 <p>この関数シグニチャでライフタイム引数を指定する時、渡されたり、返したりした、いかなる値のライフタイムも変更していないことを思い出してください。
 むしろ、借用チェッカーは、これらの制約を守らない値全てを拒否するべきと指定しています。
 <code>longest</code>関数は、<code>x</code>と<code>y</code>の正確な生存期間を知っている必要はなく、
 このシグニチャを満たすようなスコープを<code>'a</code>に代入できることを知っているだけであることに注意してください。</p>
 <!--
 When annotating lifetimes in functions, the annotations go in the function
-signature, not in the function body. Rust can analyze the code within the
-function without any help. However, when a function has references to or from
-code outside that function, it becomes almost impossible for Rust to figure out
-the lifetimes of the parameters or return values on its own. The lifetimes
-might be different each time the function is called. This is why we need to
-annotate the lifetimes manually.
+signature, not in the function body. The lifetime annotations become part of
+the contract of the function, much like the types in the signature. Having
+function signatures contain the lifetime contract means the analysis the Rust
+compiler does can be simpler. If there’s a problem with the way a function is
+annotated or the way it is called, the compiler errors can point to the part of
+our code and the constraints more precisely. If, instead, the Rust compiler
+made more inferences about what we intended the relationships of the lifetimes
+to be, the compiler might only be able to point to a use of our code many steps
+away from the cause of the problem.
 -->
 <p>関数にライフタイムを注釈するときは、注釈は関数の本体ではなくシグニチャに付与します。
-コンパイラは注釈がなくとも関数内のコードを解析できます。しかしながら、
-関数に関数外からの参照や関数外への参照がある場合、コンパイラが引数や戻り値のライフタイムを自力で解決することはほとんど不可能になります。
-そのライフタイムは、関数が呼び出される度に異なる可能性があります。このために、手動でライフタイムを注釈する必要があるのです。</p>
+ライフタイム注釈は、シグニチャ内の型がそうであるように、その関数の契約の一部を構成します。
+関数シグニチャにライフタイムの契約を含めることで、コンパイラが行う解析をより簡潔にすることができます。
+関数の注釈や呼ばれる状況に問題がある場合に、コンパイラのエラーはより正確にコードと制約の問題のある部分を示すことができます。
+もしRustコンパイラが、プログラムが意図するライフタイムの関係についてこれより深く推論を行うとしたら、
+コンパイラは、問題の原因から何ステップも離れたコードを指し示すことしかできなくなるかもしれません。</p>
 <!--
 When we pass concrete references to `longest`, the concrete lifetime that is
 substituted for `'a` is the part of the scope of `x` that overlaps with the
@@ -18599,11 +18427,11 @@ lifetimes of `x` and `y`.
 返却される参照を同じライフタイム引数<code>'a</code>で注釈したので、返却される参照も<code>x</code>か<code>y</code>のライフタイムの小さい方と同じだけ有効になるでしょう。</p>
 <!--
 Let’s look at how the lifetime annotations restrict the `longest` function by
-passing in references that have different concrete lifetimes. Listing 10-23 is
+passing in references that have different concrete lifetimes. Listing 10-22 is
 a straightforward example.
 -->
 <p>ライフタイム注釈が異なる具体的なライフタイムを持つ参照を渡すことで<code>longest</code>関数を制限する方法を見ましょう。
-リスト10-23はそのシンプルな例です。</p>
+リスト10-22はそのシンプルな例です。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -18629,34 +18457,34 @@ a straightforward example.
 </span><span class="boring">    }
 </span><span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 10-23: Using the `longest` function with
+<span class="caption">Listing 10-22: Using the `longest` function with
 references to `String` values that have different concrete lifetimes</span>
 -->
-<p><span class="caption">リスト10-23: 異なる具体的なライフタイムを持つ<code>String</code>値への参照で<code>longest</code>関数を使用する</span></p>
+<p><span class="caption">リスト10-22: 異なる具体的なライフタイムを持つ<code>String</code>値への参照で<code>longest</code>関数を使用する</span></p>
 <!--
 In this example, `string1` is valid until the end of the outer scope, `string2`
 is valid until the end of the inner scope, and `result` references something
 that is valid until the end of the inner scope. Run this code, and you’ll see
-that the borrow checker approves of this code; it will compile and print `The
-longest string is long string is long`.
+that the borrow checker approves; it will compile and print `The longest string
+is long string is long`.
 -->
 <p>この例において、<code>string1</code>は外側のスコープの終わりまで有効で、<code>string2</code>は内側のスコープの終わりまで有効、
 そして<code>result</code>は内側のスコープの終わりまで有効な何かを参照しています。このコードを実行すると、
-借用チェッカーがこのコードを良しとするのがわかるでしょう。要するに、コンパイルでき、
+借用チェッカーが良しとするのがわかるでしょう。要するに、コンパイルでき、
 <code>The longest string is long string is long</code>と出力するのです。</p>
 <!--
 Next, let’s try an example that shows that the lifetime of the reference in
 `result` must be the smaller lifetime of the two arguments. We’ll move the
 declaration of the `result` variable outside the inner scope but leave the
 assignment of the value to the `result` variable inside the scope with
-`string2`. Then we’ll move the `println!` that uses `result` outside the inner
-scope, after the inner scope has ended. The code in Listing 10-24 will not
-compile.
+`string2`. Then we’ll move the `println!` that uses `result` to outside the
+inner scope, after the inner scope has ended. The code in Listing 10-23 will
+not compile.
 -->
 <p>次に、<code>result</code>の参照のライフタイムが2つの引数の小さい方のライフタイムになることを示す例を試しましょう。
 <code>result</code>変数の宣言を内側のスコープの外に移すものの、<code>result</code>変数への代入は<code>string2</code>のスコープ内に残したままにします。
 それから<code>result</code>を使用する<code>println!</code>を内側のスコープの外、内側のスコープが終わった後に移動します。
-リスト10-24のコードはコンパイルできません。</p>
+リスト10-23のコードはコンパイルできません。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -18679,12 +18507,12 @@ compile.
 </span><span class="boring">    }
 </span><span class="boring">}</span></code></pre>
 <!--
-<span class="caption">Listing 10-24: Attempting to use `result` after `string2`
+<span class="caption">Listing 10-23: Attempting to use `result` after `string2`
 has gone out of scope</span>
 -->
-<p><span class="caption">リスト10-24: <code>string2</code>がスコープを抜けてから<code>result</code>を使用しようとする</span></p>
+<p><span class="caption">リスト10-23: <code>string2</code>がスコープを抜けてから<code>result</code>を使用しようとする</span></p>
 <!--
-When we try to compile this code, we’ll get this error:
+When we try to compile this code, we get this error:
 -->
 <p>このコードのコンパイルを試みると、こんなエラーになります:</p>
 <pre><code class="language-console">$ cargo run
@@ -18692,6 +18520,8 @@ When we try to compile this code, we’ll get this error:
 error[E0597]: `string2` does not live long enough
  --&gt; src/main.rs:6:44
   |
+5 |         let string2 = String::from(&quot;xyz&quot;);
+  |             ------- binding `string2` declared here
 6 |         result = longest(string1.as_str(), string2.as_str());
   |                                            ^^^^^^^ borrowed value does not live long enough
 7 |     }
@@ -18699,12 +18529,8 @@ error[E0597]: `string2` does not live long enough
 8 |     println!(&quot;The longest string is {}&quot;, result);
   |                                          ------ borrow later used here
 
-error: aborting due to previous error
-
 For more information about this error, try `rustc --explain E0597`.
-error: could not compile `chapter10`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `chapter10` (bin &quot;chapter10&quot;) due to 1 previous error
 </code></pre>
 <!--
 The error shows that for `result` to be valid for the `println!` statement,
@@ -18722,14 +18548,14 @@ still be valid for the `println!` statement. However, the compiler can’t see
 that the reference is valid in this case. We’ve told Rust that the lifetime of
 the reference returned by the `longest` function is the same as the smaller of
 the lifetimes of the references passed in. Therefore, the borrow checker
-disallows the code in Listing 10-24 as possibly having an invalid reference.
+disallows the code in Listing 10-23 as possibly having an invalid reference.
 -->
 <p>人間からしたら、<code>string1</code>は<code>string2</code>よりも長く、それ故に<code>result</code>が<code>string1</code>への参照を含んでいることは
 コードから明らかです。まだ<code>string1</code>はスコープを抜けていないので、
 <code>string1</code>への参照は<code>println!</code>にとって有効でしょう。ですが、コンパイラはこの場合、
 参照が有効であると見なせません。<code>longest</code>関数から返ってくる参照のライフタイムは、
 渡した参照のうちの小さい方と同じだとコンパイラに指示しました。したがって、
-借用チェッカーは、リスト10-24のコードを無効な参照がある可能性があるとして許可しないのです。</p>
+借用チェッカーは、リスト10-23のコードを無効な参照がある可能性があるとして許可しないのです。</p>
 <!--
 Try designing more experiments that vary the values and lifetimes of the
 references passed in to the `longest` function and how the returned reference
@@ -18768,23 +18594,24 @@ following code will compile:
     x
 }</code></pre></pre>
 <!--
-In this example, we’ve specified a lifetime parameter `'a` for the parameter
-`x` and the return type, but not for the parameter `y`, because the lifetime of
-`y` does not have any relationship with the lifetime of `x` or the return value.
+We’ve specified a lifetime parameter `'a` for the parameter `x` and the return
+type, but not for the parameter `y`, because the lifetime of `y` does not have
+any relationship with the lifetime of `x` or the return value.
 -->
-<p>この例では、引数<code>x</code>と戻り値に対してライフタイム引数<code>'a</code>を指定しましたが、引数<code>y</code>には指定していません。
+<p>引数<code>x</code>と戻り値に対してライフタイム引数<code>'a</code>を指定しましたが、引数<code>y</code>には指定していません。
 <code>y</code>のライフタイムは<code>x</code>や戻り値のライフタイムとは何の関係もないからです。</p>
 <!--
 When returning a reference from a function, the lifetime parameter for the
 return type needs to match the lifetime parameter for one of the parameters. If
 the reference returned does *not* refer to one of the parameters, it must refer
-to a value created within this function, which would be a dangling reference
-because the value will go out of scope at the end of the function. Consider
-this attempted implementation of the `longest` function that won’t compile:
+to a value created within this function. However, this would be a dangling
+reference because the value will go out of scope at the end of the function.
+Consider this attempted implementation of the `longest` function that won’t
+compile:
 -->
 <p>関数から参照を返す際、戻り値型のライフタイム引数は、引数のうちどれかのライフタイム引数と一致する必要があります。
 返される参照が引数のどれかを参照<em>していない</em>ならば、この関数内で生成された値を参照しているはずです。
-すると、その値は関数の末端でスコープを抜けるので、これはダングリング参照になるでしょう。
+しかしながら、その値は関数の末端でスコープを抜けるので、これはダングリング参照になるでしょう。
 以下に示す、コンパイルできない<code>longest</code>関数の未完成の実装を考えてください:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
@@ -18815,23 +18642,19 @@ error message we get:
 <pre><code class="language-console">$ cargo run
    Compiling chapter10 v0.1.0 (file:///projects/chapter10)
 error[E0515]: cannot return value referencing local variable `result`
-(エラー[E0515]: ローカル変数`result`を参照している値は返せません)
+(エラー[E0515]: ローカル変数`result`を参照する値を返すことはできません)
   --&gt; src/main.rs:11:5
    |
 11 |     result.as_str()
    |     ------^^^^^^^^^
    |     |
    |     returns a value referencing data owned by the current function
+   |    (現在の関数に所有されているデータを参照する値を返しています)
    |     `result` is borrowed here
-   |    (現在の関数に所有されているデータを参照する値を返しています
-   |     `result`はここで借用されています)
-
-error: aborting due to previous error
+   |    (`result`はここで借用されています)
 
 For more information about this error, try `rustc --explain E0515`.
-error: could not compile `chapter10`.
-
-To learn more, run the command again with --verbose.
+error: could not compile `chapter10` (bin &quot;chapter10&quot;) due to 1 previous error
 </code></pre>
 <!--
 The problem is that `result` goes out of scope and gets cleaned up at the end
@@ -18859,14 +18682,14 @@ would create dangling pointers or otherwise violate memory safety.
 -->
 <h3 id="構造体定義のライフタイム注釈"><a class="header" href="#構造体定義のライフタイム注釈">構造体定義のライフタイム注釈</a></h3>
 <!--
-So far, we’ve only defined structs to hold owned types. It’s possible for
-structs to hold references, but in that case we would need to add a lifetime
-annotation on every reference in the struct’s definition. Listing 10-25 has a
-struct named `ImportantExcerpt` that holds a string slice.
+So far, the structs we’ve defined all hold owned types. We can define structs to
+hold references, but in that case we would need to add a lifetime annotation on
+every reference in the struct’s definition. Listing 10-24 has a struct named
+`ImportantExcerpt` that holds a string slice.
 -->
-<p>ここまで、所有された型を保持する構造体だけを定義してきました。構造体に参照を保持させることもできますが、
+<p>ここまで定義してきた構造体はすべて所有された型を保持しています。参照を保持する構造体を定義することもできますが、
 その場合、構造体定義の全参照にライフタイム注釈を付け加える必要があるでしょう。
-リスト10-25には、文字列スライスを保持する<code>ImportantExcerpt</code>(重要な一節)という構造体があります。</p>
+リスト10-24には、文字列スライスを保持する<code>ImportantExcerpt</code>(重要な一節)という構造体があります。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -18876,28 +18699,26 @@ struct named `ImportantExcerpt` that holds a string slice.
 }
 
 fn main() {
-    // 僕をイシュマエルとお呼び。何年か前・・・
     let novel = String::from(&quot;Call me Ishmael. Some years ago...&quot;);
-    //                                                  &quot;'.'が見つかりませんでした&quot;
     let first_sentence = novel.split('.').next().expect(&quot;Could not find a '.'&quot;);
     let i = ImportantExcerpt {
         part: first_sentence,
     };
 }</code></pre></pre>
 <!--
-<span class="caption">Listing 10-25: A struct that holds a reference, so its
-definition needs a lifetime annotation</span>
+<span class="caption">Listing 10-24: A struct that holds a reference, requiring
+a lifetime annotation</span>
 -->
-<p><span class="caption">リスト10-25: 参照を含む構造体なので、定義にライフタイム注釈が必要</span></p>
+<p><span class="caption">リスト10-24: ライフタイム注釈を必要とする、参照を含む構造体</span></p>
 <!--
-This struct has one field, `part`, that holds a string slice, which is a
+This struct has the single field `part` that holds a string slice, which is a
 reference. As with generic data types, we declare the name of the generic
 lifetime parameter inside angle brackets after the name of the struct so we can
 use the lifetime parameter in the body of the struct definition. This
 annotation means an instance of `ImportantExcerpt` can’t outlive the reference
 it holds in its `part` field.
 -->
-<p>この構造体には文字列スライスを保持する1つのフィールド、<code>part</code>があり、これは参照です。
+<p>この構造体には文字列スライスを保持する単一のフィールド、<code>part</code>があり、これは参照です。
 ジェネリックなデータ型同様、構造体名の後、山カッコの中にジェネリックなライフタイム引数の名前を宣言するので、
 構造体定義の本体でライフタイム引数を使用できます。この注釈は、<code>ImportantExcerpt</code>のインスタンスが、
 <code>part</code>フィールドに保持している参照よりも長生きしないことを意味します。</p>
@@ -18920,11 +18741,11 @@ the `ImportantExcerpt` goes out of scope, so the reference in the
 <!--
 You’ve learned that every reference has a lifetime and that you need to specify
 lifetime parameters for functions or structs that use references. However, in
-Chapter 4 we had a function in Listing 4-9, which is shown again in Listing
-10-26, that compiled without lifetime annotations.
+Chapter 4 we had a function in Listing 4-9, shown again in Listing 10-25, that
+compiled without lifetime annotations.
 -->
 <p>全参照にはライフタイムがあり、参照を使用する関数や構造体にはライフタイム引数を指定する必要があることを学びました。
-しかし、リスト4-9にあった関数（リスト10-26に再度示しました）はライフタイム注釈なしでコンパイルできました。</p>
+しかし、リスト4-9にあった関数（リスト10-25に再度示しました）はライフタイム注釈なしでコンパイルできました。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
@@ -18957,11 +18778,11 @@ Chapter 4 we had a function in Listing 4-9, which is shown again in Listing
 </span><span class="boring">    let word = first_word(my_string_literal);
 </span><span class="boring">}</span></code></pre></pre>
 <!--
-<span class="caption">Listing 10-26: A function we defined in Listing 4-9 that
+<span class="caption">Listing 10-25: A function we defined in Listing 4-9 that
 compiled without lifetime annotations, even though the parameter and return
 type are references</span>
 -->
-<p><span class="caption">リスト10-26: リスト4-9で定義した、引数と戻り値型が参照であるにも関わらず、ライフタイム注釈なしでコンパイルできた関数</span></p>
+<p><span class="caption">リスト10-25: リスト4-9で定義した、引数と戻り値型が参照であるにも関わらず、ライフタイム注釈なしでコンパイルできた関数</span></p>
 <!--
 The reason this function compiles without lifetime annotations is historical:
 in early versions (pre-1.0) of Rust, this code wouldn’t have compiled because
@@ -19004,14 +18825,12 @@ fits these cases, you don’t need to write the lifetimes explicitly.
 The elision rules don’t provide full inference. If Rust deterministically
 applies the rules but there is still ambiguity as to what lifetimes the
 references have, the compiler won’t guess what the lifetime of the remaining
-references should be. In this case, instead of guessing, the compiler will give
-you an error that you can resolve by adding the lifetime annotations that
-specify how the references relate to each other.
+references should be. Instead of guessing, the compiler will give you an error
+that you can resolve by adding the lifetime annotations.
 -->
 <p>省略規則は、完全な推論を提供しません。コンパイラが決定的に規則を適用できるけれども、
 参照が保持するライフタイムに関してそれでも曖昧性があるなら、コンパイラは、残りの参照がなるべきライフタイムを推測しません。
-この場合コンパイラは、それらを推測するのではなくエラーを与えます。
-これらは、参照がお互いにどう関係するかを指定するライフタイム注釈を追記することで解決できます。</p>
+コンパイラはそれらを推測するのではなく、ライフタイム注釈を追記することで解決できるようなエラーを与えます。</p>
 <!--
 Lifetimes on function or method parameters are called *input lifetimes*, and
 lifetimes on return values are called *output lifetimes*.
@@ -19019,52 +18838,52 @@ lifetimes on return values are called *output lifetimes*.
 <p>関数やメソッドの引数のライフタイムは、<em>入力ライフタイム</em>と呼ばれ、
 戻り値のライフタイムは<em>出力ライフタイム</em>と称されます。</p>
 <!--
-The compiler uses three rules to figure out what lifetimes references have when
-there aren’t explicit annotations. The first rule applies to input lifetimes,
-and the second and third rules apply to output lifetimes. If the compiler gets
-to the end of the three rules and there are still references for which it can’t
-figure out lifetimes, the compiler will stop with an error. These rules apply
-to `fn` definitions as well as `impl` blocks.
+The compiler uses three rules to figure out the lifetimes of the references
+when there aren’t explicit annotations. The first rule applies to input
+lifetimes, and the second and third rules apply to output lifetimes. If the
+compiler gets to the end of the three rules and there are still references for
+which it can’t figure out lifetimes, the compiler will stop with an error.
+These rules apply to `fn` definitions as well as `impl` blocks.
 -->
-<p>コンパイラは3つの規則を活用し、明示的な注釈がない時に、参照がどんなライフタイムになるかを計算します。
+<p>コンパイラは3つの規則を活用し、明示的な注釈がない時に、参照のライフタイムを計算します。
 最初の規則は入力ライフタイムに適用され、2番目と3番目の規則は出力ライフタイムに適用されます。
 コンパイラが3つの規則の最後まで到達し、それでもライフタイムを割り出せない参照があったら、
 コンパイラはエラーで停止します。
 これらのルールは<code>fn</code>の定義にも<code>impl</code>ブロックにも適用されます。</p>
 <!--
-The first rule is that each parameter that is a reference gets its own lifetime
-parameter. In other words, a function with one parameter gets one lifetime
-parameter: `fn foo<'a>(x: &'a i32)`; a function with two parameters gets two
-separate lifetime parameters: `fn foo<'a, 'b>(x: &'a i32, y: &'b i32)`; and so
-on.
+The first rule is that the compiler assigns a lifetime parameter to each
+parameter that’s a reference. In other words, a function with one parameter gets
+one lifetime parameter: `fn foo<'a>(x: &'a i32)`; a function with two
+parameters gets two separate lifetime parameters: `fn foo<'a, 'b>(x: &'a i32,
+y: &'b i32)`; and so on.
 -->
-<p>最初の規則は、参照である各引数は、独自のライフタイム引数を得るというものです。換言すれば、
-1引数の関数は、1つのライフタイム引数を得るということです: <code>fn foo&lt;'a&gt;(x: &amp;'a i32)</code>;
+<p>最初の規則は、コンパイラは参照である各引数に、ライフタイム引数を割り当てるというものです。
+換言すれば、1引数の関数は、1つのライフタイム引数を得るということです: <code>fn foo&lt;'a&gt;(x: &amp;'a i32)</code>;
 2つ引数のある関数は、2つの個別のライフタイム引数を得ます: <code>fn foo&lt;'a, 'b&gt;(x: &amp;'a i32, y: &amp;'b i32)</code>;
 以下同様。</p>
 <!--
-The second rule is if there is exactly one input lifetime parameter, that
+The second rule is that, if there is exactly one input lifetime parameter, that
 lifetime is assigned to all output lifetime parameters: `fn foo<'a>(x: &'a i32)
 -> &'a i32`.
 -->
 <p>2番目の規則は、1つだけ入力ライフタイム引数があるなら、そのライフタイムが全ての出力ライフタイム引数に代入されるというものです:
 <code>fn foo&lt;'a&gt;(x: &amp;'a i32) -&gt; &amp;'a i32</code>。</p>
 <!--
-The third rule is if there are multiple input lifetime parameters, but one of
-them is `&self` or `&mut self` because this is a method, the lifetime of `self`
-is assigned to all output lifetime parameters. This third rule makes methods
-much nicer to read and write because fewer symbols are necessary.
+The third rule is that, if there are multiple input lifetime parameters, but
+one of them is `&self` or `&mut self` because this is a method, the lifetime of
+`self` is assigned to all output lifetime parameters. This third rule makes
+methods much nicer to read and write because fewer symbols are necessary.
 -->
 <p>3番目の規則は、複数の入力ライフタイム引数があるけれども、メソッドなのでそのうちの一つが<code>&amp;self</code>や<code>&amp;mut self</code>だったら、
 <code>self</code>のライフタイムが全出力ライフタイム引数に代入されるというものです。
 この3番目の規則により、必要なシンボルの数が減るので、メソッドが遥かに読み書きしやすくなります。</p>
 <!--
-Let’s pretend we’re the compiler. We’ll apply these rules to figure out what
-the lifetimes of the references in the signature of the `first_word` function
-in Listing 10-26 are. The signature starts without any lifetimes associated
-with the references:
+Let’s pretend we’re the compiler. We’ll apply these rules to figure out the
+lifetimes of the references in the signature of the `first_word` function in
+Listing 10-25. The signature starts without any lifetimes associated with the
+references:
 -->
-<p>コンパイラの立場になってみましょう。これらの規則を適用して、リスト10-26の<code>first_word</code>関数のシグニチャの参照のライフタイムが何か計算します。
+<p>コンパイラの立場になってみましょう。これらの規則を適用して、リスト10-25の<code>first_word</code>関数のシグニチャの参照のライフタイムを計算します。
 シグニチャは、参照に紐づけられるライフタイムがない状態から始まります:</p>
 <pre><code class="language-rust ignore">fn first_word(s: &amp;str) -&gt; &amp;str {</code></pre>
 <!--
@@ -19092,9 +18911,9 @@ the lifetimes in this function signature.
 プログラマにこの関数シグニチャのライフタイムを注釈してもらう必要なく、解析を続行できます。</p>
 <!--
 Let’s look at another example, this time using the `longest` function that had
-no lifetime parameters when we started working with it in Listing 10-21:
+no lifetime parameters when we started working with it in Listing 10-20:
 -->
-<p>別の例に目を向けましょう。今回は、リスト10-21で取り掛かったときにはライフタイム引数がなかった<code>longest</code>関数です:</p>
+<p>別の例に目を向けましょう。今回は、リスト10-20で取り掛かったときにはライフタイム引数がなかった<code>longest</code>関数です:</p>
 <pre><code class="language-rust ignore">fn longest(x: &amp;str, y: &amp;str) -&gt; &amp;str {</code></pre>
 <!--
 Let’s apply the first rule: each parameter gets its own lifetime. This time we
@@ -19109,12 +18928,12 @@ input lifetime. The third rule doesn’t apply either, because `longest` is a
 function rather than a method, so none of the parameters are `self`. After
 working through all three rules, we still haven’t figured out what the return
 type’s lifetime is. This is why we got an error trying to compile the code in
-Listing 10-21: the compiler worked through the lifetime elision rules but still
+Listing 10-20: the compiler worked through the lifetime elision rules but still
 couldn’t figure out all the lifetimes of the references in the signature.
 -->
 <p>2つ以上入力ライフタイムがあるので、2番目の規則は適用されないとわかります。また3番目の規則も適用されません。
 <code>longest</code>はメソッドではなく関数なので、どの引数も<code>self</code>ではないのです。3つの規則全部を適用した後でも、
-まだ戻り値型のライフタイムが判明していません。このために、リスト10-21でこのコードをコンパイルしようとしてエラーになったのです:
+まだ戻り値型のライフタイムが判明していません。このために、リスト10-20でこのコードをコンパイルしようとしてエラーになったのです:
 コンパイラは、ライフタイム省略規則全てを適用したけれども、シグニチャの参照全部のライフタイムを計算できなかったのです。</p>
 <!--
 Because the third rule really only applies in method signatures, we’ll look at
@@ -19147,11 +18966,11 @@ In method signatures inside the `impl` block, references might be tied to the
 lifetime of references in the struct’s fields, or they might be independent. In
 addition, the lifetime elision rules often make it so that lifetime annotations
 aren’t necessary in method signatures. Let’s look at some examples using the
-struct named `ImportantExcerpt` that we defined in Listing 10-25.
+struct named `ImportantExcerpt` that we defined in Listing 10-24.
 -->
 <p><code>impl</code>ブロック内のメソッドシグニチャでは、参照は構造体のフィールドの参照のライフタイムに紐づいている可能性と、
 独立している可能性があります。加えて、ライフタイム省略規則により、メソッドシグニチャでライフタイム注釈が必要なくなることがよくあります。
-リスト10-25で定義した<code>ImportantExcerpt</code>という構造体を使用した例をいくつか見てみましょう。</p>
+リスト10-24で定義した<code>ImportantExcerpt</code>という構造体を使用した例をいくつか見てみましょう。</p>
 <!--
 First, we’ll use a method named `level` whose only parameter is a reference to
 `self` and whose return value is an `i32`, which is not a reference to anything:
@@ -19233,11 +19052,11 @@ and all lifetimes have been accounted for.
 -->
 <h3 id="静的ライフタイム"><a class="header" href="#静的ライフタイム">静的ライフタイム</a></h3>
 <!--
-One special lifetime we need to discuss is `'static`, which means that this
-reference *can* live for the entire duration of the program. All string
-literals have the `'static` lifetime, which we can annotate as follows:
+One special lifetime we need to discuss is `'static`, which denotes that the
+affected reference *can* live for the entire duration of the program. All
+string literals have the `'static` lifetime, which we can annotate as follows:
 -->
-<p>議論する必要のある1種の特殊なライフタイムが、<code>'static</code>であり、これは、この参照がプログラムの全期間生存<em>できる</em>事を意味します。
+<p>議論する必要のある1種の特殊なライフタイムが<code>'static</code>であり、これは影響を受ける参照がプログラムの全期間生存<em>できる</em>ことを示します。
 文字列リテラルは全て<code>'static</code>ライフタイムになり、次のように注釈できます:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -19255,15 +19074,14 @@ is always available. Therefore, the lifetime of all string literals is
 You might see suggestions to use the `'static` lifetime in error messages. But
 before specifying `'static` as the lifetime for a reference, think about
 whether the reference you have actually lives the entire lifetime of your
-program or not. You might consider whether you want it to live that long, even
-if it could. Most of the time, the problem results from attempting to create a
-dangling reference or a mismatch of the available lifetimes. In such cases, the
-solution is fixing those problems, not specifying the `'static` lifetime.
+program or not, and whether you want it to. Most of the time, an error message
+suggesting the `'static` lifetime results from attempting to create a dangling
+reference or a mismatch of the available lifetimes. In such cases, the solution
+is fixing those problems, not specifying the `'static` lifetime.
 -->
 <p>エラーメッセージで、<code>'static</code>ライフタイムを使用するよう勧める提言を見かける可能性があります。
-ですが、参照に対してライフタイムとして<code>'static</code>を指定する前に、今ある参照が本当にプログラムの全期間生きるかどうか考えてください。
-それが可能であったとしても、参照がそれだけの期間生きてほしいのかどうか考慮するのも良いでしょう。
-ほとんどの場合、問題は、ダングリング参照を生成しようとしているか、利用可能なライフタイムの不一致が原因です。
+ですが、参照に対してライフタイムとして<code>'static</code>を指定する前に、今ある参照が本当にプログラムの全期間生きるかどうか、そして生きてほしいのかどうか、考えてください。
+ほとんどの場合、<code>'static</code>ライフタイムを提案するエラーメッセージは、ダングリング参照を生成しようとしているか、利用可能なライフタイムの不一致が原因です。
 そのような場合、解決策はその問題を修正することであり、<code>'static</code>ライフタイムを指定することではありません。</p>
 <!--
 ## Generic Type Parameters, Trait Bounds, and Lifetimes Together
@@ -19305,21 +19123,21 @@ where
     }
 }</code></pre></pre>
 <!--
-This is the `longest` function from Listing 10-22 that returns the longer of
+This is the `longest` function from Listing 10-21 that returns the longer of
 two string slices. But now it has an extra parameter named `ann` of the generic
 type `T`, which can be filled in by any type that implements the `Display`
 trait as specified by the `where` clause. This extra parameter will be printed
-before the function compares the lengths of the string slices, which is why the
-`Display` trait bound is necessary. Because lifetimes are a type of generic,
-the declarations of the lifetime parameter `'a` and the generic type parameter
-`T` go in the same list inside the angle brackets after the function name.
+using `{}`, which is why the `Display` trait bound is necessary. Because
+lifetimes are a type of generic, the declarations of the lifetime parameter
+`'a` and the generic type parameter `T` go in the same list inside the angle
+brackets after the function name.
 -->
-<p>これがリスト10-22からの2つの文字列のうち長い方を返す<code>longest</code>関数ですが、
+<p>これがリスト10-21からの2つの文字列のうち長い方を返す<code>longest</code>関数ですが、
 ジェネリックな型<code>T</code>の<code>ann</code>という追加の引数があり、これは<code>where</code>節で指定されているように、
 <code>Display</code>トレイトを実装するあらゆる型で埋めることができます。
-この追加の引数は、関数が文字列スライスの長さを比較する前に出力されるので、
-<code>Display</code>トレイト境界が必要なのです。ライフタイムは一種のジェネリックなので、
-ライフタイム引数<code>'a</code>とジェネリックな型引数<code>T</code>が関数名の後、山カッコ内の同じリストに収まっています。</p>
+この追加の引数は<code>{}</code>を使用して出力されるので、<code>Display</code>トレイト境界が必要なのです。
+ライフタイムは一種のジェネリックなので、ライフタイム引数<code>'a</code>とジェネリックな型引数<code>T</code>が関数名の後、
+山カッコ内の同じリストに収まっています。</p>
 <!--
 ## Summary
 -->
@@ -19353,6 +19171,13 @@ Rust so you can make sure your code is working the way it should.
 非常に高度な筋書きの場合でのみ必要になる、ライフタイム注釈が関わる、もっと複雑な筋書きもあります。
 それらについては、<a href="https://doc.rust-lang.org/reference/">Rust Reference</a>をお読みください。 
 ですが次は、コードがあるべき通りに動いていることを確かめられるように、Rustでテストを書く方法を学びます。</p>
+<!--
+[references-and-borrowing]:
+ch04-02-references-and-borrowing.html#references-and-borrowing
+[string-slices-as-parameters]:
+ch04-03-slices.html#string-slices-as-parameters
+[reference]: ../reference/index.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Writing Automated Tests
 -->
