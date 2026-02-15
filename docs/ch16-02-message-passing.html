@@ -152,39 +152,40 @@
 One increasingly popular approach to ensuring safe concurrency is *message
 passing*, where threads or actors communicate by sending each other messages
 containing data. Here’s the idea in a slogan from [the Go language
-documentation](http://golang.org/doc/effective_go.html): “Do not communicate by
-sharing memory; instead, share memory by communicating.”
+documentation](https://golang.org/doc/effective_go.html#concurrency):
+“Do not communicate by sharing memory; instead, share memory by communicating.”
 -->
 <p>人気度を増してきている安全な並行性を保証する一つのアプローチが<em>メッセージ受け渡し</em>で、
 スレッドやアクターがデータを含むメッセージを相互に送り合うことでやり取りします。
-こちらが、<a href="http:golang.org/doc/effective_go.html">Go言語のドキュメンテーション</a>のスローガンにある考えです:
+こちらが、<a href="https://golang.org/doc/effective_go.html#concurrency">Go言語のドキュメンテーション</a>のスローガンにある考えです:
 「メモリを共有することでやり取りするな; 代わりにやり取りすることでメモリを共有しろ」</p>
 <!--
-One major tool Rust has for accomplishing message-sending concurrency is the
-*channel*, a programming concept that Rust’s standard library provides an
-implementation of. You can imagine a channel in programming as being like a
-channel of water, such as a stream or a river. If you put something like a
-rubber duck or a boat into a stream, it will travel downstream to the end of the
-waterway.
+To accomplish message-sending concurrency, Rust's standard library provides an
+implementation of *channels*. A channel is a general programming concept by
+which data is sent from one thread to another.
 -->
-<p>メッセージ送信並行性を達成するためにRustに存在する一つの主な道具は、<em>チャンネル</em>で、
-Rustの標準ライブラリが実装を提供しているプログラミング概念です。プログラミングのチャンネルは、
-水の流れのように考えることができます。小川とか川ですね。アヒルのおもちゃやボートみたいなものを流れに置いたら、
-水路の終端まで下流に流れていきます。</p>
+<p>メッセージ送信による並行性を達成するために、Rustの標準ライブラリは<em>チャンネル</em>の実装を提供しています。
+チャンネルは、あるスレッドから別のスレッドへデータを送信する手段である、普遍的なプログラミング概念です。</p>
 <!--
-5行目終わり、for arriving messagesは本来ならfor messages arrivingのような気がするが、その想定で訳してある
+You can imagine a channel in programming as being like a directional channel of
+water, such as a stream or a river. If you put something like a rubber duck
+into a river, it will travel downstream to the end of the waterway.
+-->
+<p>プログラミングのチャンネルは、川などの、向きのある水路のように考えることができます（訳注: channelは日常語としては水路を意味します）。
+アヒルのおもちゃなどを川に置いたら、水路の終端まで下流に流れていきます。</p>
+<!--
+6行目、for arriving messagesは本来ならfor messages arrivingのような気がするが、その想定で訳してある
 これは自動詞を形容詞のように前からかけているだけと思われる
 -->
 <!--
-A channel in programming has two halves: a transmitter and a receiver. The
-transmitter half is the upstream location where you put rubber ducks into the
-river, and the receiver half is where the rubber duck ends up downstream. One
-part of our code calls methods on the transmitter with the data you want to
-send, and another part checks the receiving end for arriving messages. A
-channel is said to be *closed* if either the transmitter or receiver half is
-dropped.
+A channel has two halves: a transmitter and a receiver. The transmitter half is
+the upstream location where you put rubber ducks into the river, and the
+receiver half is where the rubber duck ends up downstream. One part of your
+code calls methods on the transmitter with the data you want to send, and
+another part checks the receiving end for arriving messages. A channel is said
+to be *closed* if either the transmitter or receiver half is dropped.
 -->
-<p>プログラミングにおけるチャンネルは、2分割できます: 転送機と受信機です。転送機はアヒルのおもちゃを川に置く上流になり、
+<p>チャンネルは、2分割できます: 転送機と受信機です。転送機はアヒルのおもちゃを川に置く上流になり、
 受信機は、アヒルのおもちゃが行き着く下流になります。コードのある箇所が送信したいデータとともに転送機のメソッドを呼び出し、
 別の部分がメッセージが到着していないか受信側を調べます。転送機と受信機のどちらかがドロップされると、
 チャンネルは<em>閉じられた</em>と言います。</p>
@@ -193,14 +194,15 @@ Here, we’ll work up to a program that has one thread to generate values and
 send them down a channel, and another thread that will receive the values and
 print them out. We’ll be sending simple values between threads using a channel
 to illustrate the feature. Once you’re familiar with the technique, you could
-use channels to implement a chat system or a system where many threads perform
-parts of a calculation and send the parts to one thread that aggregates the
-results.
+use channels for any threads that need to communicate between each other, such
+as a chat system or a system where many threads perform parts of a calculation
+and send the parts to one thread that aggregates the results.
 -->
 <p>ここで、1つのスレッドが値を生成し、それをチャンネルに送信し、別のスレッドがその値を受け取り、
 出力するプログラムに取り掛かります。チャンネルを使用してスレッド間に単純な値を送り、
-機能の説明を行います。一旦、そのテクニックに慣れてしまえば、チャンネルを使用してチャットシステムや、
-多くのスレッドが計算の一部を担い、結果をまとめる1つのスレッドにその部分を送るようなシステムを実装できるでしょう。</p>
+機能の説明を行います。一旦そのテクニックに慣れてしまえば、チャットシステムや、
+多くのスレッドが計算の一部を担い、結果をまとめる1つのスレッドにその部分を送るようなシステムなど、
+任意のスレッドが互いに通信する必要があるシステムに対して、チャンネルを使用できるでしょう。</p>
 <!--
 First, in Listing 16-6, we’ll create a channel but not do anything with it.
 Note that this won’t compile yet because Rust can’t tell what type of values we
@@ -213,12 +215,11 @@ want to send over the channel.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::sync::mpsc;
+<pre><code class="language-rust ignore does_not_compile">use std::sync::mpsc;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
-<span class="boring">    tx.send(()).unwrap();
-</span>}</code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 16-6: Creating a channel and assigning the two
 halves to `tx` and `rx`</span>
@@ -241,23 +242,21 @@ working.
 どの小川を通っても、送られたものは最終的に1つの川に行き着きます。今は、1つの生成器から始めますが、
 この例が動作するようになったら、複数の生成器を追加します。</p>
 <!--
-NEXT PARAGRAPH WRAPPED WEIRD INTENTIONALLY SEE #199
--->
-<!--
 The `mpsc::channel` function returns a tuple, the first element of which is the
-sending end and the second element is the receiving end. The abbreviations `tx`
-and `rx` are traditionally used in many fields for *transmitter* and *receiver*
-respectively, so we name our variables as such to indicate each end. We’re
-using a `let` statement with a pattern that destructures the tuples; we’ll
-discuss the use of patterns in `let` statements and destructuring in
-Chapter 18. Using a `let` statement this way is a convenient approach to
-extract the pieces of the tuple returned by `mpsc::channel`.
+sending end--the transmitter--and the second element is the receiving end--the
+receiver. The abbreviations `tx` and `rx` are traditionally used in many fields
+for *transmitter* and *receiver* respectively, so we name our variables as such
+to indicate each end. We’re using a `let` statement with a pattern that
+destructures the tuples; we’ll discuss the use of patterns in `let` statements
+and destructuring in Chapter 18. For now, know that using a `let` statement
+this way is a convenient approach to extract the pieces of the tuple returned
+by `mpsc::channel`.
 -->
-<p><code>mpsc::channel</code>関数はタプルを返し、1つ目の要素は、送信側、2つ目の要素は受信側になります。
+<p><code>mpsc::channel</code>関数はタプルを返し、1つ目の要素は、送信側（転送機）、2つ目の要素は受信側（受信機）になります。
 <code>tx</code>と<code>rx</code>という略称は、多くの分野で伝統的に<em>転送機</em>と<em>受信機</em>にそれぞれ使用されているので、
 変数をそのように名付けて、各終端を示します。タプルを分配するパターンを伴う<code>let</code>文を使用しています;
-<code>let</code>文でパターンを使用することと分配については、第18章で議論しましょう。このように<code>let</code>文を使うと、
-<code>mpsc::channel</code>で返ってくるタプルの部品を抽出するのが便利になります。</p>
+<code>let</code>文でパターンを使用することと分配については、第18章で議論しましょう。今のところは、
+このように<code>let</code>文を使うと、<code>mpsc::channel</code>で返ってくるタプルの部品を抽出するのが便利になるということだけ知っておいてください。</p>
 <!--
 Let’s move the transmitting end into a spawned thread and have it send one
 string so the spawned thread is communicating with the main thread, as shown in
@@ -271,8 +270,8 @@ sending a chat message from one thread to another.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::thread;
-use std::sync::mpsc;
+<pre><pre class="playground"><code class="language-rust">use std::sync::mpsc;
+use std::thread;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
@@ -290,37 +289,34 @@ fn main() {
 <!--
 Again, we’re using `thread::spawn` to create a new thread and then using `move`
 to move `tx` into the closure so the spawned thread owns `tx`. The spawned
-thread needs to own the transmitting end of the channel to be able to send
-messages through the channel.
--->
-<p>今回も、<code>thread::spawn</code>を使用して新しいスレッドを生成し、それから<code>move</code>を使用して、
-立ち上げたスレッドが<code>tx</code>を所有するようにクロージャに<code>tx</code>をムーブしています。立ち上げたスレッドは、
-メッセージをチャンネルを通して送信できるように、チャンネルの送信側を所有する必要があります。</p>
-<!--
-The transmitting end has a `send` method that takes the value we want to send.
-The `send` method returns a `Result<T, E>` type, so if the receiving end has
+thread needs to own the transmitter to be able to send messages through the
+channel. The transmitter has a `send` method that takes the value we want to
+send. The `send` method returns a `Result<T, E>` type, so if the receiver has
 already been dropped and there’s nowhere to send a value, the send operation
 will return an error. In this example, we’re calling `unwrap` to panic in case
 of an error. But in a real application, we would handle it properly: return to
 Chapter 9 to review strategies for proper error handling.
 -->
-<p>転送側には、送信したい値を取る<code>send</code>メソッドがあります。<code>send</code>メソッドは<code>Result&lt;T, E&gt;</code>型を返すので、
-既に受信側がドロップされ、値を送信する場所がなければ、送信処理はエラーを返します。
+<p>今回も、<code>thread::spawn</code>を使用して新しいスレッドを生成し、それから<code>move</code>を使用して、
+立ち上げたスレッドが<code>tx</code>を所有するようにクロージャに<code>tx</code>をムーブしています。立ち上げたスレッドは、
+メッセージをチャンネルを通して送信できるように、転送機を所有する必要があります。
+転送機には、送信したい値を取る<code>send</code>メソッドがあります。<code>send</code>メソッドは<code>Result&lt;T, E&gt;</code>型を返すので、
+既に受信機がドロップされ、値を送信する場所がなければ、送信処理はエラーを返します。
 この例では、エラーの場合には、パニックするように<code>unwrap</code>を呼び出しています。ですが、実際のアプリケーションでは、
 ちゃんと扱うでしょう: 第9章に戻ってちゃんとしたエラー処理の方法を再確認してください。</p>
 <!--
-In Listing 16-8, we’ll get the value from the receiving end of the channel in
-the main thread. This is like retrieving the rubber duck from the water at the
-end of the river or like getting a chat message.
+In Listing 16-8, we’ll get the value from the receiver in the main thread. This
+is like retrieving the rubber duck from the water at the end of the river or
+receiving a chat message.
 -->
-<p>リスト16-8において、メインスレッドのチャンネルの受信側から値を得ます。
-アヒルのおもちゃを川の終端で水から回収したり、チャットメッセージを取得するみたいですね。</p>
+<p>リスト16-8において、メインスレッドのチャンネルの受信機から値を得ます。
+アヒルのおもちゃを川の終端で水から回収したり、チャットメッセージを受信するみたいですね。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::thread;
-use std::sync::mpsc;
+<pre><pre class="playground"><code class="language-rust">use std::sync::mpsc;
+use std::thread;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
@@ -331,7 +327,7 @@ fn main() {
     });
 
     let received = rx.recv().unwrap();
-    // 値は{}です
+    //       &quot;取得しました: {}&quot;
     println!(&quot;Got: {}&quot;, received);
 }</code></pre></pre>
 <!--
@@ -340,17 +336,16 @@ and printing it</span>
 -->
 <p><span class="caption">リスト16-8: 「やあ」の値をメインスレッドで受け取り、出力する</span></p>
 <!--
-The receiving end of a channel has two useful methods: `recv` and `try_recv`.
-We’re using `recv`, short for *receive*, which will block the main thread’s
-execution and wait until a value is sent down the channel. Once a value is
-sent, `recv` will return it in a `Result<T, E>`. When the sending end of the
-channel closes, `recv` will return an error to signal that no more values will
-be coming.
+The receiver has two useful methods: `recv` and `try_recv`. We’re using `recv`,
+short for *receive*, which will block the main thread’s execution and wait
+until a value is sent down the channel. Once a value is sent, `recv` will
+return it in a `Result<T, E>`. When the transmitter closes, `recv` will return
+an error to signal that no more values will be coming.
 -->
-<p>チャンネルの受信側には有用なメソッドが2つあります: <code>recv</code>と<code>try_recv</code>です。
+<p>受信機には有用なメソッドが2つあります: <code>recv</code>と<code>try_recv</code>です。
 <em>receive</em>の省略形である<code>recv</code>を使っています。これは、メインスレッドの実行をブロックし、
 値がチャンネルを流れてくるまで待機します。一旦値が送信されたら、<code>recv</code>はそれを<code>Result&lt;T, E&gt;</code>に含んで返します。
-チャンネルの送信側が閉じたら、<code>recv</code>はエラーを返し、もう値は来ないと通知します。</p>
+転送機が閉じたら、<code>recv</code>はエラーを返し、もう値は来ないと通知します。</p>
 <!--
 The `try_recv` method doesn’t block, but will instead return a `Result<T, E>`
 immediately: an `Ok` value holding a message if one is available and an `Err`
@@ -377,6 +372,9 @@ When we run the code in Listing 16-8, we’ll see the value printed from the mai
 thread:
 -->
 <p>リスト16-8のコードを実行したら、メインスレッドから値が出力されるところを目撃するでしょう:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">Got: hi
 </code></pre>
 <!--
@@ -390,7 +388,7 @@ Perfect!
 <!--
 The ownership rules play a vital role in message sending because they help you
 write safe, concurrent code. Preventing errors in concurrent programming is the
-advantage of thinking about ownership throughout your Rust program. Let's do
+advantage of thinking about ownership throughout your Rust programs. Let’s do
 an experiment to show how channels and ownership work together to prevent
 problems: we’ll try to use a `val` value in the spawned thread *after* we’ve
 sent it down the channel. Try compiling the code in Listing 16-9 to see why
@@ -405,8 +403,8 @@ this code isn’t allowed:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use std::thread;
-use std::sync::mpsc;
+<pre><code class="language-rust ignore does_not_compile">use std::sync::mpsc;
+use std::thread;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
@@ -414,7 +412,7 @@ fn main() {
     thread::spawn(move || {
         let val = String::from(&quot;hi&quot;);
         tx.send(val).unwrap();
-        // valは{}
+        //       &quot;valは{}です&quot;
         println!(&quot;val is {}&quot;, val);
     });
 
@@ -430,7 +428,7 @@ down the channel</span>
 Here, we try to print `val` after we’ve sent it down the channel via `tx.send`.
 Allowing this would be a bad idea: once the value has been sent to another
 thread, that thread could modify or drop it before we try to use the value
-again. Potentially, the other thread's modifications could cause errors or
+again. Potentially, the other thread’s modifications could cause errors or
 unexpected results due to inconsistent or nonexistent data. However, Rust gives
 us an error if we try to compile the code in Listing 16-9:
 -->
@@ -438,16 +436,31 @@ us an error if we try to compile the code in Listing 16-9:
 一旦、値が他のスレッドに送信されたら、再度値を使用しようとする前にそのスレッドが変更したりドロップできてしまいます。
 可能性として、その別のスレッドの変更により、矛盾していたり存在しないデータのせいでエラーが発生したり、
 予期しない結果になるでしょう。ですが、リスト16-9のコードのコンパイルを試みると、Rustはエラーを返します:</p>
-<pre><code class="language-text">error[E0382]: use of moved value: `val`
+<pre><code class="language-console">$ cargo run
+   Compiling message-passing v0.1.0 (file:///projects/message-passing)
+error[E0382]: borrow of moved value: `val`
+(エラー: ムーブされた値の借用: `val`)
   --&gt; src/main.rs:10:31
    |
+8  |         let val = String::from(&quot;hi&quot;);
+   |             --- move occurs because `val` has type `String`, which does not implement the `Copy` trait
+   |                (`val`は`Copy`トレイトを実装しない`String`型を持つので、ムーブが発生します)
 9  |         tx.send(val).unwrap();
    |                 --- value moved here
+   |                    (値はここでムーブされます)
 10 |         println!(&quot;val is {}&quot;, val);
-   |                               ^^^ value used here after move
+   |                               ^^^ value borrowed here after move
+   |                                  (ここでムーブ後に借用されます)
    |
-   = note: move occurs because `val` has type `std::string::String`, which does
-not implement the `Copy` trait
+   = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `println` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider cloning the value if the performance cost is acceptable
+(ヘルプ: パフォーマンスコストが許容できる場合は、クローンすることを検討してください)
+   |
+9  |         tx.send(val.clone()).unwrap();
+   |                    ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `message-passing` (bin &quot;message-passing&quot;) due to 1 previous error
 </code></pre>
 <!--
 Our concurrency mistake has caused a compile time error. The `send` function
@@ -476,15 +489,15 @@ pause for a second between each message.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::thread;
-use std::sync::mpsc;
+<pre><code class="language-rust noplayground">use std::sync::mpsc;
+use std::thread;
 use std::time::Duration;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
 
     thread::spawn(move || {
-        // スレッドからやあ(hi from the thread)
+    	// スレッドからやあ (hi from the thread)
         let vals = vec![
             String::from(&quot;hi&quot;),
             String::from(&quot;from&quot;),
@@ -501,7 +514,7 @@ fn main() {
     for received in rx {
         println!(&quot;Got: {}&quot;, received);
     }
-}</code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 16-10: Sending multiple messages and pausing
 between each</span>
@@ -529,6 +542,9 @@ When running the code in Listing 16-10, you should see the following output
 with a 1-second pause in between each line:
 -->
 <p>リスト16-10のコードを走らせると、各行の間に1秒の待機をしつつ、以下のような出力を目の当たりにするはずです:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">Got: hi
 Got: from
 Got: the
@@ -549,60 +565,60 @@ the spawned thread.
 Earlier we mentioned that `mpsc` was an acronym for *multiple producer,
 single consumer*. Let’s put `mpsc` to use and expand the code in Listing 16-10
 to create multiple threads that all send values to the same receiver. We can do
-so by cloning the transmitting half of the channel, as shown in Listing 16-11:
+so by cloning the transmitter, as shown in Listing 16-11:
 -->
 <p><code>mpsc</code>は、<em>mutiple producer, single consumer</em>の頭字語であると前述しました。
 <code>mpsc</code>を使い、リスト16-10のコードを拡張して、全ての値を同じ受信機に送信する複数のスレッドを生成しましょう。
-チャンネルの転送の片割れをクローンすることでそうすることができます。リスト16-11のようにですね:</p>
+転送機をクローンすることでそうすることができます。リスト16-11のようにですね:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::thread;
-</span><span class="boring">use std::sync::mpsc;
+<pre><code class="language-rust noplayground"><span class="boring">use std::sync::mpsc;
+</span><span class="boring">use std::thread;
 </span><span class="boring">use std::time::Duration;
 </span><span class="boring">
 </span><span class="boring">fn main() {
-</span>// --snip--
+</span>    // --snip--
 
-let (tx, rx) = mpsc::channel();
+    let (tx, rx) = mpsc::channel();
 
-let tx1 = mpsc::Sender::clone(&amp;tx);
-thread::spawn(move || {
-    let vals = vec![
-        String::from(&quot;hi&quot;),
-        String::from(&quot;from&quot;),
-        String::from(&quot;the&quot;),
-        String::from(&quot;thread&quot;),
-    ];
+    let tx1 = tx.clone();
+    thread::spawn(move || {
+        let vals = vec![
+            String::from(&quot;hi&quot;),
+            String::from(&quot;from&quot;),
+            String::from(&quot;the&quot;),
+            String::from(&quot;thread&quot;),
+        ];
 
-    for val in vals {
-        tx1.send(val).unwrap();
-        thread::sleep(Duration::from_secs(1));
+        for val in vals {
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    thread::spawn(move || {
+        // 君のためにもっとメッセージを (more messages for you)
+        let vals = vec![
+            String::from(&quot;more&quot;),
+            String::from(&quot;messages&quot;),
+            String::from(&quot;for&quot;),
+            String::from(&quot;you&quot;),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!(&quot;Got: {}&quot;, received);
     }
-});
 
-thread::spawn(move || {
-    // 君のためにもっとメッセージを(more messages for you)
-    let vals = vec![
-        String::from(&quot;more&quot;),
-        String::from(&quot;messages&quot;),
-        String::from(&quot;for&quot;),
-        String::from(&quot;you&quot;),
-    ];
-
-    for val in vals {
-        tx.send(val).unwrap();
-        thread::sleep(Duration::from_secs(1));
-    }
-});
-
-for received in rx {
-    println!(&quot;Got: {}&quot;, received);
-}
-
-// --snip--
-<span class="boring">}</span></code></pre></pre>
+    // --snip--
+<span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 16-11: Sending multiple messages from multiple
 producers</span>
@@ -610,19 +626,21 @@ producers</span>
 <p><span class="caption">リスト16-11: 複数の生成器から複数のメッセージを送信する</span></p>
 <!--
 This time, before we create the first spawned thread, we call `clone` on the
-sending end of the channel. This will give us a new sending handle we can pass
-to the first spawned thread. We pass the original sending end of the channel to
-a second spawned thread. This gives us two threads, each sending different
-messages to the receiving end of the channel.
+transmitter. This will give us a new transmitter we can pass to the first
+spawned thread. We pass the original transmitter to a second spawned thread.
+This gives us two threads, each sending different messages to the one receiver.
 -->
-<p>今回、最初のスレッドを立ち上げる前に、チャンネルの送信側に対して<code>clone</code>を呼び出しています。
-これにより、最初に立ち上げたスレッドに渡せる新しい送信ハンドルが得られます。
-元のチャンネルの送信側は、2番目に立ち上げたスレッドに渡します。これにより2つスレッドが得られ、
-それぞれチャンネルの受信側に異なるメッセージを送信します。</p>
+<p>今回、最初のスレッドを立ち上げる前に、転送機に対して<code>clone</code>を呼び出しています。
+これにより、最初に立ち上げたスレッドに渡せる新しい転送機が得られます。
+元の転送機は、2番目に立ち上げたスレッドに渡します。これにより2つスレッドが得られ、
+1つの受信機にそれぞれ異なるメッセージを送信します。</p>
 <!--
 When you run the code, your output should look something like this:
 -->
 <p>コードを実行すると、出力は以下のようなものになるはずです:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">Got: hi
 Got: more
 Got: from
@@ -633,12 +651,12 @@ Got: thread
 Got: you
 </code></pre>
 <!--
-You might see the values in another order; it depends on your system. This is
+You might see the values in another order, depending on your system. This is
 what makes concurrency interesting as well as difficult. If you experiment with
 `thread::sleep`, giving it various values in the different threads, each run
 will be more nondeterministic and create different output each time.
 -->
-<p>別の順番で値が出る可能性もあります; システム次第です。並行性が面白いと同時に難しい部分でもあります。
+<p>システム次第で、別の順番で値が出る可能性もあります。並行性が面白いと同時に難しい部分でもあります。
 異なるスレッドで色々な値を与えて<code>thread::sleep</code>で実験をしたら、走らせるたびにより非決定的になり、
 毎回異なる出力をするでしょう。</p>
 <!--

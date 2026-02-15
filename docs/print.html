@@ -32432,11 +32432,11 @@ subtle bugs and is easy to refactor without introducing new bugs.
 Rustのこの方向性を<em>恐れるな！並行性</em>とニックネーム付けしました。これにより、潜在的なバグがなく、かつ、
 新しいバグを導入することなく簡単にリファクタリングできるコードを書くことができます。</p>
 <!--
-Note: For simplicity’s sake, we’ll refer to many of the problems as
-*concurrent* rather than being more precise by saying *concurrent and/or
-parallel*. If this book were about concurrency and/or parallelism, we'd be
-more specific. For this chapter, please mentally substitute *concurrent
-and/or parallel* whenever we use *concurrent*.
+> Note: For simplicity’s sake, we’ll refer to many of the problems as
+> *concurrent* rather than being more precise by saying *concurrent and/or
+> parallel*. If this book were about concurrency and/or parallelism, we’d be
+> more specific. For this chapter, please mentally substitute *concurrent
+> and/or parallel* whenever we use *concurrent*.
 -->
 <blockquote>
 <p>注釈: 簡潔性のため、並行または並列と述べることで正確を期するのではなく、
@@ -32470,9 +32470,9 @@ Here are the topics we’ll cover in this chapter:
 * How to create threads to run multiple pieces of code at the same time
 * *Message-passing* concurrency, where channels send messages between threads
 * *Shared-state* concurrency, where multiple threads have access to some piece
-of data
+  of data
 * The `Sync` and `Send` traits, which extend Rust’s concurrency guarantees to
-user-defined types as well as types provided by the standard library
+  user-defined types as well as types provided by the standard library
 -->
 <ul>
 <li>スレッドを生成して、複数のコードを同時に走らせる方法</li>
@@ -32486,107 +32486,58 @@ user-defined types as well as types provided by the standard library
 <h2 id="スレッドを使用してコードを同時に走らせる"><a class="header" href="#スレッドを使用してコードを同時に走らせる">スレッドを使用してコードを同時に走らせる</a></h2>
 <!--
 In most current operating systems, an executed program’s code is run in a
-*process*, and the operating system manages multiple processes at once. Within
-your program, you can also have independent parts that run simultaneously. The
-features that run these independent parts are called *threads*.
+*process*, and the operating system will manage multiple processes at once.
+Within a program, you can also have independent parts that run simultaneously.
+The features that run these independent parts are called *threads*. For
+example, a web server could have multiple threads so that it could respond to
+more than one request at the same time.
 -->
-<p>多くの現代のOSでは、実行中のプログラムのコードは<em>プロセス</em>で走り、OSは同時に複数のプロセスを管理します。
-自分のプログラム内で、独立した部分を同時に実行できます。これらの独立した部分を走らせる機能を<em>スレッド</em>と呼びます。</p>
+<p>多くの現代のOSでは、実行中のプログラムのコードは<em>プロセス</em>で走り、OSは同時に複数のプロセスを管理するでしょう。
+プログラム内では、独立した部分を同時に実行することもできます。これらの独立した部分を走らせる機能を<em>スレッド</em>と呼びます。
+例えばwebサーバは、同時に複数のリクエストに応答できるように、複数のスレッドを使用することができます。</p>
 <!--
-Splitting the computation in your program into multiple threads can improve
-performance because the program does multiple tasks at the same time, but it
-also adds complexity. Because threads can run simultaneously, there’s no
-inherent guarantee about the order in which parts of your code on different
-threads will run. This can lead to problems, such as:
+Splitting the computation in your program into multiple threads to run multiple
+tasks at the same time can improve performance, but it also adds complexity.
+Because threads can run simultaneously, there’s no inherent guarantee about the
+order in which parts of your code on different threads will run. This can lead
+to problems, such as:
 -->
-<p>プログラム内の計算を複数のスレッドに分けると、パフォーマンスが改善します。プログラムが同時に複数の作業をするからですが、
+<p>同時に複数のタスクを実行するために、プログラム内の計算を複数のスレッドに分けることで、パフォーマンスを改善することができますが、
 複雑度も増します。スレッドは同時に走らせることができるので、異なるスレッドのコードが走る順番に関して、
 本来的に保証はありません。これは例えば以下のような問題を招きます:</p>
 <!--
 * Race conditions, where threads are accessing data or resources in an
-inconsistent order
-* Deadlocks, where two threads are waiting for each other to finish using a
-resource the other thread has, preventing both threads from continuing
+  inconsistent order
+* Deadlocks, where two threads are waiting for each other, preventing both
+  threads from continuing
 * Bugs that happen only in certain situations and are hard to reproduce and fix
-reliably
+  reliably
 -->
 <ul>
 <li>スレッドがデータやリソースに矛盾した順番でアクセスする競合状態</li>
-<li>2つのスレッドがお互いにもう一方が持っているリソースを使用し終わるのを待ち、両者が継続するのを防ぐデッドロック</li>
+<li>2つのスレッドがお互いを待ち、両者が継続するのを防ぐデッドロック</li>
 <li>特定の状況でのみ起き、確実な再現や修正が困難なバグ</li>
 </ul>
 <!--
 Rust attempts to mitigate the negative effects of using threads, but
 programming in a multithreaded context still takes careful thought and requires
-a code structure that is different from programs that run in a single
+a code structure that is different from that in programs running in a single
 thread.
 -->
 <p>Rustは、スレッドを使用する際の悪影響を軽減しようとしていますが、それでも、マルチスレッドの文脈でのプログラミングでは、
-注意深い思考とシングルスレッドで走るプログラムとは異なるコード構造が必要です。</p>
+注意深い思考と、シングルスレッドで走るプログラムでのそれとは異なるコード構造が必要です。</p>
 <!--
-Programming languages implement threads in a few different ways. Many operating
-systems provide an API for creating new threads. This model where a language
-calls the operating system APIs to create threads is sometimes called *1:1*,
-meaning one operating system thread per one language thread.
+Programming languages implement threads in a few different ways, and many
+operating systems provide an API the language can call for creating new
+threads. The Rust standard library uses a *1:1* model of thread implementation,
+whereby a program uses one operating system thread per one language thread.
+There are crates that implement other models of threading that make different
+tradeoffs to the 1:1 model.
 -->
-<p>プログラミング言語によってスレッドはいくつかの方法で実装されています。多くのOSで、新規スレッドを生成するAPIが提供されています。
-言語がOSのAPIを呼び出してスレッドを生成するこのモデルを時に<em>1:1</em>と呼び、1つのOSスレッドに対して1つの言語スレッドを意味します。</p>
-<!--
-Many programming languages provide their own special implementation of threads.
-Programming language-provided threads are known as *green* threads, and
-languages that use these green threads will execute them in the context of a
-different number of operating system threads. For this reason, the
-green-threaded model is called the *M:N* model: there are `M` green threads per
-`N` operating system threads, where `M` and `N` are not necessarily the same
-number.
--->
-<p>多くのプログラミング言語がスレッドの独自の特別な実装を提供しています。プログラミング言語が提供するスレッドは、
-<em>グリーン</em>スレッドとして知られ、このグリーンスレッドを使用する言語は、それを異なる数のOSスレッドの文脈で実行します。
-このため、グリーンスレッドのモデルは<em>M:N</em>モデルと呼ばれます: <code>M</code>個のグリーンスレッドに対して、
-<code>N</code>個のOSスレッドがあり、<code>M</code>と<code>N</code>は必ずしも同じ数字ではありません。</p>
-<!--
-Each model has its own advantages and trade-offs, and the trade-off most
-important to Rust is runtime support. *Runtime* is a confusing term and can
-have different meanings in different contexts.
--->
-<p>各モデルには、それだけの利点と代償があり、Rustにとって最も重要な代償は、ランタイムのサポートです。
-<em>ランタイム</em>は、混乱しやすい用語で文脈によって意味も変わります。</p>
-<!--
-In this context, by *runtime* we mean code that is included by the language in
-every binary. This code can be large or small depending on the language, but
-every non-assembly language will have some amount of runtime code. For that
-reason, colloquially when people say a language has “no runtime,” they often
-mean “small runtime.” Smaller runtimes have fewer features but have the
-advantage of resulting in smaller binaries, which make it easier to combine the
-language with other languages in more contexts. Although many languages are
-okay with increasing the runtime size in exchange for more features, Rust needs
-to have nearly no runtime and cannot compromise on being able to call into C to
-maintain performance.
--->
-<p>この文脈での<em>ランタイム</em>とは、言語によって全てのバイナリに含まれるコードのことを意味します。
-言語によってこのコードの大小は決まりますが、非アセンブリ言語は全てある量の実行時コードを含みます。
-そのため、口語的に誰かが「ノーランタイム」と言ったら、「小さいランタイム」のことを意味することがしばしばあります。
-ランタイムが小さいと機能も少ないですが、バイナリのサイズも小さくなるという利点があり、
-その言語を他の言語とより多くの文脈で組み合わせることが容易になります。多くの言語では、
-より多くの機能と引き換えにランタイムのサイズが膨れ上がるのは、受け入れられることですが、
-Rustにはほとんどゼロのランタイムが必要でパフォーマンスを維持するためにCコードを呼び出せることを妥協できないのです。</p>
-<!--
-The green-threading M:N model requires a larger language runtime to manage
-threads. As such, the Rust standard library only provides an implementation of
-1:1 threading. Because Rust is such a low-level language, there are crates that
-implement M:N threading if you would rather trade overhead for aspects such as
-more control over which threads run when and lower costs of context switching,
-for example.
--->
-<p>M:Nのグリーンスレッドモデルは、スレッドを管理するのにより大きな言語ランタイムが必要です。よって、
-Rustの標準ライブラリは、1:1スレッドの実装のみを提供しています。Rustはそのような低級言語なので、
-例えば、むしろどのスレッドがいつ走るかのより詳細な制御や、より低コストの文脈切り替えなどの一面をオーバーヘッドと引き換えるなら、
-M:Nスレッドの実装をしたクレートもあります。</p>
-<!--
-Now that we’ve defined threads in Rust, let’s explore how to use the
-thread-related API provided by the standard library.
--->
-<p>今やRustにおけるスレッドを定義したので、標準ライブラリで提供されているスレッド関連のAPIの使用法を探究しましょう。</p>
+<p>プログラミング言語によってスレッドはいくつかの方法で実装されており、多くのOSは、言語が呼び出すことができる、
+新規スレッドを生成するためのAPIを提供しています。
+Rust標準ライブラリは<em>1:1</em>モデルのスレッド実装を使用しており、1つの言語スレッドに対して1つのOSスレッドを使用します。
+1:1モデルとは異なるトレードオフを選択して、他のモデルのスレッドを実装するクレートもあります。</p>
 <!--
 ### Creating a New Thread with `spawn`
 -->
@@ -32610,14 +32561,14 @@ use std::time::Duration;
 fn main() {
     thread::spawn(|| {
         for i in 1..10 {
-            // やあ！立ち上げたスレッドから数字{}だよ！
+            //       &quot;やあ！立ち上げたスレッドから数字{}だよ！&quot;
             println!(&quot;hi number {} from the spawned thread!&quot;, i);
             thread::sleep(Duration::from_millis(1));
         }
     });
 
     for i in 1..5 {
-        // メインスレッドから数字{}だよ！
+        //       &quot;やあ！メインスレッドから数字{}だよ！&quot;
         println!(&quot;hi number {} from the main thread!&quot;, i);
         thread::sleep(Duration::from_millis(1));
     }
@@ -32628,13 +32579,16 @@ while the main thread prints something else</span>
 -->
 <p><span class="caption">リスト16-1: メインスレッドが別のものを出力する間に新規スレッドを生成して何かを出力する</span></p>
 <!--
-Note that with this function, the new thread will be stopped when the main
-thread ends, whether or not it has finished running. The output from this
+Note that when the main thread of a Rust program completes, all spawned threads
+are shut down, whether or not they have finished running. The output from this
 program might be a little different every time, but it will look similar to the
 following:
 -->
-<p>この関数では、新しいスレッドは、実行が終わったかどうかにかかわらず、メインスレッドが終了したら停止することに注意してください。
-このプログラムからの出力は毎回少々異なる可能性がありますが、だいたい以下のような感じでしょう:</p>
+<p>Rustプログラムのメインスレッドが完了するときには、立ち上げられたすべてのスレッドは、その実行が完了したかどうかにかかわらず、
+停止されることに注意してください。このプログラムからの出力は毎回少々異なる可能性がありますが、だいたい以下のような感じでしょう:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">hi number 1 from the main thread!
 hi number 1 from the spawned thread!
 hi number 2 from the main thread!
@@ -32671,23 +32625,22 @@ for the operating system to switch between the threads.
 <h3 id="joinハンドルで全スレッドの終了を待つ"><a class="header" href="#joinハンドルで全スレッドの終了を待つ"><code>join</code>ハンドルで全スレッドの終了を待つ</a></h3>
 <!--
 The code in Listing 16-1 not only stops the spawned thread prematurely most of
-the time due to the main thread ending, but also can’t guarantee that the
-spawned thread will get to run at all. The reason is that there is no guarantee
-on the order in which threads run!
+the time due to the main thread ending, but because there is no guarantee on
+the order in which threads run, we also can’t guarantee that the spawned thread
+will get to run at all!
 -->
-<p>リスト16-1のコードは、メインスレッドが終了するためにほとんどの場合、立ち上げたスレッドがすべて実行されないだけでなく、
-立ち上げたスレッドが実行されるかどうかも保証できません。原因は、スレッドの実行順に保証がないからです。</p>
+<p>リスト16-1のコードはほとんどの場合、メインスレッドが終了することで、立ち上げたスレッドが完了する前に停止されるだけでなく、
+スレッドの実行順に保証がないことから、立ち上げたスレッドがそもそも実行されるかどうかも保証できません。</p>
 <!--
-We can fix the problem of the spawned thread not getting to run, or not getting
-to run completely, by saving the return value of `thread::spawn` in a variable.
-The return type of `thread::spawn` is `JoinHandle`. A `JoinHandle` is an owned
-value that, when we call the `join` method on it, will wait for its thread to
-finish. Listing 16-2 shows how to use the `JoinHandle` of the thread we created
-in Listing 16-1 and call `join` to make sure the spawned thread finishes before
-`main` exits:
+We can fix the problem of the spawned thread not running or ending prematurely
+by saving the return value of `thread::spawn` in a variable. The return type of
+`thread::spawn` is `JoinHandle`. A `JoinHandle` is an owned value that, when we
+call the `join` method on it, will wait for its thread to finish. Listing 16-2
+shows how to use the `JoinHandle` of the thread we created in Listing 16-1 and
+call `join` to make sure the spawned thread finishes before `main` exits:
 -->
 <p><code>thread::spawn</code>の戻り値を変数に保存することで、立ち上げたスレッドが実行されなかったり、
-完全には実行されなかったりする問題を修正することができます。<code>thread::spawn</code>の戻り値の型は<code>JoinHandle</code>です。
+完了する前に終了してしまったりする問題を修正することができます。<code>thread::spawn</code>の戻り値の型は<code>JoinHandle</code>です。
 <code>JoinHandle</code>は、その<code>join</code>メソッドを呼び出したときにスレッドの終了を待つ所有された値です。
 リスト16-2は、リスト16-1で生成したスレッドの<code>JoinHandle</code>を使用し、<code>join</code>を呼び出して、
 <code>main</code>が終了する前に、立ち上げたスレッドが確実に完了する方法を示しています:</p>
@@ -32729,6 +32682,9 @@ produce output similar to this:
 スレッドを<em>ブロック</em>するとは、そのスレッドが動いたり、終了したりすることを防ぐことです。
 <code>join</code>の呼び出しをメインスレッドの<code>for</code>ループの後に配置したので、リスト16-2を実行すると、
 以下のように出力されるはずです:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">hi number 1 from the main thread!
 hi number 2 from the main thread!
 hi number 1 from the spawned thread!
@@ -32782,6 +32738,9 @@ The main thread will wait for the spawned thread to finish and then run its
 -->
 <p>メインスレッドは、立ち上げたスレッドが終了するまで待ち、それから<code>for</code>ループを実行するので、
 以下のように出力はもう混ざらないでしょう:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">hi number 1 from the spawned thread!
 hi number 2 from the spawned thread!
 hi number 3 from the spawned thread!
@@ -32806,44 +32765,41 @@ threads run at the same time.
 -->
 <h3 id="スレッドでmoveクロージャを使用する"><a class="header" href="#スレッドでmoveクロージャを使用する">スレッドで<code>move</code>クロージャを使用する</a></h3>
 <!--
-The `move` closure is often used alongside `thread::spawn` because it allows
-you to use data from one thread in another thread.
+We'll often use the `move` keyword with closures passed to `thread::spawn`
+because the closure will then take ownership of the values it uses from the
+environment, thus transferring ownership of those values from one thread to
+another. In the [“Capturing References or Moving Ownership”][capture]
+section of Chapter 13, we discussed `move` in the context of closures. Now,
+we’ll concentrate more on the interaction between `move` and `thread::spawn`.
 -->
-<p><code>move</code>クロージャは、<code>thread::spawn</code>とともによく使用されます。
-あるスレッドのデータを別のスレッドで使用できるようになるからです。</p>
-<!--
-In Chapter 13, we mentioned we can use the `move` keywrod before the parameter
-list of a closure to force the closure to take ownership of the values it uses
-in the environment. This technique is especially useful when creating new
-threads in order to transfer ownership of values from one thread to another.
--->
-<p>第13章で、クロージャの引数リストの前に<code>move</code>キーワードを使用して、
-クロージャに環境で使用している値の所有権を強制的に奪わせることができると述べました。
-このテクニックは、あるスレッドから別のスレッドに値の所有権を移すために新しいスレッドを生成する際に特に有用です。</p>
+<p><code>thread::spawn</code>に渡されるクロージャでは、<code>move</code>キーワードを多用することになるでしょう。
+そうすることで、クロージャは環境から使用する値の所有権を奪い、あるスレッドから別のスレッドに値の所有権を移すからです。
+第13章の<a href="ch13-01-closures.html#%E5%8F%82%E7%85%A7%E3%82%92%E3%82%AD%E3%83%A3%E3%83%97%E3%83%81%E3%83%A3%E3%81%99%E3%82%8B%E3%81%8B%E6%89%80%E6%9C%89%E6%A8%A9%E3%82%92%E7%A7%BB%E5%8B%95%E3%81%99%E3%82%8B%E3%81%8B">「参照をキャプチャするか、所有権を移動するか」</a>節では、クロージャの文脈で<code>move</code>について議論しました。
+それでは、<code>move</code>と<code>thread::spawn</code>の相互作用により集中していきましょう。</p>
 <!--
 Notice in Listing 16-1 that the closure we pass to `thread::spawn` takes no
 arguments: we’re not using any data from the main thread in the spawned
 thread’s code. To use data from the main thread in the spawned thread, the
 spawned thread’s closure must capture the values it needs. Listing 16-3 shows
 an attempt to create a vector in the main thread and use it in the spawned
-thread. However, this won’t yet work, as you’ll see in a moment:
+thread. However, this won’t yet work, as you’ll see in a moment.
 -->
 <p>リスト16-1において、<code>thread::spawn</code>に渡したクロージャには引数がなかったことに注目してください:
 立ち上げたスレッドのコードでメインスレッドからのデータは何も使用していないのです。
 立ち上げたスレッドでメインスレッドのデータを使用するには、立ち上げるスレッドのクロージャは、
 必要な値をキャプチャしなければなりません。リスト16-3は、メインスレッドでベクタを生成し、
-立ち上げたスレッドで使用する試みを示しています。しかしながら、すぐにわかるように、これはまだ動きません:</p>
+立ち上げたスレッドで使用する試みを示しています。しかしながら、すぐにわかるように、これはまだ動きません。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use std::thread;
+<pre><code class="language-rust ignore does_not_compile">use std::thread;
 
 fn main() {
     let v = vec![1, 2, 3];
 
     let handle = thread::spawn(|| {
-        // こちらがベクタ: {:?}
+        //       &quot;こちらがベクタ: {:?}&quot;
         println!(&quot;Here's a vector: {:?}&quot;, v);
     });
 
@@ -32864,23 +32820,36 @@ example, we get the following error:
 <code>thread::spawn</code>はこのクロージャを新しいスレッドで走らせるので、
 その新しいスレッド内で<code>v</code>にアクセスできるはずです。しかし、このコードをコンパイルすると、
 以下のようなエラーが出ます:</p>
-<pre><code class="language-text">error[E0373]: closure may outlive the current function, but it borrows `v`,
-which is owned by the current function
-(エラー: クロージャは現在の関数よりも長生きするかもしれませんが、現在の関数が所有している
-`v`を借用しています)
+<pre><code class="language-console">$ cargo run
+   Compiling threads v0.1.0 (file:///projects/threads)
+error[E0373]: closure may outlive the current function, but it borrows `v`, which is owned by the current function
+(エラー: クロージャは現在の関数よりも長生きするかもしれませんが、現在の関数が所有している`v`を借用しています)
  --&gt; src/main.rs:6:32
   |
 6 |     let handle = thread::spawn(|| {
   |                                ^^ may outlive borrowed value `v`
+  |                                  (借用されている値`v`より長生きするかもしれません)
 7 |         println!(&quot;Here's a vector: {:?}&quot;, v);
   |                                           - `v` is borrowed here
+  |                                            (`v`はここで借用されています)
   |
-help: to force the closure to take ownership of `v` (and any other referenced
-variables), use the `move` keyword
-(助言: `v`(や他の参照されている変数)の所有権をクロージャに奪わせるには、`move`キーワードを使用してください)
+note: function requires argument type to outlive `'static`
+(注釈: 関数は引数型が`'static`より長生きすることを要求しています)
+ --&gt; src/main.rs:6:18
+  |
+6 |       let handle = thread::spawn(|| {
+  |  __________________^
+7 | |         println!(&quot;Here's a vector: {:?}&quot;, v);
+8 | |     });
+  | |______^
+help: to force the closure to take ownership of `v` (and any other referenced variables), use the `move` keyword
+(ヘルプ: `v`(や他の参照されている変数)の所有権をクロージャに奪わせるには、`move`キーワードを使用してください)
   |
 6 |     let handle = thread::spawn(move || {
-  |                                ^^^^^^^
+  |                                ++++
+
+For more information about this error, try `rustc --explain E0373`.
+error: could not compile `threads` (bin &quot;threads&quot;) due to 1 previous error
 </code></pre>
 <!--
 Rust *infers* how to capture `v`, and because `println!` only needs a reference
@@ -32900,7 +32869,7 @@ that won’t be valid:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use std::thread;
+<pre><code class="language-rust ignore does_not_compile">use std::thread;
 
 fn main() {
     let v = vec![1, 2, 3];
@@ -32909,18 +32878,18 @@ fn main() {
         println!(&quot;Here's a vector: {:?}&quot;, v);
     });
 
-    // いや〜！
-    drop(v); // oh no!
+    drop(v); // あちゃー！
 
     handle.join().unwrap();
-}</code></pre>
+}
+</code></pre>
 <!--
 <span class="caption">Listing 16-4: A thread with a closure that attempts to
 capture a reference to `v` from a main thread that drops `v`</span>
 -->
 <p><span class="caption">リスト16-4: <code>v</code>をドロップするメインスレッドから<code>v</code>への参照をキャプチャしようとするクロージャを伴うスレッド</span></p>
 <!--
-If we were allowed to run this code, there’s a possibility the spawned thread
+If Rust allowed us to run this code, there’s a possibility the spawned thread
 would be immediately put in the background without running at all. The spawned
 thread has a reference to `v` inside, but the main thread immediately drops
 `v`, using the `drop` function we discussed in Chapter 15. Then, when the
@@ -32936,11 +32905,14 @@ To fix the compiler error in Listing 16-3, we can use the error message’s
 advice:
 -->
 <p>リスト16-3のコンパイルエラーを修正するには、エラーメッセージのアドバイスを活用できます:</p>
-<pre><code class="language-text">help: to force the closure to take ownership of `v` (and any other referenced
-variables), use the `move` keyword
+<!-- manual-regeneration
+after automatic regeneration, look at listings/ch16-fearless-concurrency/listing-16-03/output.txt and copy the relevant part
+-->
+<pre><code class="language-text">help: to force the closure to take ownership of `v` (and any other referenced variables), use the `move` keyword
+(ヘルプ: `v`(や他の参照されている変数)の所有権をクロージャに奪わせるには、`move`キーワードを使用してください)
   |
 6 |     let handle = thread::spawn(move || {
-  |                                ^^^^^^^
+  |                                ++++
 </code></pre>
 <!--
 By adding the `move` keyword before the closure, we force the closure to take
@@ -32972,30 +32944,41 @@ to take ownership of the values it uses</span>
 -->
 <p><span class="caption">リスト16-5: <code>move</code>キーワードを使用してクロージャに使用している値の所有権を強制的に奪わせる</span></p>
 <!--
-What would happen to the code in Listing 16-4 where the main thread called
-`drop` if we use a `move` closure? Would `move` fix that case? Unfortunately,
-no; we would get a different error because what Listing 16-4 is trying to do
-isn’t allowed for a different reason. If we added `move` to the closure, we
-would move `v` into the closure’s environment, and we could no longer call
-`drop` on it in the main thread. We would get this compiler error instead:
+We might be tempted to try the same thing to fix the code in Listing 16-4 where
+the main thread called `drop` by using a `move` closure. However, this fix will
+not work because what Listing 16-4 is trying to do is disallowed for a
+different reason. If we added `move` to the closure, we would move `v` into the
+closure’s environment, and we could no longer call `drop` on it in the main
+thread. We would get this compiler error instead:
 -->
-<p><code>move</code>クロージャを使用していたら、メインスレッドが<code>drop</code>を呼び出すリスト16-4のコードはどうなるのでしょうか？
-<code>move</code>で解決するのでしょうか？残念ながら、違います; リスト16-4が試みていることは別の理由によりできないので、
-違うエラーが出ます。クロージャに<code>move</code>を付与したら、<code>v</code>をクロージャの環境にムーブするので、
+<p>リスト16-4の、メインスレッドが<code>drop</code>を呼び出すコードを修正するためにも、
+<code>move</code>クロージャを使用して同じことを試したくなるかもしれません。しかしながら、
+リスト16-4が試みていることは別の理由によりできないので、この修正はうまくいきません。
+クロージャに<code>move</code>を付与したら、<code>v</code>をクロージャの環境にムーブするので、
 最早メインスレッドで<code>drop</code>を呼び出すことは叶わなくなるでしょう。代わりにこのようなコンパイルエラーが出るでしょう:</p>
-<pre><code class="language-text">error[E0382]: use of moved value: `v`
+<pre><code class="language-console">$ cargo run
+   Compiling threads v0.1.0 (file:///projects/threads)
+error[E0382]: use of moved value: `v`
 (エラー: ムーブされた値の使用: `v`)
   --&gt; src/main.rs:10:10
    |
+4  |     let v = vec![1, 2, 3];
+   |         - move occurs because `v` has type `Vec&lt;i32&gt;`, which does not implement the `Copy` trait
+   |          (`v`は`Copy`トレイトを実装しない`Vec&lt;i32&gt;`型を持つので、ムーブが発生します)
+5  |
 6  |     let handle = thread::spawn(move || {
-   |                                ------- value moved (into closure) here
+   |                                ------- value moved into closure here
+   |                                       (値はここでクロージャ内にムーブされます)
+7  |         println!(&quot;Here's a vector: {:?}&quot;, v);
+   |                                           - variable moved due to use in closure
+   |                                            (変数はクロージャ内で使用されているためムーブされます)
 ...
 10 |     drop(v); // oh no!
    |          ^ value used here after move
-   |
-   = note: move occurs because `v` has type `std::vec::Vec&lt;i32&gt;`, which does
-   not implement the `Copy` trait
-   (注釈: `v`の型が`std::vec::Vec&lt;i32&gt;`のためムーブが起きました。この型は、`Copy`トレイトを実装していません)
+   |           (値はここでムーブ後に使用されています)
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `threads` (bin &quot;threads&quot;) due to 1 previous error
 </code></pre>
 <!--
 Rust’s ownership rules have saved us again! We got an error from the code in
@@ -33021,6 +33004,9 @@ With a basic understanding of threads and the thread API, let’s look at what w
 can *do* with threads.
 -->
 <p>スレッドとスレッドAPIの基礎知識を得たので、スレッドで<em>できる</em>ことを見ていきましょう。</p>
+<!--
+[capture]: ch13-01-closures.html#capturing-references-or-moving-ownership
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Using Message Passing to Transfer Data Between Threads
 -->
@@ -33029,39 +33015,40 @@ can *do* with threads.
 One increasingly popular approach to ensuring safe concurrency is *message
 passing*, where threads or actors communicate by sending each other messages
 containing data. Here’s the idea in a slogan from [the Go language
-documentation](http://golang.org/doc/effective_go.html): “Do not communicate by
-sharing memory; instead, share memory by communicating.”
+documentation](https://golang.org/doc/effective_go.html#concurrency):
+“Do not communicate by sharing memory; instead, share memory by communicating.”
 -->
 <p>人気度を増してきている安全な並行性を保証する一つのアプローチが<em>メッセージ受け渡し</em>で、
 スレッドやアクターがデータを含むメッセージを相互に送り合うことでやり取りします。
-こちらが、<a href="http:golang.org/doc/effective_go.html">Go言語のドキュメンテーション</a>のスローガンにある考えです:
+こちらが、<a href="https://golang.org/doc/effective_go.html#concurrency">Go言語のドキュメンテーション</a>のスローガンにある考えです:
 「メモリを共有することでやり取りするな; 代わりにやり取りすることでメモリを共有しろ」</p>
 <!--
-One major tool Rust has for accomplishing message-sending concurrency is the
-*channel*, a programming concept that Rust’s standard library provides an
-implementation of. You can imagine a channel in programming as being like a
-channel of water, such as a stream or a river. If you put something like a
-rubber duck or a boat into a stream, it will travel downstream to the end of the
-waterway.
+To accomplish message-sending concurrency, Rust's standard library provides an
+implementation of *channels*. A channel is a general programming concept by
+which data is sent from one thread to another.
 -->
-<p>メッセージ送信並行性を達成するためにRustに存在する一つの主な道具は、<em>チャンネル</em>で、
-Rustの標準ライブラリが実装を提供しているプログラミング概念です。プログラミングのチャンネルは、
-水の流れのように考えることができます。小川とか川ですね。アヒルのおもちゃやボートみたいなものを流れに置いたら、
-水路の終端まで下流に流れていきます。</p>
+<p>メッセージ送信による並行性を達成するために、Rustの標準ライブラリは<em>チャンネル</em>の実装を提供しています。
+チャンネルは、あるスレッドから別のスレッドへデータを送信する手段である、普遍的なプログラミング概念です。</p>
 <!--
-5行目終わり、for arriving messagesは本来ならfor messages arrivingのような気がするが、その想定で訳してある
+You can imagine a channel in programming as being like a directional channel of
+water, such as a stream or a river. If you put something like a rubber duck
+into a river, it will travel downstream to the end of the waterway.
+-->
+<p>プログラミングのチャンネルは、川などの、向きのある水路のように考えることができます（訳注: channelは日常語としては水路を意味します）。
+アヒルのおもちゃなどを川に置いたら、水路の終端まで下流に流れていきます。</p>
+<!--
+6行目、for arriving messagesは本来ならfor messages arrivingのような気がするが、その想定で訳してある
 これは自動詞を形容詞のように前からかけているだけと思われる
 -->
 <!--
-A channel in programming has two halves: a transmitter and a receiver. The
-transmitter half is the upstream location where you put rubber ducks into the
-river, and the receiver half is where the rubber duck ends up downstream. One
-part of our code calls methods on the transmitter with the data you want to
-send, and another part checks the receiving end for arriving messages. A
-channel is said to be *closed* if either the transmitter or receiver half is
-dropped.
+A channel has two halves: a transmitter and a receiver. The transmitter half is
+the upstream location where you put rubber ducks into the river, and the
+receiver half is where the rubber duck ends up downstream. One part of your
+code calls methods on the transmitter with the data you want to send, and
+another part checks the receiving end for arriving messages. A channel is said
+to be *closed* if either the transmitter or receiver half is dropped.
 -->
-<p>プログラミングにおけるチャンネルは、2分割できます: 転送機と受信機です。転送機はアヒルのおもちゃを川に置く上流になり、
+<p>チャンネルは、2分割できます: 転送機と受信機です。転送機はアヒルのおもちゃを川に置く上流になり、
 受信機は、アヒルのおもちゃが行き着く下流になります。コードのある箇所が送信したいデータとともに転送機のメソッドを呼び出し、
 別の部分がメッセージが到着していないか受信側を調べます。転送機と受信機のどちらかがドロップされると、
 チャンネルは<em>閉じられた</em>と言います。</p>
@@ -33070,14 +33057,15 @@ Here, we’ll work up to a program that has one thread to generate values and
 send them down a channel, and another thread that will receive the values and
 print them out. We’ll be sending simple values between threads using a channel
 to illustrate the feature. Once you’re familiar with the technique, you could
-use channels to implement a chat system or a system where many threads perform
-parts of a calculation and send the parts to one thread that aggregates the
-results.
+use channels for any threads that need to communicate between each other, such
+as a chat system or a system where many threads perform parts of a calculation
+and send the parts to one thread that aggregates the results.
 -->
 <p>ここで、1つのスレッドが値を生成し、それをチャンネルに送信し、別のスレッドがその値を受け取り、
 出力するプログラムに取り掛かります。チャンネルを使用してスレッド間に単純な値を送り、
-機能の説明を行います。一旦、そのテクニックに慣れてしまえば、チャンネルを使用してチャットシステムや、
-多くのスレッドが計算の一部を担い、結果をまとめる1つのスレッドにその部分を送るようなシステムを実装できるでしょう。</p>
+機能の説明を行います。一旦そのテクニックに慣れてしまえば、チャットシステムや、
+多くのスレッドが計算の一部を担い、結果をまとめる1つのスレッドにその部分を送るようなシステムなど、
+任意のスレッドが互いに通信する必要があるシステムに対して、チャンネルを使用できるでしょう。</p>
 <!--
 First, in Listing 16-6, we’ll create a channel but not do anything with it.
 Note that this won’t compile yet because Rust can’t tell what type of values we
@@ -33090,12 +33078,11 @@ want to send over the channel.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::sync::mpsc;
+<pre><code class="language-rust ignore does_not_compile">use std::sync::mpsc;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
-<span class="boring">    tx.send(()).unwrap();
-</span>}</code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 16-6: Creating a channel and assigning the two
 halves to `tx` and `rx`</span>
@@ -33118,23 +33105,21 @@ working.
 どの小川を通っても、送られたものは最終的に1つの川に行き着きます。今は、1つの生成器から始めますが、
 この例が動作するようになったら、複数の生成器を追加します。</p>
 <!--
-NEXT PARAGRAPH WRAPPED WEIRD INTENTIONALLY SEE #199
--->
-<!--
 The `mpsc::channel` function returns a tuple, the first element of which is the
-sending end and the second element is the receiving end. The abbreviations `tx`
-and `rx` are traditionally used in many fields for *transmitter* and *receiver*
-respectively, so we name our variables as such to indicate each end. We’re
-using a `let` statement with a pattern that destructures the tuples; we’ll
-discuss the use of patterns in `let` statements and destructuring in
-Chapter 18. Using a `let` statement this way is a convenient approach to
-extract the pieces of the tuple returned by `mpsc::channel`.
+sending end--the transmitter--and the second element is the receiving end--the
+receiver. The abbreviations `tx` and `rx` are traditionally used in many fields
+for *transmitter* and *receiver* respectively, so we name our variables as such
+to indicate each end. We’re using a `let` statement with a pattern that
+destructures the tuples; we’ll discuss the use of patterns in `let` statements
+and destructuring in Chapter 18. For now, know that using a `let` statement
+this way is a convenient approach to extract the pieces of the tuple returned
+by `mpsc::channel`.
 -->
-<p><code>mpsc::channel</code>関数はタプルを返し、1つ目の要素は、送信側、2つ目の要素は受信側になります。
+<p><code>mpsc::channel</code>関数はタプルを返し、1つ目の要素は、送信側（転送機）、2つ目の要素は受信側（受信機）になります。
 <code>tx</code>と<code>rx</code>という略称は、多くの分野で伝統的に<em>転送機</em>と<em>受信機</em>にそれぞれ使用されているので、
 変数をそのように名付けて、各終端を示します。タプルを分配するパターンを伴う<code>let</code>文を使用しています;
-<code>let</code>文でパターンを使用することと分配については、第18章で議論しましょう。このように<code>let</code>文を使うと、
-<code>mpsc::channel</code>で返ってくるタプルの部品を抽出するのが便利になります。</p>
+<code>let</code>文でパターンを使用することと分配については、第18章で議論しましょう。今のところは、
+このように<code>let</code>文を使うと、<code>mpsc::channel</code>で返ってくるタプルの部品を抽出するのが便利になるということだけ知っておいてください。</p>
 <!--
 Let’s move the transmitting end into a spawned thread and have it send one
 string so the spawned thread is communicating with the main thread, as shown in
@@ -33148,8 +33133,8 @@ sending a chat message from one thread to another.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::thread;
-use std::sync::mpsc;
+<pre><pre class="playground"><code class="language-rust">use std::sync::mpsc;
+use std::thread;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
@@ -33167,37 +33152,34 @@ fn main() {
 <!--
 Again, we’re using `thread::spawn` to create a new thread and then using `move`
 to move `tx` into the closure so the spawned thread owns `tx`. The spawned
-thread needs to own the transmitting end of the channel to be able to send
-messages through the channel.
--->
-<p>今回も、<code>thread::spawn</code>を使用して新しいスレッドを生成し、それから<code>move</code>を使用して、
-立ち上げたスレッドが<code>tx</code>を所有するようにクロージャに<code>tx</code>をムーブしています。立ち上げたスレッドは、
-メッセージをチャンネルを通して送信できるように、チャンネルの送信側を所有する必要があります。</p>
-<!--
-The transmitting end has a `send` method that takes the value we want to send.
-The `send` method returns a `Result<T, E>` type, so if the receiving end has
+thread needs to own the transmitter to be able to send messages through the
+channel. The transmitter has a `send` method that takes the value we want to
+send. The `send` method returns a `Result<T, E>` type, so if the receiver has
 already been dropped and there’s nowhere to send a value, the send operation
 will return an error. In this example, we’re calling `unwrap` to panic in case
 of an error. But in a real application, we would handle it properly: return to
 Chapter 9 to review strategies for proper error handling.
 -->
-<p>転送側には、送信したい値を取る<code>send</code>メソッドがあります。<code>send</code>メソッドは<code>Result&lt;T, E&gt;</code>型を返すので、
-既に受信側がドロップされ、値を送信する場所がなければ、送信処理はエラーを返します。
+<p>今回も、<code>thread::spawn</code>を使用して新しいスレッドを生成し、それから<code>move</code>を使用して、
+立ち上げたスレッドが<code>tx</code>を所有するようにクロージャに<code>tx</code>をムーブしています。立ち上げたスレッドは、
+メッセージをチャンネルを通して送信できるように、転送機を所有する必要があります。
+転送機には、送信したい値を取る<code>send</code>メソッドがあります。<code>send</code>メソッドは<code>Result&lt;T, E&gt;</code>型を返すので、
+既に受信機がドロップされ、値を送信する場所がなければ、送信処理はエラーを返します。
 この例では、エラーの場合には、パニックするように<code>unwrap</code>を呼び出しています。ですが、実際のアプリケーションでは、
 ちゃんと扱うでしょう: 第9章に戻ってちゃんとしたエラー処理の方法を再確認してください。</p>
 <!--
-In Listing 16-8, we’ll get the value from the receiving end of the channel in
-the main thread. This is like retrieving the rubber duck from the water at the
-end of the river or like getting a chat message.
+In Listing 16-8, we’ll get the value from the receiver in the main thread. This
+is like retrieving the rubber duck from the water at the end of the river or
+receiving a chat message.
 -->
-<p>リスト16-8において、メインスレッドのチャンネルの受信側から値を得ます。
-アヒルのおもちゃを川の終端で水から回収したり、チャットメッセージを取得するみたいですね。</p>
+<p>リスト16-8において、メインスレッドのチャンネルの受信機から値を得ます。
+アヒルのおもちゃを川の終端で水から回収したり、チャットメッセージを受信するみたいですね。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::thread;
-use std::sync::mpsc;
+<pre><pre class="playground"><code class="language-rust">use std::sync::mpsc;
+use std::thread;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
@@ -33208,7 +33190,7 @@ fn main() {
     });
 
     let received = rx.recv().unwrap();
-    // 値は{}です
+    //       &quot;取得しました: {}&quot;
     println!(&quot;Got: {}&quot;, received);
 }</code></pre></pre>
 <!--
@@ -33217,17 +33199,16 @@ and printing it</span>
 -->
 <p><span class="caption">リスト16-8: 「やあ」の値をメインスレッドで受け取り、出力する</span></p>
 <!--
-The receiving end of a channel has two useful methods: `recv` and `try_recv`.
-We’re using `recv`, short for *receive*, which will block the main thread’s
-execution and wait until a value is sent down the channel. Once a value is
-sent, `recv` will return it in a `Result<T, E>`. When the sending end of the
-channel closes, `recv` will return an error to signal that no more values will
-be coming.
+The receiver has two useful methods: `recv` and `try_recv`. We’re using `recv`,
+short for *receive*, which will block the main thread’s execution and wait
+until a value is sent down the channel. Once a value is sent, `recv` will
+return it in a `Result<T, E>`. When the transmitter closes, `recv` will return
+an error to signal that no more values will be coming.
 -->
-<p>チャンネルの受信側には有用なメソッドが2つあります: <code>recv</code>と<code>try_recv</code>です。
+<p>受信機には有用なメソッドが2つあります: <code>recv</code>と<code>try_recv</code>です。
 <em>receive</em>の省略形である<code>recv</code>を使っています。これは、メインスレッドの実行をブロックし、
 値がチャンネルを流れてくるまで待機します。一旦値が送信されたら、<code>recv</code>はそれを<code>Result&lt;T, E&gt;</code>に含んで返します。
-チャンネルの送信側が閉じたら、<code>recv</code>はエラーを返し、もう値は来ないと通知します。</p>
+転送機が閉じたら、<code>recv</code>はエラーを返し、もう値は来ないと通知します。</p>
 <!--
 The `try_recv` method doesn’t block, but will instead return a `Result<T, E>`
 immediately: an `Ok` value holding a message if one is available and an `Err`
@@ -33254,6 +33235,9 @@ When we run the code in Listing 16-8, we’ll see the value printed from the mai
 thread:
 -->
 <p>リスト16-8のコードを実行したら、メインスレッドから値が出力されるところを目撃するでしょう:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">Got: hi
 </code></pre>
 <!--
@@ -33267,7 +33251,7 @@ Perfect!
 <!--
 The ownership rules play a vital role in message sending because they help you
 write safe, concurrent code. Preventing errors in concurrent programming is the
-advantage of thinking about ownership throughout your Rust program. Let's do
+advantage of thinking about ownership throughout your Rust programs. Let’s do
 an experiment to show how channels and ownership work together to prevent
 problems: we’ll try to use a `val` value in the spawned thread *after* we’ve
 sent it down the channel. Try compiling the code in Listing 16-9 to see why
@@ -33282,8 +33266,8 @@ this code isn’t allowed:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use std::thread;
-use std::sync::mpsc;
+<pre><code class="language-rust ignore does_not_compile">use std::sync::mpsc;
+use std::thread;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
@@ -33291,7 +33275,7 @@ fn main() {
     thread::spawn(move || {
         let val = String::from(&quot;hi&quot;);
         tx.send(val).unwrap();
-        // valは{}
+        //       &quot;valは{}です&quot;
         println!(&quot;val is {}&quot;, val);
     });
 
@@ -33307,7 +33291,7 @@ down the channel</span>
 Here, we try to print `val` after we’ve sent it down the channel via `tx.send`.
 Allowing this would be a bad idea: once the value has been sent to another
 thread, that thread could modify or drop it before we try to use the value
-again. Potentially, the other thread's modifications could cause errors or
+again. Potentially, the other thread’s modifications could cause errors or
 unexpected results due to inconsistent or nonexistent data. However, Rust gives
 us an error if we try to compile the code in Listing 16-9:
 -->
@@ -33315,16 +33299,31 @@ us an error if we try to compile the code in Listing 16-9:
 一旦、値が他のスレッドに送信されたら、再度値を使用しようとする前にそのスレッドが変更したりドロップできてしまいます。
 可能性として、その別のスレッドの変更により、矛盾していたり存在しないデータのせいでエラーが発生したり、
 予期しない結果になるでしょう。ですが、リスト16-9のコードのコンパイルを試みると、Rustはエラーを返します:</p>
-<pre><code class="language-text">error[E0382]: use of moved value: `val`
+<pre><code class="language-console">$ cargo run
+   Compiling message-passing v0.1.0 (file:///projects/message-passing)
+error[E0382]: borrow of moved value: `val`
+(エラー: ムーブされた値の借用: `val`)
   --&gt; src/main.rs:10:31
    |
+8  |         let val = String::from(&quot;hi&quot;);
+   |             --- move occurs because `val` has type `String`, which does not implement the `Copy` trait
+   |                (`val`は`Copy`トレイトを実装しない`String`型を持つので、ムーブが発生します)
 9  |         tx.send(val).unwrap();
    |                 --- value moved here
+   |                    (値はここでムーブされます)
 10 |         println!(&quot;val is {}&quot;, val);
-   |                               ^^^ value used here after move
+   |                               ^^^ value borrowed here after move
+   |                                  (ここでムーブ後に借用されます)
    |
-   = note: move occurs because `val` has type `std::string::String`, which does
-not implement the `Copy` trait
+   = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `println` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider cloning the value if the performance cost is acceptable
+(ヘルプ: パフォーマンスコストが許容できる場合は、クローンすることを検討してください)
+   |
+9  |         tx.send(val.clone()).unwrap();
+   |                    ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `message-passing` (bin &quot;message-passing&quot;) due to 1 previous error
 </code></pre>
 <!--
 Our concurrency mistake has caused a compile time error. The `send` function
@@ -33353,15 +33352,15 @@ pause for a second between each message.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::thread;
-use std::sync::mpsc;
+<pre><code class="language-rust noplayground">use std::sync::mpsc;
+use std::thread;
 use std::time::Duration;
 
 fn main() {
     let (tx, rx) = mpsc::channel();
 
     thread::spawn(move || {
-        // スレッドからやあ(hi from the thread)
+    	// スレッドからやあ (hi from the thread)
         let vals = vec![
             String::from(&quot;hi&quot;),
             String::from(&quot;from&quot;),
@@ -33378,7 +33377,7 @@ fn main() {
     for received in rx {
         println!(&quot;Got: {}&quot;, received);
     }
-}</code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 16-10: Sending multiple messages and pausing
 between each</span>
@@ -33406,6 +33405,9 @@ When running the code in Listing 16-10, you should see the following output
 with a 1-second pause in between each line:
 -->
 <p>リスト16-10のコードを走らせると、各行の間に1秒の待機をしつつ、以下のような出力を目の当たりにするはずです:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">Got: hi
 Got: from
 Got: the
@@ -33426,60 +33428,60 @@ the spawned thread.
 Earlier we mentioned that `mpsc` was an acronym for *multiple producer,
 single consumer*. Let’s put `mpsc` to use and expand the code in Listing 16-10
 to create multiple threads that all send values to the same receiver. We can do
-so by cloning the transmitting half of the channel, as shown in Listing 16-11:
+so by cloning the transmitter, as shown in Listing 16-11:
 -->
 <p><code>mpsc</code>は、<em>mutiple producer, single consumer</em>の頭字語であると前述しました。
 <code>mpsc</code>を使い、リスト16-10のコードを拡張して、全ての値を同じ受信機に送信する複数のスレッドを生成しましょう。
-チャンネルの転送の片割れをクローンすることでそうすることができます。リスト16-11のようにですね:</p>
+転送機をクローンすることでそうすることができます。リスト16-11のようにですね:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::thread;
-</span><span class="boring">use std::sync::mpsc;
+<pre><code class="language-rust noplayground"><span class="boring">use std::sync::mpsc;
+</span><span class="boring">use std::thread;
 </span><span class="boring">use std::time::Duration;
 </span><span class="boring">
 </span><span class="boring">fn main() {
-</span>// --snip--
+</span>    // --snip--
 
-let (tx, rx) = mpsc::channel();
+    let (tx, rx) = mpsc::channel();
 
-let tx1 = mpsc::Sender::clone(&amp;tx);
-thread::spawn(move || {
-    let vals = vec![
-        String::from(&quot;hi&quot;),
-        String::from(&quot;from&quot;),
-        String::from(&quot;the&quot;),
-        String::from(&quot;thread&quot;),
-    ];
+    let tx1 = tx.clone();
+    thread::spawn(move || {
+        let vals = vec![
+            String::from(&quot;hi&quot;),
+            String::from(&quot;from&quot;),
+            String::from(&quot;the&quot;),
+            String::from(&quot;thread&quot;),
+        ];
 
-    for val in vals {
-        tx1.send(val).unwrap();
-        thread::sleep(Duration::from_secs(1));
+        for val in vals {
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    thread::spawn(move || {
+        // 君のためにもっとメッセージを (more messages for you)
+        let vals = vec![
+            String::from(&quot;more&quot;),
+            String::from(&quot;messages&quot;),
+            String::from(&quot;for&quot;),
+            String::from(&quot;you&quot;),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!(&quot;Got: {}&quot;, received);
     }
-});
 
-thread::spawn(move || {
-    // 君のためにもっとメッセージを(more messages for you)
-    let vals = vec![
-        String::from(&quot;more&quot;),
-        String::from(&quot;messages&quot;),
-        String::from(&quot;for&quot;),
-        String::from(&quot;you&quot;),
-    ];
-
-    for val in vals {
-        tx.send(val).unwrap();
-        thread::sleep(Duration::from_secs(1));
-    }
-});
-
-for received in rx {
-    println!(&quot;Got: {}&quot;, received);
-}
-
-// --snip--
-<span class="boring">}</span></code></pre></pre>
+    // --snip--
+<span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 16-11: Sending multiple messages from multiple
 producers</span>
@@ -33487,19 +33489,21 @@ producers</span>
 <p><span class="caption">リスト16-11: 複数の生成器から複数のメッセージを送信する</span></p>
 <!--
 This time, before we create the first spawned thread, we call `clone` on the
-sending end of the channel. This will give us a new sending handle we can pass
-to the first spawned thread. We pass the original sending end of the channel to
-a second spawned thread. This gives us two threads, each sending different
-messages to the receiving end of the channel.
+transmitter. This will give us a new transmitter we can pass to the first
+spawned thread. We pass the original transmitter to a second spawned thread.
+This gives us two threads, each sending different messages to the one receiver.
 -->
-<p>今回、最初のスレッドを立ち上げる前に、チャンネルの送信側に対して<code>clone</code>を呼び出しています。
-これにより、最初に立ち上げたスレッドに渡せる新しい送信ハンドルが得られます。
-元のチャンネルの送信側は、2番目に立ち上げたスレッドに渡します。これにより2つスレッドが得られ、
-それぞれチャンネルの受信側に異なるメッセージを送信します。</p>
+<p>今回、最初のスレッドを立ち上げる前に、転送機に対して<code>clone</code>を呼び出しています。
+これにより、最初に立ち上げたスレッドに渡せる新しい転送機が得られます。
+元の転送機は、2番目に立ち上げたスレッドに渡します。これにより2つスレッドが得られ、
+1つの受信機にそれぞれ異なるメッセージを送信します。</p>
 <!--
 When you run the code, your output should look something like this:
 -->
 <p>コードを実行すると、出力は以下のようなものになるはずです:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">Got: hi
 Got: more
 Got: from
@@ -33510,12 +33514,12 @@ Got: thread
 Got: you
 </code></pre>
 <!--
-You might see the values in another order; it depends on your system. This is
+You might see the values in another order, depending on your system. This is
 what makes concurrency interesting as well as difficult. If you experiment with
 `thread::sleep`, giving it various values in the different threads, each run
 will be more nondeterministic and create different output each time.
 -->
-<p>別の順番で値が出る可能性もあります; システム次第です。並行性が面白いと同時に難しい部分でもあります。
+<p>システム次第で、別の順番で値が出る可能性もあります。並行性が面白いと同時に難しい部分でもあります。
 異なるスレッドで色々な値を与えて<code>thread::sleep</code>で実験をしたら、走らせるたびにより非決定的になり、
 毎回異なる出力をするでしょう。</p>
 <!--
@@ -33529,18 +33533,20 @@ concurrency.
 <h2 id="状態共有並行性"><a class="header" href="#状態共有並行性">状態共有並行性</a></h2>
 <!--
 Message passing is a fine way of handling concurrency, but it’s not the only
-one. Consider this part of the slogan from the Go language documentation again:
-“communicate by sharing memory.”
+one. Another method would be for multiple threads to access the same shared
+data. Consider this part of the slogan from the Go language documentation
+again: “do not communicate by sharing memory.”
 -->
 <p>メッセージ受け渡しは、並行性を扱う素晴らしい方法ですが、唯一の方法ではありません。
+他の方法としては、複数のスレッドが同一の共有されたデータにアクセスする方法があるでしょう。
 Go言語ドキュメンテーションのスローガンのこの部分を再び考えてください:
-「メモリを共有することでやり取りする。」</p>
+「メモリを共有することでやり取りするな。」</p>
 <!--
 What would communicating by sharing memory look like? In addition, why would
-message-passing enthusiasts not use it and do the opposite instead?
+message-passing enthusiasts caution not to use memory sharing?
 -->
 <p>メモリを共有することでやり取りするとはどんな感じなのでしょうか？さらに、
-なぜメッセージ受け渡しに熱狂的な人は、それを使わず、代わりに全く反対のことをするのでしょうか？</p>
+なぜメッセージ受け渡しに熱狂的な人は、メモリ共有を使うなと警告するのでしょうか？</p>
 <!--
 In a way, channels in any programming language are similar to single ownership,
 because once you transfer a value down a channel, you should no longer use that
@@ -33567,15 +33573,15 @@ Rustの型システムと所有権規則は、この管理を正しく行う大�
 1行目、as in,が肝だが、inの後は普通名詞に相当するものが来るはずだが、文になっている
 -->
 <!--
-*Mutex* is an abbreviation for “mutual exclusion,” as in, a mutex allows only
+*Mutex* is an abbreviation for *mutual exclusion*, as in, a mutex allows only
 one thread to access some data at any given time. To access the data in a
 mutex, a thread must first signal that it wants access by asking to acquire the
-mutex's *lock*. The lock is a data structure that is part of the mutex that
+mutex’s *lock*. The lock is a data structure that is part of the mutex that
 keeps track of who currently has exclusive access to the data. Therefore, the
 mutex is described as *guarding* the data it holds via the locking system.
 -->
 <p>ミューテックスは、どんな時も1つのスレッドにしかなんらかのデータへのアクセスを許可しないというように、
-&quot;mutual exclusion&quot;(相互排他)の省略形です。ミューテックスにあるデータにアクセスするには、
+<em>mutual exclusion</em>(相互排他)の省略形です。ミューテックスにあるデータにアクセスするには、
 ミューテックスのロックを所望することでアクセスしたいことをまず、スレッドは通知しなければなりません。
 ロックとは、現在誰がデータへの排他的アクセスを行なっているかを追跡するミューテックスの一部をなすデータ構造です。
 故に、ミューテックスはロックシステム経由で保持しているデータを<em>死守する</em>(guarding)と解説されます。</p>
@@ -33587,7 +33593,7 @@ remember two rules:
 <!--
 * You must attempt to acquire the lock before using the data.
 * When you’re done with the data that the mutex guards, you must unlock the
-data so other threads can acquire the lock.
+  data so other threads can acquire the lock.
 -->
 <ul>
 <li>データを使用する前にロックの獲得を試みなければならない。</li>
@@ -33667,28 +33673,31 @@ that case, no one would ever be able to get the lock, so we’ve chosen to
 <!--
 After we’ve acquired the lock, we can treat the return value, named `num` in
 this case, as a mutable reference to the data inside. The type system ensures
-that we acquire a lock before using the value in `m`: `Mutex<i32>` is not an
-`i32`, so we *must* acquire the lock to be able to use the `i32` value. We
-can’t forget; the type system won’t let us access the inner `i32` otherwise.
+that we acquire a lock before using the value in `m`. The type of `m` is
+`Mutex<i32>`, not `i32`, so we *must* call `lock` to be able to use the `i32`
+value. We can’t forget; the type system won’t let us access the inner `i32`
+otherwise.
 -->
 <p>ロックを獲得した後、今回の場合、<code>num</code>と名付けられていますが、戻り値を中に入っているデータへの可変参照として扱うことができます。
-型システムにより、<code>m</code>の値を使用する前にロックを獲得していることが確認されます: <code>Mutex&lt;i32&gt;</code>は<code>i32</code>ではないので、
-<code>i32</code>を使用できるようにするには、ロックを獲得し<em>なければならない</em>のです。忘れることはあり得ません;
+型システムにより、<code>m</code>の値を使用する前にロックを獲得していることが確認されます。<code>m</code>の型は<code>Mutex&lt;i32&gt;</code>であって<code>i32</code>ではないので、
+<code>i32</code>を使用できるようにするには、<code>lock</code>を呼び出さ<em>なければならない</em>のです。忘れることはあり得ません;
 型システムにより、それ以外の場合に内部の<code>i32</code>にアクセスすることは許されません。</p>
 <!--
 As you might suspect, `Mutex<T>` is a smart pointer. More accurately, the call
-to `lock` *returns* a smart pointer called `MutexGuard`. This smart pointer
-implements `Deref` to point at our inner data; the smart pointer also has a
-`Drop` implementation that releases the lock automatically when a `MutexGuard`
-goes out of scope, which happens at the end of the inner scope in Listing
-16-12. As a result, we don’t risk forgetting to release the lock and blocking
-the mutex from being used by other threads because the lock release happens
+to `lock` *returns* a smart pointer called `MutexGuard`, wrapped in a
+`LockResult` that we handled with the call to `unwrap`. The `MutexGuard` smart
+pointer implements `Deref` to point at our inner data; the smart pointer also
+has a `Drop` implementation that releases the lock automatically when a
+`MutexGuard` goes out of scope, which happens at the end of the inner scope. As
+a result, we don’t risk forgetting to release the lock and blocking the mutex
+from being used by other threads, because the lock release happens
 automatically.
 -->
 <p>お察しかもしれませんが、<code>Mutex&lt;T&gt;</code>はスマートポインタです。より正確を期すなら、
-<code>lock</code>の呼び出しが<code>MutexGuard</code>というスマートポインタを<em>返却</em>します。このスマートポインタが、
+<code>lock</code>を呼び出すと<code>LockResult</code>に包まれた形で<code>MutexGuard</code>というスマートポインタを<em>返却</em>し、
+これを<code>unwrap</code>の呼び出しによって処理しました。<code>MutexGuard</code>スマートポインタが、
 内部のデータを指す<code>Deref</code>を実装しています; このスマートポインタはさらに<code>MutexGuard</code>がスコープを外れた時に、
-自動的にロックを解除する<code>Drop</code>実装もしていて、これがリスト16-12の内部スコープの終わりで発生します。
+自動的にロックを解除する<code>Drop</code>実装もしていて、これが内部スコープの終わりで発生します。
 結果として、ロックの解除が自動的に行われるので、ロックの解除を忘れ、
 ミューテックスが他のスレッドで使用されるのを阻害するリスクを負いません。</p>
 <!--
@@ -33703,20 +33712,19 @@ to change the inner `i32` to 6.
 <!--
 Now, let’s try to share a value between multiple threads using `Mutex<T>`.
 We’ll spin up 10 threads and have them each increment a counter value by 1, so
-the counter goes from 0 to 10. Note that the next few examples will have
-compiler errors, and we’ll use those errors to learn more about using
-`Mutex<T>` and how Rust helps us use it correctly. Listing 16-13 has our
-starting example:
+the counter goes from 0 to 10. The next example in Listing 16-13 will have
+a compiler error, and we’ll use that error to learn more about using
+`Mutex<T>` and how Rust helps us use it correctly.
 -->
 <p>さて、<code>Mutex&lt;T&gt;</code>を使って複数のスレッド間で値を共有してみましょう。10個のスレッドを立ち上げ、
 各々カウンタの値を1ずつインクリメントさせるので、カウンタは0から10まで上がります。
-以下の数例は、コンパイルエラーになることに注意し、そのエラーを使用して<code>Mutex&lt;T&gt;</code>の使用法と、
-コンパイラがそれを正しく活用する手助けをしてくれる方法について学びます。リスト16-13が最初の例です:</p>
+次のリスト16-13の例はコンパイルエラーになりますが、そのエラーを使用して、<code>Mutex&lt;T&gt;</code>の使用法と、
+コンパイラがそれを正しく活用する手助けをしてくれる方法について学びます。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use std::sync::Mutex;
+<pre><code class="language-rust ignore does_not_compile">use std::sync::Mutex;
 use std::thread;
 
 fn main() {
@@ -33744,150 +33752,65 @@ guarded by a `Mutex<T>`</span>
 -->
 <p><span class="caption">リスト16-13: <code>Mutex&lt;T&gt;</code>により死守されているカウンタを10個のスレッドがそれぞれインクリメントする</span></p>
 <!--
-We create a `counter` variable to hold an `i32` inside a `Mutex<T>`, as we
-did in Listing 16-12. Next, we create 10 threads by mapping over a range
-of numbers. We use `thread::spawn` and give all the threads the same closure,
-one that moves the counter into the thread, acquires a lock on the `Mutex<T>`
-by calling the `lock` method, and then adds 1 to the value in the mutex. When a
+We create a `counter` variable to hold an `i32` inside a `Mutex<T>`, as we did
+in Listing 16-12. Next, we create 10 threads by iterating over a range of
+numbers. We use `thread::spawn` and give all the threads the same closure: one
+that moves the counter into the thread, acquires a lock on the `Mutex<T>` by
+calling the `lock` method, and then adds 1 to the value in the mutex. When a
 thread finishes running its closure, `num` will go out of scope and release the
 lock so another thread can acquire it.
 -->
 <p>リスト16-12のように、<code>counter</code>変数を生成して<code>Mutex&lt;T&gt;</code>の内部に<code>i32</code>を保持しています。
-次に、数値の範囲をマッピングして10個のスレッドを生成しています。<code>thread::spawn</code>を使用して、
+次に、数値の範囲を走査して10個のスレッドを生成しています。<code>thread::spawn</code>を使用して、
 全スレッドに同じクロージャを与えています。このクロージャは、スレッド内にカウンタをムーブし、
 <code>lock</code>メソッドを呼ぶことで<code>Mutex&lt;T&gt;</code>のロックを獲得し、それからミューテックスの値に1を足します。
 スレッドがクロージャを実行し終わったら、<code>num</code>はスコープ外に出てロックを解除するので、
 他のスレッドが獲得できるわけです。</p>
 <!--
 In the main thread, we collect all the join handles. Then, as we did in Listing
-16-2, we call `join` on each to make sure all the threads finish. At
+16-2, we call `join` on each handle to make sure all the threads finish. At
 that point, the main thread will acquire the lock and print the result of this
 program.
 -->
-<p>メインスレッドで全てのjoinハンドルを収集します。それからリスト16-2のように、各々に対して<code>join</code>を呼び出し、
+<p>メインスレッドで全てのjoinハンドルを収集します。それからリスト16-2のように、各ハンドルに対して<code>join</code>を呼び出し、
 全スレッドが終了するのを確かめています。その時点で、メインスレッドはロックを獲得し、このプログラムの結果を出力します。</p>
 <!--
 We hinted that this example wouldn’t compile. Now let’s find out why!
 -->
 <p>この例はコンパイルできないでしょうと仄めかしました。では、理由を探りましょう！</p>
-<pre><code class="language-text">error[E0382]: capture of moved value: `counter`
-(エラー: ムーブされた値をキャプチャしています: `counter`)
-  --&gt; src/main.rs:10:27
-   |
-9  |         let handle = thread::spawn(move || {
-   |                                    ------- value moved (into closure) here
-10 |             let mut num = counter.lock().unwrap();
-   |                           ^^^^^^^ value captured here after move
-   |
-   = note: move occurs because `counter` has type `std::sync::Mutex&lt;i32&gt;`,
-   which does not implement the `Copy` trait
-
-error[E0382]: use of moved value: `counter`
+<pre><code class="language-console">$ cargo run
+   Compiling shared-state v0.1.0 (file:///projects/shared-state)
+error[E0382]: borrow of moved value: `counter`
+(エラー: ムーブされた値の借用: `counter`)
   --&gt; src/main.rs:21:29
    |
+5  |     let counter = Mutex::new(0);
+   |         ------- move occurs because `counter` has type `Mutex&lt;i32&gt;`, which does not implement the `Copy` trait
+   |                (`counter`は`Copy`トレイトを実装しない`Mutex&lt;i32&gt;`型を持つので、ムーブが発生します)
+...
 9  |         let handle = thread::spawn(move || {
-   |                                    ------- value moved (into closure) here
+   |                                    ------- value moved into closure here, in previous iteration of loop
+   |                                           (値は、ループの前回の反復時に、ここでクロージャ内にムーブされます)
 ...
 21 |     println!(&quot;Result: {}&quot;, *counter.lock().unwrap());
-   |                             ^^^^^^^ value used here after move
-   |
-   = note: move occurs because `counter` has type `std::sync::Mutex&lt;i32&gt;`,
-   which does not implement the `Copy` trait
+   |                             ^^^^^^^ value borrowed here after move
+   |                                    (値はここでムーブ後に借用されています)
 
-error: aborting due to 2 previous errors
-(エラー: 前述の2つのエラーによりアボート)
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `shared-state` (bin &quot;shared-state&quot;) due to 1 previous error
 </code></pre>
 <!--
-The error message states that the `counter` value is moved into the closure and
-then captured when we call `lock`. That description sounds like what we wanted,
-but it’s not allowed!
+3行目のlockは不要？
 -->
-<p>エラーメッセージは、<code>counter</code>値はクロージャにムーブされ、それから<code>lock</code>を呼び出したときにキャプチャされていると述べています。
-その説明は、所望した動作のように聞こえますが、許可されていないのです！</p>
 <!--
-Let’s figure this out by simplifying the program. Instead of making 10 threads
-in a `for` loop, let’s just make two threads without a loop and see what
-happens. Replace the first `for` loop in Listing 16-13 with this code instead:
+The error message states that the `counter` value was moved in the previous
+iteration of the loop. Rust is telling us that we can’t move the ownership
+of lock `counter` into multiple threads. Let’s fix the compiler error with a
+multiple-ownership method we discussed in Chapter 15.
 -->
-<p>プログラムを単純化してこれを理解しましょう。<code>for</code>ループで10個スレッドを生成する代わりに、
-ループなしで2つのスレッドを作るだけにしてどうなるか確認しましょう。
-リスト16-13の最初の<code>for</code>ループを代わりにこのコードと置き換えてください:</p>
-<pre><code class="language-rust ignore">use std::sync::Mutex;
-use std::thread;
-
-fn main() {
-    let counter = Mutex::new(0);
-    let mut handles = vec![];
-
-    let handle = thread::spawn(move || {
-        let mut num = counter.lock().unwrap();
-
-        *num += 1;
-    });
-    handles.push(handle);
-
-    let handle2 = thread::spawn(move || {
-        let mut num2 = counter.lock().unwrap();
-
-        *num2 += 1;
-    });
-    handles.push(handle2);
-
-    for handle in handles {
-        handle.join().unwrap();
-    }
-
-    println!(&quot;Result: {}&quot;, *counter.lock().unwrap());
-}</code></pre>
-<!--
-We make two threads and change the variable names used with the second thread
-to `handle2` and `num2`. When we run the code this time, compiling gives us the
-following:
--->
-<p>2つのスレッドを生成し、2番目のスレッドの変数名を<code>handle2</code>と<code>num2</code>に変更しています。
-今回このコードを走らせると、コンパイラは以下の出力をします:</p>
-<pre><code class="language-text">error[E0382]: capture of moved value: `counter`
-  --&gt; src/main.rs:16:24
-   |
-8  |     let handle = thread::spawn(move || {
-   |                                ------- value moved (into closure) here
-...
-16 |         let mut num2 = counter.lock().unwrap();
-   |                        ^^^^^^^ value captured here after move
-   |
-   = note: move occurs because `counter` has type `std::sync::Mutex&lt;i32&gt;`,
-   which does not implement the `Copy` trait
-
-error[E0382]: use of moved value: `counter`
-  --&gt; src/main.rs:26:29
-   |
-8  |     let handle = thread::spawn(move || {
-   |                                ------- value moved (into closure) here
-...
-26 |     println!(&quot;Result: {}&quot;, *counter.lock().unwrap());
-   |                             ^^^^^^^ value used here after move
-   |
-   = note: move occurs because `counter` has type `std::sync::Mutex&lt;i32&gt;`,
-   which does not implement the `Copy` trait
-
-error: aborting due to 2 previous errors
-</code></pre>
-<!--
-Aha! The first error message indicates that `counter` is moved into the closure
-for the thread associated with `handle`. That move is preventing us from
-capturing `counter` when we try to call `lock` on it and store the result in
-`num2` in the second thread! So Rust is telling us that we can’t move ownership
-of `counter` into multiple threads. This was hard to see earlier because our
-threads were in a loop, and Rust can’t point to different threads in different
-iterations of the loop. Let’s fix the compiler error with a multiple-ownership
-method we discussed in Chapter 15.
--->
-<p>なるほど！最初のエラーメッセージは、<code>handle</code>に紐づけられたスレッドのクロージャに<code>counter</code>がムーブされていることを示唆しています。
-そのムーブにより、それに対して<code>lock</code>を呼び出し、結果を2番目のスレッドの<code>num2</code>に保持しようとした時に、
-<code>counter</code>をキャプチャすることを妨げています！ゆえに、コンパイラは、<code>counter</code>の所有権を複数のスレッドに移すことはできないと教えてくれています。
-これは、以前では確認しづらかったことです。なぜなら、スレッドはループの中にあり、
-ループの違う繰り返しにある違うスレッドをコンパイラは指し示せないからです。
-第15章で議論した複数所有権メソッドによりコンパイルエラーを修正しましょう。</p>
+<p>エラーメッセージには、<code>counter</code>値はループの前回の反復時にムーブされたと書いてあります。
+コンパイラは、ロック<code>counter</code>の所有権を複数のスレッドに移動することはできないと教えてくれているのです。
+第15章で議論した、複数所有権の手法を使って、コンパイラエラーを修正しましょう。</p>
 <!--
 #### Multiple Ownership with Multiple Threads
 -->
@@ -33896,19 +33819,16 @@ method we discussed in Chapter 15.
 In Chapter 15, we gave a value multiple owners by using the smart pointer
 `Rc<T>` to create a reference counted value. Let’s do the same here and see
 what happens. We’ll wrap the `Mutex<T>` in `Rc<T>` in Listing 16-14 and clone
-the `Rc<T>` before moving ownership to the thread. Now that we’ve seen the
-errors, we’ll also switch back to using the `for` loop, and we’ll keep the
-`move` keyword with the closure.
+the `Rc<T>` before moving ownership to the thread.
 -->
 <p>第15章で、スマートポインタの<code>Rc&lt;T&gt;</code>を使用して参照カウントの値を作ることで、1つの値に複数の所有者を与えました。
 同じことをここでもして、どうなるか見ましょう。リスト16-14で<code>Rc&lt;T&gt;</code>に<code>Mutex&lt;T&gt;</code>を包含し、
-所有権をスレッドに移す前に<code>Rc&lt;T&gt;</code>をクローンします。今やエラーを確認したので、
-<code>for</code>ループの使用に立ち戻り、クロージャに<code>move</code>キーワードを使用し続けます。</p>
+所有権をスレッドに移す前に<code>Rc&lt;T&gt;</code>をクローンします。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use std::rc::Rc;
+<pre><code class="language-rust ignore does_not_compile">use std::rc::Rc;
 use std::sync::Mutex;
 use std::thread;
 
@@ -33942,44 +33862,53 @@ Once again, we compile and get... different errors! The compiler is teaching us
 a lot.
 -->
 <p>再三、コンパイルし……別のエラーが出ました！コンパイラはいろんなことを教えてくれています。</p>
-<pre><code class="language-text">error[E0277]: the trait bound `std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;:
-std::marker::Send` is not satisfied in `[closure@src/main.rs:11:36:
-15:10 counter:std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;]`
-(エラー: トレイト境界`std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;:
-std::marker::Send`は`[closure@src/main.rs:11:36:15:10
-counter:std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;]`で満たされていません)
-  --&gt; src/main.rs:11:22
+<pre><code class="language-console">$ cargo run
+   Compiling shared-state v0.1.0 (file:///projects/shared-state)
+error[E0277]: `Rc&lt;Mutex&lt;i32&gt;&gt;` cannot be sent between threads safely
+(エラー: `Rc&lt;Mutex&lt;i32&gt;&gt;`はスレッド間で安全に送信できません)
+  --&gt; src/main.rs:11:36
+   |
+11 |           let handle = thread::spawn(move || {
+   |                        ------------- ^------
+   |                        |             |
+   |  ______________________|_____________within this `{closure@src/main.rs:11:36: 11:43}`
+   | |                      |            (この`{[closure@src/main.rs:11:36: 11:43}`の中で)
+   | |                      |
+   | |                      required by a bound introduced by this call
+   | |                     (この呼び出しによって導入される境界によって必要とされます)
+12 | |             let mut num = counter.lock().unwrap();
+13 | |
+14 | |             *num += 1;
+15 | |         });
+   | |_________^ `Rc&lt;Mutex&lt;i32&gt;&gt;` cannot be sent between threads safely
+   |            (`Rc&lt;Mutex&lt;i32&gt;&gt;`はスレッド間で安全に送信できません)
+   |
+   = help: within `{closure@src/main.rs:11:36: 11:43}`, the trait `Send` is not implemented for `Rc&lt;Mutex&lt;i32&gt;&gt;`
+   =(ヘルプ: `{closure@src/main.rs:11:36: 11:43}`の中で、トレイト`Send`は`Rc&lt;Mutex&lt;i32&gt;&gt;`に対して実装されていません
+note: required because it's used within this closure
+(注釈: このクロージャの中で使用されているので、要求されます)
+  --&gt; src/main.rs:11:36
    |
 11 |         let handle = thread::spawn(move || {
-   |                      ^^^^^^^^^^^^^ `std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;`
-cannot be sent between threads safely
-                          (`std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;`は、スレッド間で安全に送信できません)
-   |
-   = help: within `[closure@src/main.rs:11:36: 15:10
-counter:std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;]`, the trait `std::marker::Send` is
-not implemented for `std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;`
-     (ヘルプ: `[closure@src/main.rs:11:36 15:10
-     counter:std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;]`内でトレイト`std::marker::Send`は、
-     `std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;`に対して実装されていません)
-   = note: required because it appears within the type
-`[closure@src/main.rs:11:36: 15:10 counter:std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;]`
-     (注釈: 型`[closure@src/main.rs:11:36 15:10
-     counter:std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;]`内に出現するので必要です)
-   = note: required by `std::thread::spawn`
-     (注釈: `std::thread::spawn`により必要とされています)
+   |                                    ^^^^^^^
+note: required by a bound in `spawn`
+(注釈: `spawn`の境界によって要求されます)
+  --&gt; /rustc/07dca489ac2d933c78d3c5158e3f43beefeb02ce/library/std/src/thread/mod.rs:678:1
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `shared-state` (bin &quot;shared-state&quot;) due to 1 previous error
 </code></pre>
 <!--
-Wow, that error message is very wordy! Here are some important parts to focus
-on: the first inline error says `` `std::rc::Rc<std::sync::Mutex<i32>>` cannot
-be sent between threads safely ``. The reason for this is in the next important
-part to focus on, the error message. The distilled error message says `` the
-trait bound `Send` is not satisfied ``. We’ll talk about `Send` in the next
-section: it’s one of the traits that ensures the types we use with threads are
-meant for use in concurrent situations.
+Wow, that error message is very wordy! Here’s the important part to focus on:
+`` `Rc<Mutex<i32>>` cannot be sent between threads safely ``. The compiler is
+also telling us the reason why: ``the trait `Send` is not implemented for
+`Rc<Mutex<i32>>` ``. We’ll talk about `Send` in the next section: it’s one of
+the traits that ensures the types we use with threads are meant for use in
+concurrent situations.
 -->
-<p>おお、このエラーメッセージはとても長ったらしいですね！こちらが、注目すべき重要な部分です:
-最初のインラインエラーは<code> `std::rc::Rc&lt;std::sync::Mutex&lt;i32&gt;&gt;` cannot be sent between threads safely</code>と述べています。この理由は、エラーメッセージの次に注目すべき重要な部分にあります。
-洗練されたエラーメッセージは、<code> the trait bound `Send` is not satisfied</code>と述べています。
+<p>おお、このエラーメッセージはとても長ったらしいですね！注目すべき重要な部分はここです:
+<code>`Rc&lt;Mutex&lt;i32&gt;&gt;` cannot be sent between threads safely</code>。コンパイラは、
+その理由も伝えてくれています: <code>the trait `Send` is not implemented for `Rc&lt;Mutex&lt;i32&gt;&gt;`</code>。
 <code>Send</code>については、次の節で語ります:
 スレッドとともに使用している型が並行な場面で使われることを意図したものであることを保証するトレイトの1つです。</p>
 <!--
@@ -34006,14 +33935,14 @@ Fortunately, `Arc<T>` *is* a type like `Rc<T>` that is safe to use in
 concurrent situations. The *a* stands for *atomic*, meaning it’s an *atomically
 reference counted* type. Atomics are an additional kind of concurrency
 primitive that we won’t cover in detail here: see the standard library
-documentation for `std::sync::atomic` for more details. At this point, you just
-need to know that atomics work like primitive types but are safe to share
-across threads.
+documentation for [`std::sync::atomic`][atomic] for more
+details. At this point, you just need to know that atomics work like primitive
+types but are safe to share across threads.
 -->
 <p>幸いなことに、<code>Arc&lt;T&gt;</code>は<code>Rc&lt;T&gt;</code>のような並行な状況で安全に使用できる型<em>です</em>。
 <em>a</em>は<em>atomic</em>を表し、原子的に参照カウントする型を意味します。アトミックは、
 ここでは詳しく講義しない並行性の別の基本型です: 詳細は、
-<code>std::sync::atomic</code>の標準ライブラリドキュメンテーションを参照されたし。現時点では、
+<a href="https://doc.rust-lang.org/std/sync/atomic/index.html"><code>std::sync::atomic</code></a>の標準ライブラリドキュメンテーションを参照されたし。現時点では、
 アトミックは、基本型のように動くけれども、スレッド間で共有しても安全なことだけ知っていれば良いです。</p>
 <!--
 You might then wonder why all primitive types aren’t atomic and why standard
@@ -34037,7 +33966,7 @@ our program by changing the `use` line, the call to `new`, and the call to
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust">use std::sync::{Mutex, Arc};
+<pre><pre class="playground"><code class="language-rust">use std::sync::{Arc, Mutex};
 use std::thread;
 
 fn main() {
@@ -34069,6 +33998,9 @@ to be able to share ownership across multiple threads</span>
 This code will print the following:
 -->
 <p>このコードは、以下のように出力します:</p>
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 <pre><code class="language-text">Result: 10
 </code></pre>
 <!--
@@ -34084,6 +34016,18 @@ thread update the final result with its part.
 カウンタをインクリメントする以上の複雑な処理を行うこともできるでしょう。この手法を使えば、
 計算を独立した部分に小分けにし、その部分をスレッドに分割し、それから<code>Mutex&lt;T&gt;</code>を使用して、
 各スレッドに最終結果を更新させることができます。</p>
+<!--
+Note that if you are doing simple numerical operations, there are types simpler
+than `Mutex<T>` types provided by the [`std::sync::atomic` module of the
+standard library][atomic]. These types provide safe, concurrent,
+atomic access to primitive types. We chose to use `Mutex<T>` with a primitive
+type for this example so we could concentrate on how `Mutex<T>` works.
+-->
+<p>単純な数値演算を行おうとしているなら、<code>Mutex&lt;T&gt;</code>型よりも単純な、
+<a href="https://doc.rust-lang.org/std/sync/atomic/index.html">標準ライブラリの<code>std::sync::atomic</code>モジュール</a>によって提供される型があることに注意してください。
+これらの型はプリミティブ型に対する安全かつ並行的なアトミックアクセスを提供します。
+この例では<code>Mutex&lt;T&gt;</code>がどのように機能するかに集中できるように、
+プリミティブ型に対して<code>Mutex&lt;T&gt;</code>を使用することをあえて選択しました。</p>
 <!--
 ### Similarities Between `RefCell<T>`/`Rc<T>` and `Mutex<T>`/`Arc<T>`
 -->
@@ -34126,6 +34070,9 @@ We’ll round out this chapter by talking about the `Send` and `Sync` traits and
 how we can use them with custom types.
 -->
 <p><code>Send</code>と<code>Sync</code>トレイトと、それらを独自の型で使用する方法について語って、この章を締めくくります。</p>
+<!--
+[atomic]: ../std/sync/atomic/index.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Extensible Concurrency with the `Sync` and `Send` Traits
 -->
@@ -34153,15 +34100,16 @@ However, two concurrency concepts are embedded in the language: the
 最後から2行目、single-threaded situationsのsituationsを環境と訳すのが自然なのでそうしている
 -->
 <!--
-The `Send` marker trait indicates that ownership of the type implementing
-`Send` can be transferred between threads. Almost every Rust type is `Send`,
-but there are some exceptions, including `Rc<T>`: this cannot be `Send` because
-if you cloned an `Rc<T>` value and tried to transfer ownership of the clone to
-another thread, both threads might update the reference count at the same time.
-For this reason, `Rc<T>` is implemented for use in single-threaded situations
-where you don’t want to pay the thread-safe performance penalty.
+The `Send` marker trait indicates that ownership of values of the type
+implementing `Send` can be transferred between threads. Almost every Rust type
+is `Send`, but there are some exceptions, including `Rc<T>`: this cannot be
+`Send` because if you cloned an `Rc<T>` value and tried to transfer ownership
+of the clone to another thread, both threads might update the reference count
+at the same time. For this reason, `Rc<T>` is implemented for use in
+single-threaded situations where you don’t want to pay the thread-safe
+performance penalty.
 -->
-<p><code>Send</code>マーカートレイトは、<code>Send</code>を実装した型の所有権をスレッド間で転送できることを示唆します。
+<p><code>Send</code>マーカートレイトは、<code>Send</code>を実装した型を持つ値の所有権をスレッド間で転送できることを示唆します。
 Rustのほとんどの型は<code>Send</code>ですが、<code>Rc&lt;T&gt;</code>を含めて一部例外があります: この型は、<code>Rc&lt;T&gt;</code>の値をクローンし、
 クローンしたものの所有権を別のスレッドに転送しようとしたら、両方のスレッドが同時に参照カウントを更新できてしまうので、
 <code>Send</code>になり得ません。このため、<code>Rc&lt;T&gt;</code>はスレッド安全性のためのパフォーマンスの犠牲を支払わなくても済む、
@@ -34190,12 +34138,12 @@ we’ll discuss in Chapter 19.
 <!--
 The `Sync` marker trait indicates that it is safe for the type implementing
 `Sync` to be referenced from multiple threads. In other words, any type `T` is
-`Sync` if `&T` (a reference to `T`) is `Send`, meaning the reference can be
-sent safely to another thread. Similar to `Send`, primitive types are `Sync`,
-and types composed entirely of types that are `Sync` are also `Sync`.
+`Sync` if `&T` (an immutable reference to `T`) is `Send`, meaning the reference
+can be sent safely to another thread. Similar to `Send`, primitive types are
+`Sync`, and types composed entirely of types that are `Sync` are also `Sync`.
 -->
 <p><code>Sync</code>マーカートレイトは、<code>Sync</code>を実装した型は、複数のスレッドから参照されても安全であることを示唆します。
-言い換えると、<code>&amp;T</code>(<code>T</code>への参照)が<code>Send</code>なら、型<code>T</code>は<code>Sync</code>であり、参照が他のスレッドに安全に送信できることを意味します。
+言い換えると、<code>&amp;T</code>(<code>T</code>への不変参照)が<code>Send</code>なら、型<code>T</code>は<code>Sync</code>であり、参照が他のスレッドに安全に送信できることを意味します。
 <code>Send</code>同様、基本型は<code>Sync</code>であり、<code>Sync</code>の型からのみ構成される型もまた<code>Sync</code>です。</p>
 <!--
 The smart pointer `Rc<T>` is also not `Sync` for the same reasons that it’s not
@@ -34203,13 +34151,13 @@ The smart pointer `Rc<T>` is also not `Sync` for the same reasons that it’s no
 family of related `Cell<T>` types are not `Sync`. The implementation of borrow
 checking that `RefCell<T>` does at runtime is not thread-safe. The smart
 pointer `Mutex<T>` is `Sync` and can be used to share access with multiple
-threads as you saw in the “Sharing a `Mutex<T>` Between Multiple Threads”
-section.
+threads as you saw in the [“Sharing a `Mutex<T>` Between Multiple
+Threads”][sharing-a-mutext-between-multiple-threads] section.
 -->
 <p><code>Send</code>ではなかったのと同じ理由で、スマートポインタの<code>Rc&lt;T&gt;</code>もまた<code>Sync</code>ではありません。
 <code>RefCell&lt;T&gt;</code>型(これについては第15章で話しました)と関連する<code>Cell&lt;T&gt;</code>系についても<code>Sync</code>ではありません。
 <code>RefCell&lt;T&gt;</code>が実行時に行う借用チェックの実装は、スレッド安全ではないのです。
-スマートポインタの<code>Mutex&lt;T&gt;</code>は<code>Sync</code>で、「複数のスレッド間で<code>Mutex&lt;T&gt;</code>を共有する」節で見たように、
+スマートポインタの<code>Mutex&lt;T&gt;</code>は<code>Sync</code>で、<a href="ch16-03-shared-state.html#%E8%A4%87%E6%95%B0%E3%81%AE%E3%82%B9%E3%83%AC%E3%83%83%E3%83%89%E9%96%93%E3%81%A7mutext%E3%82%92%E5%85%B1%E6%9C%89%E3%81%99%E3%82%8B">「複数のスレッド間で<code>Mutex&lt;T&gt;</code>を共有する」</a>節で見たように、
 複数のスレッドでアクセスを共有するのに使用することができます。</p>
 <!--
 ### Implementing `Send` and `Sync` Manually Is Unsafe
@@ -34228,14 +34176,14 @@ useful for enforcing invariants related to concurrency.
 Manually implementing these traits involves implementing unsafe Rust code.
 We’ll talk about using unsafe Rust code in Chapter 19; for now, the important
 information is that building new concurrent types not made up of `Send` and
-`Sync` parts requires careful thought to uphold the safety guarantees.
-[The Rustonomicon] has more information about these guarantees and how to
+`Sync` parts requires careful thought to uphold the safety guarantees. [“The
+Rustonomicon”][nomicon] has more information about these guarantees and how to
 uphold them.
 -->
 <p>これらのトレイトを手動で実装するには、unsafeなRustコードを実装することが関わってきます。
 unsafeなRustコードを使用することについては第19章で語ります; とりあえず、重要な情報は、
 <code>Send</code>と<code>Sync</code>ではない部品からなる新しい並行な型を構成するには、安全性保証を保持するために、
-注意深い思考が必要になるということです。<a href="https://doc.rust-lang.org/stable/nomicon/">The Rustonomicon</a>には、
+注意深い思考が必要になるということです。<a href="https://doc.rust-lang.org/stable/nomicon/">“The Rustonomicon”</a>には、
 これらの保証とそれを保持する方法についての情報がより多くあります。</p>
 <blockquote>
 <p>訳注: 日本語版のThe Rustonomiconは<a href="https://doc.rust-jp.rs/rust-nomicon-ja/index.html">こちら</a>です。</p>
@@ -34269,7 +34217,7 @@ The Rust standard library provides channels for message passing and smart
 pointer types, such as `Mutex<T>` and `Arc<T>`, that are safe to use in
 concurrent contexts. The type system and the borrow checker ensure that the
 code using these solutions won’t end up with data races or invalid references.
-Once you get our code to compile, you can rest assured that it will happily
+Once you get your code to compile, you can rest assured that it will happily
 run on multiple threads without the kinds of hard-to-track-down bugs common in
 other languages. Concurrent programming is no longer a concept to be afraid of:
 go forth and make your programs concurrent, fearlessly!
@@ -34283,10 +34231,15 @@ go forth and make your programs concurrent, fearlessly!
 <!--
 Next, we’ll talk about idiomatic ways to model problems and structure solutions
 as your Rust programs get bigger. In addition, we’ll discuss how Rust’s idioms
-relate to those you might be familiar with from object oriented programming.
+relate to those you might be familiar with from object-oriented programming.
 -->
 <p>次は、Rustプログラムが肥大化するにつれて問題をモデル化し、解決策を構造化する慣例的な方法について話します。
 さらに、Rustのイディオムがオブジェクト指向プログラミングで馴染み深いかもしれないイディオムにどのように関連しているかについても議論します。</p>
+<!--
+[sharing-a-mutext-between-multiple-threads]:
+ch16-03-shared-state.html#sharing-a-mutext-between-multiple-threads
+[nomicon]: ../nomicon/index.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Object-Oriented Programming Features of Rust
 -->
