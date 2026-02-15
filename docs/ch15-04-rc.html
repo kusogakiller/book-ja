@@ -154,22 +154,23 @@ owns a given value. However, there are cases when a single value might have
 multiple owners. For example, in graph data structures, multiple edges might
 point to the same node, and that node is conceptually owned by all of the edges
 that point to it. A node shouldn’t be cleaned up unless it doesn’t have any
-edges pointing to it.
+edges pointing to it and so has no owners.
 -->
 <p>大多数の場合、所有権は明らかです: 一体どの変数が与えられた値を所有しているかわかるのです。
 ところが、単独の値が複数の所有者を持つ可能性のある場合もあります。例えば、グラフデータ構造では、
 複数の辺が同じノードを指す可能性があり、概念的にそのノードはそれを指す全ての辺に所有されるわけです。
-指す辺がなくならない限り、ノードは片付けられるべきではありません。</p>
+指す辺がなくならない限り、つまり所有者がなくならない限り、ノードは片付けられるべきではありません。</p>
 <!--
-To enable multiple ownership, Rust has a type called `Rc<T>`, which is an
-abbreviation for *reference counting*. The `Rc<T>` type keeps track of the
-number of references to a value which determines whether or not a value is
-still in use. If there are zero references to a value, the value can be cleaned
-up without any references becoming invalid.
+You have to enable multiple ownership explicitly by using the Rust type
+`Rc<T>`, which is an abbreviation for *reference counting*. The `Rc<T>` type
+keeps track of the number of references to a value to determine whether or not
+the value is still in use. If there are zero references to a value, the value
+can be cleaned up without any references becoming invalid.
 -->
-<p>複数の所有権を可能にするため、Rustには<code>Rc&lt;T&gt;</code>という型があり、これは、<em>reference counting</em>(参照カウント)の省略形です。
-<code>Rc&lt;T&gt;</code>型は、値がまだ使用中かどうか決定する値への参照の数を追跡します。値への参照が0なら、どの参照も無効にすることなく、
-値は片付けられます。</p>
+<p><code>Rc&lt;T&gt;</code>というRustの型を使用することで、明示的に複数の所有権を可能にしなくてはなりません。
+これは、<em>reference counting</em>(参照カウント)の省略形です。
+<code>Rc&lt;T&gt;</code>型は、値がまだ使用中かどうか決定するために、値への参照の数を追跡します。
+値への参照が0なら、どの参照も無効にすることなく、値は片付けられます。</p>
 <!--
 Imagine `Rc<T>` as a TV in a family room. When one person enters to watch TV,
 they turn it on. Others can come into the room and watch the TV. When the last
@@ -239,17 +240,15 @@ won’t work, as shown in Listing 15-17:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">enum List {
+<pre><code class="language-rust ignore does_not_compile">enum List {
     Cons(i32, Box&lt;List&gt;),
     Nil,
 }
 
-use List::{Cons, Nil};
+use crate::List::{Cons, Nil};
 
 fn main() {
-    let a = Cons(5,
-        Box::new(Cons(10,
-            Box::new(Nil))));
+    let a = Cons(5, Box::new(Cons(10, Box::new(Nil))));
     let b = Cons(3, Box::new(a));
     let c = Cons(4, Box::new(a));
 }</code></pre>
@@ -262,16 +261,20 @@ two lists using `Box<T>` that try to share ownership of a third list</span>
 When we compile this code, we get this error:
 -->
 <p>このコードをコンパイルすると、こんなエラーが出ます:</p>
-<pre><code class="language-text">error[E0382]: use of moved value: `a`
-  --&gt; src/main.rs:13:30
+<pre><code class="language-console">$ cargo run
+   Compiling cons-list v0.1.0 (file:///projects/cons-list)
+error[E0382]: use of moved value: `a`
+  --&gt; src/main.rs:11:30
    |
-12 |     let b = Cons(3, Box::new(a));
+9  |     let a = Cons(5, Box::new(Cons(10, Box::new(Nil))));
+   |         - move occurs because `a` has type `List`, which does not implement the `Copy` trait
+10 |     let b = Cons(3, Box::new(a));
    |                              - value moved here
-13 |     let c = Cons(4, Box::new(a));
+11 |     let c = Cons(4, Box::new(a));
    |                              ^ value used here after move
-   |
-   = note: move occurs because `a` has type `List`, which does not implement
-   the `Copy` trait
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `cons-list` (bin &quot;cons-list&quot;) due to 1 previous error
 </code></pre>
 <!--
 The `Cons` variants own the data they hold, so when we create the `b` list, `a`
@@ -285,15 +288,13 @@ creating `c`, we’re not allowed to because `a` has been moved.
 We could change the definition of `Cons` to hold references instead, but then
 we would have to specify lifetime parameters. By specifying lifetime
 parameters, we would be specifying that every element in the list will live at
-least as long as the entire list. The borrow checker wouldn’t let us compile
-`let a = Cons(10, &Nil);` for example, because the temporary `Nil` value would
-be dropped before `a` could take a reference to it.
+least as long as the entire list. This is the case for the elements and lists
+in Listing 15-17, but not in every scenario.
 -->
 <p><code>Cons</code>の定義を代わりに参照を保持するように変更することもできますが、そうしたら、
 ライフタイム引数を指定しなければなりません。ライフタイム引数を指定することで、
 リストの各要素が最低でもリスト全体と同じ期間だけ生きることを指定することになります。
-例えば、借用チェッカーは<code>let a = Cons(10, &amp;Nil);</code>をコンパイルさせてくれません。
-一時的な<code>Nil</code>値が、<code>a</code>が参照を得られるより前にドロップされてしまうからです。</p>
+これはリスト15-17での要素とリストに対しては当てはまりますが、すべての用途で当てはまるものではありません。</p>
 <!--
 Instead, we’ll change our definition of `List` to use `Rc<T>` in place of
 `Box<T>`, as shown in Listing 15-18. Each `Cons` variant will now hold a value
@@ -321,7 +322,7 @@ it.
     Nil,
 }
 
-use List::{Cons, Nil};
+use crate::List::{Cons, Nil};
 use std::rc::Rc;
 
 fn main() {
@@ -387,22 +388,22 @@ then we can see how the reference count changes when `c` goes out of scope.
 </span><span class="boring">    Nil,
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">use List::{Cons, Nil};
+</span><span class="boring">use crate::List::{Cons, Nil};
 </span><span class="boring">use std::rc::Rc;
 </span><span class="boring">
 </span>fn main() {
     let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
-    // a生成後のカウント = {}
+    //       &quot;a作成後のカウント = {}&quot;
     println!(&quot;count after creating a = {}&quot;, Rc::strong_count(&amp;a));
     let b = Cons(3, Rc::clone(&amp;a));
-    // b生成後のカウント = {}
+    //       &quot;b作成後のカウント = {}&quot;
     println!(&quot;count after creating b = {}&quot;, Rc::strong_count(&amp;a));
     {
         let c = Cons(4, Rc::clone(&amp;a));
-        // c生成後のカウント = {}
+        //       &quot;c作成後のカウント = {}&quot;
         println!(&quot;count after creating c = {}&quot;, Rc::strong_count(&amp;a));
     }
-    // cがスコープを抜けた後のカウント = {}
+    //       &quot;cがスコープを抜けた後のカウント = {}&quot;
     println!(&quot;count after c goes out of scope = {}&quot;, Rc::strong_count(&amp;a));
 }</code></pre></pre>
 <!--
@@ -411,20 +412,25 @@ then we can see how the reference count changes when `c` goes out of scope.
 <p><span class="caption">リスト15-19: 参照カウントを出力する</span></p>
 <!--
 At each point in the program where the reference count changes, we print the
-reference count, which we can get by calling the `Rc::strong_count` function.
-This function is named `strong_count` rather than `count` because the `Rc<T>`
-type also has a `weak_count`; we’ll see what `weak_count` is used for in the
-“Preventing Reference Cycles” section.
+reference count, which we get by calling the `Rc::strong_count` function. This
+function is named `strong_count` rather than `count` because the `Rc<T>` type
+also has a `weak_count`; we’ll see what `weak_count` is used for in the
+[“Preventing Reference Cycles: Turning an `Rc<T>` into a
+`Weak<T>`”][preventing-ref-cycles] section.
 -->
 <p>プログラム内で参照カウントが変更される度に、参照カウントを出力します。参照カウントは、
-<code>Rc::strong_count</code>関数を呼び出すことで得られます。<code>Rc&lt;T&gt;</code>型には<code>weak_count</code>もあるので、
+<code>Rc::strong_count</code>関数を呼び出すことで得ています。<code>Rc&lt;T&gt;</code>型には<code>weak_count</code>もあるので、
 この関数は<code>count</code>ではなく<code>strong_count</code>と命名されています; <code>weak_count</code>の使用目的は、
-「循環参照を回避する」節で確かめます。</p>
+<a href="ch15-06-reference-cycles.html#%E5%BE%AA%E7%92%B0%E5%8F%82%E7%85%A7%E3%82%92%E5%9B%9E%E9%81%BF%E3%81%99%E3%82%8B-rct%E3%82%92weakt%E3%81%AB%E5%A4%89%E6%8F%9B%E3%81%99%E3%82%8B">「循環参照を回避する: <code>Rc&lt;T&gt;</code>を<code>Weak&lt;T&gt;</code>に変換する」</a>節で確かめます。</p>
 <!--
 This code prints the following:
 -->
 <p>このコードは、以下の出力をします:</p>
-<pre><code class="language-text">count after creating a = 1
+<pre><code class="language-console">$ cargo run
+   Compiling cons-list v0.1.0 (file:///projects/cons-list)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.45s
+     Running `target/debug/cons-list`
+count after creating a = 1
 count after creating b = 2
 count after creating c = 3
 count after c goes out of scope = 2
@@ -444,16 +450,16 @@ automatically when an `Rc<T>` value goes out of scope.
 <!--
 What we can’t see in this example is that when `b` and then `a` go out of scope
 at the end of `main`, the count is then 0, and the `Rc<List>` is cleaned up
-completely at that point. Using `Rc<T>` allows a single value to have
-multiple owners, and the count ensures that the value remains valid as long as
-any of the owners still exist.
+completely. Using `Rc<T>` allows a single value to have multiple owners, and
+the count ensures that the value remains valid as long as any of the owners
+still exist.
 -->
 <p>この例でわからないことは、<code>b</code>そして<code>a</code>が、<code>main</code>の終端でスコープを抜ける時に、カウントが0になり、
-その時点で<code>Rc&lt;List&gt;</code>が完全に片付けられることです。<code>Rc&lt;T&gt;</code>を使用すると、単独の値に複数の所有者を持たせることができ、
+<code>Rc&lt;List&gt;</code>が完全に片付けられることです。<code>Rc&lt;T&gt;</code>を使用すると、単独の値に複数の所有者を持たせることができ、
 所有者のいずれかが存在している限り、値が有効であり続けることをカウントは保証します。</p>
 <!--
 Via immutable references, `Rc<T>` allows you to share data between multiple
-parts of our program for reading only. If `Rc<T>` allowed you to have multiple
+parts of your program for reading only. If `Rc<T>` allowed you to have multiple
 mutable references too, you might violate one of the borrowing rules discussed
 in Chapter 4: multiple mutable borrows to the same place can cause data races
 and inconsistencies. But being able to mutate data is very useful! In the next
@@ -466,6 +472,9 @@ immutability restriction.
 同じ場所への複数の可変借用は、データ競合や矛盾を引き起こすことがあるのです。しかし、
 データを可変化する能力はとても有用です！次の節では、内部可変性パターンと、
 <code>Rc&lt;T&gt;</code>と絡めて使用してこの不変性制限を手がけられる<code>RefCell&lt;T&gt;</code>型について議論します。</p>
+<!--
+[preventing-ref-cycles]: ch15-06-reference-cycles.html#preventing-reference-cycles-turning-an-rct-into-a-weakt
+-->
 
                     </main>
 

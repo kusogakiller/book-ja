@@ -13209,7 +13209,7 @@ Pointer to the Value with the Dereference Operator”][deref]
 section of Chapter 15.
 -->
 <p>可変参照が参照している値を変更するには、<code>+=</code>演算子を使用する前に、<code>*</code>参照外し演算子を使用して<code>i</code>の値にたどり着かないといけません。
-参照外し演算子については、第15章の<a href="ch15-02-deref.html#%E5%8F%82%E7%85%A7%E5%A4%96%E3%81%97%E6%BC%94%E7%AE%97%E5%AD%90%E3%81%A7%E5%80%A4%E3%81%BE%E3%81%A7%E3%83%9D%E3%82%A4%E3%83%B3%E3%82%BF%E3%82%92%E8%BF%BD%E3%81%84%E3%81%8B%E3%81%91%E3%82%8B">「参照外し演算子で値までポインタを追いかける」</a>節でより詳しく扱います。</p>
+参照外し演算子については、第15章の<a href="ch15-02-deref.html#%E5%80%A4%E3%81%BE%E3%81%A7%E3%83%9D%E3%82%A4%E3%83%B3%E3%82%BF%E3%82%92%E8%BF%BD%E3%81%84%E3%81%8B%E3%81%91%E3%82%8B">「参照外し演算子で値までポインタを追いかける」</a>節でより詳しく扱います。</p>
 <!--
 Iterating over a vector, whether immutably or mutably, is safe because of the
 borrow checker's rules. If we attempted to insert or remove items in the `for`
@@ -28957,61 +28957,59 @@ memory. This address refers to, or “points at,” some other data. The most
 common kind of pointer in Rust is a reference, which you learned about in
 Chapter 4. References are indicated by the `&` symbol and borrow the value they
 point to. They don’t have any special capabilities other than referring to
-data. Also, they don’t have any overhead and are the kind of pointer we use
-most often.
+data, and have no overhead.
 -->
 <p><em>ポインタ</em>は、メモリのアドレスを含む変数の一般的な概念です。このアドレスは、何らかの他のデータを参照、または「指します」。
-Rustにおいて最もありふれた種類のポインタは参照です。参照については第4章で習いましたね。参照は<code>&amp;</code>記号で示唆され、指している値を借用します。データを参照すること以外に特別な能力は何もありません。
-また、オーバーヘッドもなく、ポインタの中では最も頻繁に使われます。</p>
+Rustにおいて最もありふれた種類のポインタは参照です。参照については第4章で習いましたね。参照は<code>&amp;</code>記号で示唆され、指している値を借用します。
+データを参照すること以外に特別な能力は何もなく、オーバーヘッドもありません。</p>
 <!--
-*Smart pointers*, on the other hand, are data structures that not only act like
-a pointer but also have additional metadata and capabilities. The concept of
+*Smart pointers*, on the other hand, are data structures that act like a
+pointer but also have additional metadata and capabilities. The concept of
 smart pointers isn’t unique to Rust: smart pointers originated in C++ and exist
-in other languages as well. In Rust, the different smart pointers defined in
-the standard library provide functionality beyond that provided by references.
-One example that we’ll explore in this chapter is the *reference counting*
-smart pointer type. This pointer enables you to have multiple owners of data by
-keeping track of the number of owners and, when no owners remain, cleaning up
-the data.
+in other languages as well. Rust has a variety of smart pointers defined in the
+standard library that provide functionality beyond that provided by references.
+To explore the general concept, we’ll look at a couple of different examples of
+smart pointers, including a *reference counting* smart pointer type. This
+pointer enables you to allow data to have multiple owners by keeping track of
+the number of owners and, when no owners remain, cleaning up the data.
 -->
-<p>一方、<em>スマートポインタ</em>は、ポインタのように振る舞うだけでなく、追加のメタデータと能力があるデータ構造です。
+<p>一方、<em>スマートポインタ</em>は、ポインタのように振る舞いますが、追加のメタデータと能力があるデータ構造です。
 スマートポインタという概念は、Rustに特有のものではありません。スマートポインタは、C++に端を発し、
-他の言語にも存在しています。Rustでは、標準ライブラリに定義された色々なスマートポインタが、
-参照以上の機能を提供します。この章で探究する一つの例が、<em>参照カウント</em>方式のスマートポインタ型です。
+他の言語にも存在しています。Rustには、参照以上の機能を提供する色々なスマートポインタが標準ライブラリに定義されています。
+一般的な概念を探索するために、いくつかのスマートポインタの例を見ていきますが、その一つが<em>参照カウント</em>方式のスマートポインタ型です。
 このポインタのおかげでデータに複数の所有者を持たせることができます。
 所有者の数を追いかけ、所有者がいなくなったらデータの片付けをしてくれるからです。</p>
 <!--
-In Rust, which uses the concept of ownership and borrowing, an additional
-difference between references and smart pointers is that references are
-pointers that only borrow data; in contrast, in many cases, smart pointers
-*own* the data they point to.
+Rust, with its concept of ownership and borrowing, has an additional difference
+between references and smart pointers: while references only borrow data, in
+many cases, smart pointers *own* the data they point to.
 -->
-<p>所有権と借用の概念を使うRustにおいて、参照とスマートポインタにはもう1つ違いがあります。参照はデータを借用するだけのポインタなのです。
-対照的に多くの場合、スマートポインタは指しているデータを<em>所有</em>します。</p>
+<p>所有権と借用の概念を持つRustでは、参照とスマートポインタにはもう1つ違いがあります:
+参照はデータを借用するだけである一方で、スマートポインタは、多くの場合、指しているデータを<em>所有</em>します。</p>
 <!--
-We’ve already encountered a few smart pointers in this book, such as `String`
-and `Vec<T>` in Chapter 8, although we didn’t call them smart pointers at the
-time. Both these types count as smart pointers because they own some memory and
-allow you to manipulate it. They also have metadata (such as their capacity)
-and extra capabilities or guarantees (such as with `String` ensuring its data
-will always be valid UTF-8).
+Though we didn’t call them as such at the time, we’ve already encountered a few
+smart pointers in this book, including `String` and `Vec<T>` in Chapter 8. Both
+these types count as smart pointers because they own some memory and allow you
+to manipulate it. They also have metadata and extra capabilities or guarantees.
+`String`, for example, stores its capacity as metadata and has the extra
+ability to ensure its data will always be valid UTF-8.
 -->
-<p>私達はすでに、この本の中でいくつかのスマートポインタに遭遇してきました。例えば第8章の<code>String</code>や<code>Vec&lt;T&gt;</code>です。ただし、私達はそれらをスマートポインタとは呼んでいませんでした。
-これらの型がどちらもスマートポインタに数えられるのは、あるメモリを所有しそれを弄ることができるからです。
-また、メタデータ（キャパシティなど）や追加の能力、あるいは保証（<code>String</code>ならデータが常に有効なUTF-8であると保証することなど）もあります。</p>
+<p>そのときはそう呼ばなかったものの、私達はすでに、この本の中でいくつかのスマートポインタに遭遇してきました。
+例えば第8章の<code>String</code>や<code>Vec&lt;T&gt;</code>です。これらの型はどちらも、あるメモリを所有しそれを弄ることができるので、
+スマートポインタと見なされます。また、メタデータや追加の能力、あるいは保証もあります。
+例えば<code>String</code>は、その許容量をメタデータとして保持し、データが常に有効なUTF-8であると保証する追加の能力を持ちます。</p>
 <!--
-Smart pointers are usually implemented using structs. The characteristic that
-distinguishes a smart pointer from an ordinary struct is that smart pointers
-implement the `Deref` and `Drop` traits. The `Deref` trait allows an instance
-of the smart pointer struct to behave like a reference so you can write code
-that works with either references or smart pointers. The `Drop` trait allows
-you to customize the code that is run when an instance of the smart pointer
-goes out of scope. In this chapter, we’ll discuss both traits and demonstrate
-why they’re important to smart pointers.
+Smart pointers are usually implemented using structs. Unlike an ordinary
+struct, smart pointers implement the `Deref` and `Drop` traits. The `Deref`
+trait allows an instance of the smart pointer struct to behave like a reference
+so you can write your code to work with either references or smart pointers.
+The `Drop` trait allows you to customize the code that’s run when an instance
+of the smart pointer goes out of scope. In this chapter, we’ll discuss both
+traits and demonstrate why they’re important to smart pointers.
 -->
-<p>スマートポインタは普通、構造体を使用して実装されています。スマートポインタを通常の構造体と区別する特徴は、
-スマートポインタが<code>Deref</code>と<code>Drop</code>トレイトを実装していることです。<code>Deref</code>トレイトにより、スマートポインタ構造体のインスタンスは、
-参照のように振る舞うことができるので、参照あるいはスマートポインタのどちらとも動作するコードを書くことができます。
+<p>スマートポインタは普通、構造体を使用して実装されています。通常の構造体とは異なり、
+スマートポインタが<code>Deref</code>と<code>Drop</code>トレイトを実装します。<code>Deref</code>トレイトにより、スマートポインタ構造体のインスタンスは、
+参照のように振る舞うことができるので、参照あるいはスマートポインタのどちらとも動作するようにコードを書くことができます。
 <code>Drop</code>トレイトにより、スマートポインタのインスタンスがスコープを外れた時に走るコードをカスタマイズすることができます。
 この章では、どちらのトレイトについても議論し、これらのトレイトがスマートポインタにとって重要な理由を説明します。</p>
 <!--
@@ -29027,7 +29025,7 @@ cover the most common smart pointers in the standard library:
 * `Box<T>` for allocating values on the heap
 * `Rc<T>`, a reference counting type that enables multiple ownership
 * `Ref<T>` and `RefMut<T>`, accessed through `RefCell<T>`, a type that enforces
-the borrowing rules at runtime instead of compile time
+  the borrowing rules at runtime instead of compile time
 -->
 <ul>
 <li>ヒープに値を確保する<code>Box&lt;T&gt;</code></li>
@@ -29067,11 +29065,11 @@ either. You’ll use them most often in these situations:
 しかし、特別な能力がたくさんあるわけでもありません。以下のような場面で最もよく使われるでしょう。</p>
 <!--
 * When you have a type whose size can’t be known at compile time and you want
-to use a value of that type in a context that requires an exact size
+  to use a value of that type in a context that requires an exact size
 * When you have a large amount of data and you want to transfer ownership but
-ensure the data won’t be copied when you do so
+  ensure the data won’t be copied when you do so
 * When you want to own a value and you care only that it’s a type that
-implements a particular trait rather than being of a specific type
+  implements a particular trait rather than being of a specific type
 -->
 <ul>
 <li>コンパイル時にはサイズを知ることができない型があり、正確なサイズを要求する文脈でその型の値を使用する時</li>
@@ -29083,21 +29081,23 @@ implements a particular trait rather than being of a specific type
 辞書には文の先頭に用いて強調する用法があると書かれているので、これのことと思われる
 -->
 <!--
-We’ll demonstrate the first situation in the “Enabling Recursive Types with
-Boxes” section. In the second case, transferring ownership of a large amount of
-data can take a long time because the data is copied around on the stack. To
-improve performance in this situation, we can store the large amount of data on
-the heap in a box. Then, only the small amount of pointer data is copied around
-on the stack, while the data it references stays in one place on the heap. The
-third case is known as a *trait object*, and Chapter 17 devotes an entire
-section, “Using Trait Objects That Allow for Values of Different Types,” just
-to that topic. So what you learn here you’ll apply again in Chapter 17!
+We’ll demonstrate the first situation in the [“Enabling Recursive Types with
+Boxes”](#enabling-recursive-types-with-boxes) section. In the
+second case, transferring ownership of a large amount of data can take a long
+time because the data is copied around on the stack. To improve performance in
+this situation, we can store the large amount of data on the heap in a box.
+Then, only the small amount of pointer data is copied around on the stack,
+while the data it references stays in one place on the heap. The third case is
+known as a *trait object*, and Chapter 17 devotes an entire section, [“Using
+Trait Objects That Allow for Values of Different Types,”][trait-objects]
+just to that topic. So what you learn here you’ll apply again in
+Chapter 17!
 -->
-<p>「ボックスで再帰的な型を可能にする」節で1つ目の場合について実際に説明します。
+<p><a href="ch15-01-box.html#%E3%83%9C%E3%83%83%E3%82%AF%E3%82%B9%E3%81%A7%E5%86%8D%E5%B8%B0%E7%9A%84%E3%81%AA%E5%9E%8B%E3%82%92%E5%8F%AF%E8%83%BD%E3%81%AB%E3%81%99%E3%82%8B">「ボックスで再帰的な型を可能にする」</a>節で1つ目の場合について実際に説明します。
 2番目の場合、多くのデータの所有権を転送するには、データがスタック上でコピーされるので、長い時間がかかり得ます。
 この場面でパフォーマンスを向上させるために、多くのデータをヒープ上にボックスとして格納することができます。
 そして、小さなポインタのデータのみがスタック上でコピーされる一方、それが参照しているデータはヒープ上の1箇所に留まります。
-3番目のケースは<em>トレイトオブジェクト</em>として知られています。第17章の「トレイトオブジェクトで異なる型の値を許容する」の節は、
+3番目のケースは<em>トレイトオブジェクト</em>として知られています。第17章の<a href="ch17-02-trait-objects.html#%E3%83%88%E3%83%AC%E3%82%A4%E3%83%88%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%A7%E7%95%B0%E3%81%AA%E3%82%8B%E5%9E%8B%E3%81%AE%E5%80%A4%E3%82%92%E8%A8%B1%E5%AE%B9%E3%81%99%E3%82%8B">「トレイトオブジェクトで異なる型の値を許容する」</a>の節は、
 すべてその話題に捧げられています。
 従って、ここで学ぶことは第17章でもまた使うことになります！</p>
 <!--
@@ -29105,10 +29105,10 @@ to that topic. So what you learn here you’ll apply again in Chapter 17!
 -->
 <h3 id="boxtを使ってヒープにデータを格納する"><a class="header" href="#boxtを使ってヒープにデータを格納する"><code>Box&lt;T&gt;</code>を使ってヒープにデータを格納する</a></h3>
 <!--
-Before we discuss this use case for `Box<T>`, we’ll cover the syntax and how to
-interact with values stored within a `Box<T>`.
+Before we discuss the heap storage use case for `Box<T>`, we’ll cover the
+syntax and how to interact with values stored within a `Box<T>`.
 -->
-<p><code>Box&lt;T&gt;</code>のこのユースケースを議論する前に、<code>Box&lt;T&gt;</code>の記法と、<code>Box&lt;T&gt;</code>内に格納された値を読み書きする方法について講義しましょう。</p>
+<p><code>Box&lt;T&gt;</code>のヒープストレージのユースケースを議論する前に、<code>Box&lt;T&gt;</code>の記法と、<code>Box&lt;T&gt;</code>内に格納された値を読み書きする方法について講義しましょう。</p>
 <!--
 Listing 15-1 shows how to use a box to store an `i32` value on the heap:
 -->
@@ -29130,14 +29130,14 @@ box</span>
 We define the variable `b` to have the value of a `Box` that points to the
 value `5`, which is allocated on the heap. This program will print `b = 5`; in
 this case, we can access the data in the box similar to how we would if this
-data was on the stack. Just like any owned value, when a box goes out of
+data were on the stack. Just like any owned value, when a box goes out of
 scope, as `b` does at the end of `main`, it will be deallocated. The
-deallocation happens for the box (stored on the stack) and the data it points
-to (stored on the heap).
+deallocation happens both for the box (stored on the stack) and the data it
+points to (stored on the heap).
 -->
 <p>変数<code>b</code>を定義して<code>Box</code>の値を保持します。<code>Box</code>は値<code>5</code>を指し、値<code>5</code>はヒープに確保されています。このプログラムは、<code>b = 5</code>と出力するでしょう。つまりこの場合、このデータがスタックにあるのと同じような方法でボックスのデータにアクセスできます。
 所有された値と全く同じでスコープを抜けるとき、実際<code>b</code>は<code>main</code>の終わりで抜けるのですが、
-ボックスはメモリから解放されます。メモリの解放は（スタックに格納されている）ボックスと（ヒープに格納されている）指しているデータに対して起きます。</p>
+ボックスはメモリから解放されます。メモリの解放は（スタックに格納されている）ボックスと（ヒープに格納されている）指しているデータの両方に対して起きます。</p>
 <!--
 Putting a single value on the heap isn’t very useful, so you won’t use boxes by
 themselves in this way very often. Having values like a single `i32` on the
@@ -29153,25 +29153,25 @@ wouldn’t be allowed to if we didn’t have boxes.
 -->
 <h3 id="ボックスで再帰的な型を可能にする"><a class="header" href="#ボックスで再帰的な型を可能にする">ボックスで再帰的な型を可能にする</a></h3>
 <!--
-At compile time, Rust needs to know how much space a type takes up. One type
-whose size can’t be known at compile time is a *recursive type*, where a value
-can have as part of itself another value of the same type. Because this nesting
-of values could theoretically continue infinitely, Rust doesn’t know how much
-space a value of a recursive type needs. However, boxes have a known size, so
-by inserting a box in a recursive type definition, you can have recursive types.
+A value of *recursive type* can have another value of the same type as part of
+itself. Recursive types pose an issue because at compile time Rust needs to
+know how much space a type takes up. However, the nesting of values of
+recursive types could theoretically continue infinitely, so Rust can’t know how
+much space the value needs. Because boxes have a known size, we can enable
+recursive types by inserting a box in the recursive type definition.
 -->
-<p>コンパイル時にコンパイラが知っておかねばならないのは、ある型が占有する領域の大きさです。コンパイル時にサイズがわからない型の1つ
-として
-<em>再帰的な型</em>があります。この型の値は、値の一部として同じ型の他の値を持つ場合があります。値のこうしたネストは、理論的には無限に続く可能性があるので、コンパイラは再帰的な型の値が必要とする領域を知ることができないのです。
-しかしながら、ボックスのサイズはわかっているので、再帰的な型の定義にボックスを挟むことで再帰的な型を作ることができます。</p>
+<p><em>再帰的な型</em>の値は、値の一部として同じ型の他の値を持つことができます。再帰的な型はある問題を提起します。
+コンパイラは、コンパイル時にある型が占有する領域の大きさを知っておかなくてはならないからです。
+しかし、再帰的な型の値のネストは、理論的には無限に続く可能性があるので、コンパイラはその値が必要とする領域の大きさを知ることができないのです。
+ボックスのサイズはわかっているので、再帰的な型の定義にボックスを挟むことで、再帰的な型を作ることができます。</p>
 <!--
-Let’s explore the *cons list*, which is a data type common in functional
-programming languages, as an example of a recursive type. The cons list type
+As an example of a recursive type, let’s explore the *cons list*. This is a data
+type commonly found in functional programming languages. The cons list type
 we’ll define is straightforward except for the recursion; therefore, the
 concepts in the example we’ll work with will be useful any time you get into
 more complex situations involving recursive types.
 -->
-<p><em>コンスリスト</em>は関数型プログラミング言語では一般的なデータ型ですが、これを再帰的な型の例として探究しましょう。
+<p>再帰的な型の例として、<em>コンスリスト</em>を探究しましょう。これは関数型プログラミング言語でよく見られるデータ型です。
 我々が定義するコンスリストは、再帰を除けば素直です。故に、これから取り掛かる例に現れる概念は、
 再帰的な型が関わるもっと複雑な場面に遭遇したときには必ず役に立つでしょう。</p>
 <!--
@@ -29180,20 +29180,22 @@ more complex situations involving recursive types.
 <h4 id="コンスリストについてもっと詳しく"><a class="header" href="#コンスリストについてもっと詳しく">コンスリストについてもっと詳しく</a></h4>
 <!--
 A *cons list* is a data structure that comes from the Lisp programming language
-and its dialects. In Lisp, the `cons` function (short for “construct function”)
-constructs a new pair from its two arguments, which usually are a single value
-and another pair. These pairs containing pairs form a list.
+and its dialects and is made up of nested pairs, and is the Lisp version of a
+linked list. Its name comes from the `cons` function (short for “construct
+function”) in Lisp that constructs a new pair from its two arguments. By
+calling `cons` on a pair consisting of a value and another pair, we can
+construct cons lists made up of recursive pairs.
 -->
-<p>コンスリストは、Lispプログラミング言語とその方言に由来するデータ構造です。Lispでは、
-<code>cons</code>関数（&quot;construct function&quot;の省略形です）は2つの引数から新しいペアを構成します。
-この引数は通常、単独の値と別のペアからなります。これらのペアを含むペアがリストをなすのです。</p>
+<p>コンスリストは、Lispプログラミング言語とその方言に由来するデータ構造で、ネストされたペアによって構成される、
+Lisp版の連結リストです。その名前は、2つの引数から新しいペアを構築するLispの<code>cons</code>関数（&quot;construct function&quot;の省略形です）に由来します。
+<code>cons</code>を、値と別のペアからなるペアに対して呼び出すことで、再帰的なペアからなるコンスリストを構築することができます。</p>
 <!--
-The cons function concept has made its way into more general functional
-programming jargon: “to cons *x* onto *y*” informally means to construct a new
-container instance by putting the element *x* at the start of this new
-container, followed by the container *y*.
+For example, here’s a pseudocode representation of a cons list containing the
+list 1, 2, 3 with each pair in parentheses:
 -->
-<p>cons関数という概念は、より一般的な関数型プログラミングの俗語にもなっています。&quot;to cons <em>x</em> onto <em>y</em>&quot;はコンテナ<em>y</em>の先頭に要素<em>x</em>を置くことで新しいコンテナのインスタンスを生成することを意味します。</p>
+<p>例えば、リスト 1, 2, 3 を含むコンスリストを、丸かっこを各ペアする擬似コードで表現すると、次のようになります:</p>
+<pre><code class="language-text">(1, (2, (3, Nil)))
+</code></pre>
 <!--
 Each item in a cons list contains two elements: the value of the current item
 and the next item. The last item in the list contains only a value called `Nil`
@@ -29207,16 +29209,15 @@ which is an invalid or absent value.
 繰り返しの基底ケースを示すのに標準的に使われる名前は<code>Nil</code>です。これは第6章の&quot;null&quot;や&quot;nil&quot;の概念とは異なることに注意してください。
 &quot;null&quot;や&quot;nil&quot;は、無効だったり存在しない値です。</p>
 <!--
-Although functional programming languages use cons lists frequently, the cons
-list isn't a commonly used data structure in Rust. Most of the time when you
-have a list of items in Rust, `Vec<T>` is a better choice to use. Other, more
-complext recursive data types *are* useful in various situations, but by
-starting with the cons list, we can explore how boxes let us define a recursive
-data type without much distraction.
+The cons list isn’t a commonly used data structure in Rust. Most of the time
+when you have a list of items in Rust, `Vec<T>` is a better choice to use.
+Other, more complex recursive data types *are* useful in various situations,
+but by starting with the cons list in this chapter, we can explore how boxes
+let us define a recursive data type without much distraction.
 -->
-<p>関数型プログラミング言語ではコンスリストは頻繁に使われますが、Rustではあまり使用されないデータ構造です。
+<p>コンスリストはRustではあまり使用されないデータ構造です。
 Rustで要素のリストがあるときはほとんど、<code>Vec&lt;T&gt;</code>を使用するのがよりよい選択になります。
-より複雑な他の再帰的なデータ型は様々な場面で役に立ち<em>ます</em>。しかしコンスリストから始めることで、
+より複雑な他の再帰的なデータ型は様々な場面で役に立ち<em>ます</em>。しかしこの章ではコンスリストから始めることで、
 ボックスのおかげで再帰的なデータ型を定義できるわけを、あまり気を散らすことなく調べることができるのです。</p>
 <!--
 Listing 15-2 contains an enum definition for a cons list. Note that this code
@@ -29230,20 +29231,22 @@ we’ll demonstrate.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">enum List {
+<pre><code class="language-rust ignore does_not_compile">enum List {
     Cons(i32, List),
     Nil,
-}</code></pre>
+}
+<span class="boring">
+</span><span class="boring">fn main() {}</span></code></pre>
 <!--
 <span class="caption">Listing 15-2: The first attempt at defining an enum to
 represent a cons list data structure of `i32` values</span>
 -->
 <p><span class="caption">リスト15-2: <code>i32</code>値のコンスリストデータ構造を表すenumを定義する最初の試行</span></p>
 <!--
-Note: We’re implementing a cons list that holds only `i32` values for the
-purposes of this example. We could have implemented it using generics, as we
-discussed in Chapter 10, to define a cons list type that could store values of
-any type.
+> Note: We’re implementing a cons list that holds only `i32` values for the
+> purposes of this example. We could have implemented it using generics, as we
+> discussed in Chapter 10, to define a cons list type that could store values of
+> any type.
 -->
 <blockquote>
 <p>注釈: この例のために<code>i32</code>値だけを保持するコンスリストを実装します。第10章で議論したように、
@@ -29258,7 +29261,12 @@ Listing 15-3:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use List::{Cons, Nil};
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">enum List {
+</span><span class="boring">    Cons(i32, List),
+</span><span class="boring">    Nil,
+</span><span class="boring">}
+</span><span class="boring">
+</span>use crate::List::{Cons, Nil};
 
 fn main() {
     let list = Cons(1, Cons(2, Cons(3, Nil)));
@@ -29282,18 +29290,25 @@ If we try to compile the code in Listing 15-3, we get the error shown in
 Listing 15-4:
 -->
 <p>リスト15-3のコードをコンパイルしようとすると、リスト15-4に示したエラーが出ます。</p>
-<pre><code class="language-text">error[E0072]: recursive type `List` has infinite size
-(エラー: 再帰的な型`List`は無限のサイズです)
+<pre><code class="language-console">$ cargo run
+   Compiling cons-list v0.1.0 (file:///projects/cons-list)
+error[E0072]: recursive type `List` has infinite size
+(エラー: 再帰的な型`List`は無限のサイズを持ちます)
  --&gt; src/main.rs:1:1
   |
 1 | enum List {
-  | ^^^^^^^^^ recursive type has infinite size
+  | ^^^^^^^^^
 2 |     Cons(i32, List),
-  |               ----- recursive without indirection
+  |               ---- recursive without indirection
   |
-  = help: insert indirection (e.g., a `Box`, `Rc`, or `&amp;`) at some point to
-  make `List` representable
-  (助言: 間接参照(例: `Box`、`Rc`、あるいは`&amp;`)をどこかに挿入して、`List`を表現可能にしてください)
+help: insert some indirection (e.g., a `Box`, `Rc`, or `&amp;`) to break the cycle
+(ヘルプ: 何らかの間接参照(例: `Box`、`Rc`、あるいは`&amp;`)を挿入して、循環参照を断ち切ってください)
+  |
+2 |     Cons(i32, Box&lt;List&gt;),
+  |               ++++    +
+
+For more information about this error, try `rustc --explain E0072`.
+error: could not compile `cons-list` (bin &quot;cons-list&quot;) due to 1 previous error
 </code></pre>
 <!--
 <span class="caption">Listing 15-4: The error we get when attempting to define
@@ -29304,13 +29319,12 @@ a recursive enum</span>
 The error shows this type “has infinite size.” The reason is that we’ve defined
 `List` with a variant that is recursive: it holds another value of itself
 directly. As a result, Rust can’t figure out how much space it needs to store a
-`List` value. Let’s break down why we get this error a bit. First, let’s look
-at how Rust decides how much space it needs to store a value of a non-recursive
-type.
+`List` value. Let’s break down why we get this error. First, we’ll look at how
+Rust decides how much space it needs to store a value of a non-recursive type.
 -->
 <p>エラーは、この型は「無限のサイズである」と表示しています。理由は、再帰的な列挙子を含む<code>List</code>を定義したからです。
 つまり、<code>List</code>は自身の別の値を直接保持しているのです。結果として、コンパイラは<code>List</code>値を格納するのに必要な領域が計算できません。
-このエラーが出た理由を少し噛み砕きましょう。まず、非再帰的な型の値を格納するのに必要な領域をどうコンパイラが決定しているかを見ましょう。</p>
+このエラーが出た理由を噛み砕きましょう。まず、非再帰的な型の値を格納するのに必要な領域をどうコンパイラが決定しているかを見ましょう。</p>
 <!--
 #### Computing the Size of a Non-Recursive Type
 -->
@@ -29320,15 +29334,14 @@ Recall the `Message` enum we defined in Listing 6-2 when we discussed enum
 definitions in Chapter 6:
 -->
 <p>第6章でenum定義を議論した時にリスト6-2で定義した<code>Message</code> enumを思い出してください。</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>enum Message {
+<pre><pre class="playground"><code class="language-rust">enum Message {
     Quit,
     Move { x: i32, y: i32 },
     Write(String),
     ChangeColor(i32, i32, i32),
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {}</span></code></pre></pre>
 <!--
 To determine how much space to allocate for a `Message` value, Rust goes
 through each of the variants to see which variant needs the most space. Rust
@@ -29371,35 +29384,40 @@ variant. The `Cons` variant holds a value of type `i32` and a value of type
 -->
 <h4 id="boxtで既知のサイズの再帰的な型を得る"><a class="header" href="#boxtで既知のサイズの再帰的な型を得る"><code>Box&lt;T&gt;</code>で既知のサイズの再帰的な型を得る</a></h4>
 <!--
-Rust can’t figure out how much space to allocate for recursively defined types,
-so the compiler gives the error in Listing 15-4. But the error does include
-this helpful suggestion:
+Because Rust can’t figure out how much space to allocate for recursively
+defined types, the compiler gives an error with this helpful suggestion:
 -->
-<p>コンパイラは、再帰的に定義された型に必要なメモリ量を計算できないので、リスト15-4ではエラーを返します。
-しかし、エラーにはこんな役立つ提案が含まれているのです。</p>
-<pre><code class="language-text">  = help: insert indirection (e.g., a `Box`, `Rc`, or `&amp;`) at some point to
-  make `List` representable
+<p>コンパイラは、再帰的に定義された型に必要なメモリ量を計算できないので、以下の役に立つ提案を含むエラーを返します:</p>
+<!-- manual-regeneration
+after doing automatic regeneration, look at listings/ch15-smart-pointers/listing-15-03/output.txt and copy the relevant line
+-->
+<pre><code class="language-text">help: insert some indirection (e.g., a `Box`, `Rc`, or `&amp;`) to break the cycle
+(ヘルプ: 何らかの間接参照(例: `Box`、`Rc`、あるいは`&amp;`)を挿入して、循環を断ち切ってください)
+  |
+2 |     Cons(i32, Box&lt;List&gt;),
+  |               ++++    +
 </code></pre>
 <!--
 In this suggestion, “indirection” means that instead of storing a value
-directly, we’ll change the data structure to store the value indirectly by
+directly, we should change the data structure to store the value indirectly by
 storing a pointer to the value instead.
 -->
-<p>この提案において「間接参照」は、値を直接格納するのではなく、データ構造を変更して値を間接的に格納することを意味します。これは値の代わりに値へのポインタを格納することによって可能になります。</p>
+<p>この提案において「間接参照」は、値を直接格納するのではなく、データ構造を変更して値を間接的に格納すべきであるという意味です。
+これは値の代わりに値へのポインタを格納することによって可能になります。</p>
 <!--
 Because a `Box<T>` is a pointer, Rust always knows how much space a `Box<T>`
 needs: a pointer’s size doesn’t change based on the amount of data it’s
 pointing to. This means we can put a `Box<T>` inside the `Cons` variant instead
 of another `List` value directly. The `Box<T>` will point to the next `List`
 value that will be on the heap rather than inside the `Cons` variant.
-Conceptually, we still have a list, created with lists “holding” other lists,
-but this implementation is now more like placing the items next to one another
+Conceptually, we still have a list, created with lists holding other lists, but
+this implementation is now more like placing the items next to one another
 rather than inside one another.
 -->
 <p><code>Box&lt;T&gt;</code>はポインタなので、コンパイラには<code>Box&lt;T&gt;</code>が必要とする領域が必ずわかります。すなわち、ポインタのサイズは指しているデータの量に左右されません。つまり、別の<code>List</code>値を直接置く代わりに、
 <code>Cons</code>列挙子の中に<code>Box&lt;T&gt;</code>を配置することができます。<code>Box&lt;T&gt;</code>は、
 <code>Cons</code>列挙子の中ではなく、ヒープに置かれる次の<code>List</code>値を指します。概念的には、
-依然として我々のリストは他のリストを「保持する」リストによって作られたものです。
+依然として我々のリストは他のリストを保持するリストによって作られたものです。
 しかし、今やこの実装は、要素をお互いの中に配置するというより、隣り合うように配置するような感じになります。</p>
 <!--
 We can change the definition of the `List` enum in Listing 15-2 and the usage
@@ -29416,13 +29434,10 @@ of the `List` in Listing 15-3 to the code in Listing 15-5, which will compile:
     Nil,
 }
 
-use List::{Cons, Nil};
+use crate::List::{Cons, Nil};
 
 fn main() {
-    let list = Cons(1,
-        Box::new(Cons(2,
-            Box::new(Cons(3,
-                Box::new(Nil))))));
+    let list = Cons(1, Box::new(Cons(2, Box::new(Cons(3, Box::new(Nil))))));
 }</code></pre></pre>
 <!--
 <span class="caption">Listing 15-5: Definition of `List` that uses `Box<T>` in
@@ -29430,7 +29445,7 @@ order to have a known size</span>
 -->
 <p><span class="caption">リスト15-5: 既知のサイズにするために<code>Box&lt;T&gt;</code>を使用する<code>List</code>の定義</span></p>
 <!--
-The `Cons` variant will need the size of an `i32` plus the space to store the
+The `Cons` variant needs the size of an `i32` plus the space to store the
 box’s pointer data. The `Nil` variant stores no values, so it needs less space
 than the `Cons` variant. We now know that any `List` value will take up the
 size of an `i32` plus the size of a box’s pointer data. By using a box, we’ve
@@ -29438,7 +29453,7 @@ broken the infinite, recursive chain, so the compiler can figure out the size
 it needs to store a `List` value. Figure 15-2 shows what the `Cons` variant
 looks like now.
 -->
-<p><code>Cons</code>列挙子は、1つの<code>i32</code>のサイズに加えてボックスのポインタデータを格納する領域を必要とするでしょう。
+<p><code>Cons</code>列挙子は、1つの<code>i32</code>のサイズに加えてボックスのポインタデータを格納する領域を必要とします。
 <code>Nil</code>列挙子は値を格納しないので、<code>Cons</code>列挙子よりも必要な領域は小さいです。これで、
 どんな<code>List</code>値も<code>i32</code>1つのサイズに加えてボックスのポインタデータのサイズを必要とすることがわかりました。
 ボックスを使うことで無限に続く再帰の連鎖を断ち切ったので、コンパイラは<code>List</code>値を格納するのに必要なサイズを計算できます。
@@ -29455,7 +29470,7 @@ because `Cons` holds a `Box`</span>
 <!--
 Boxes provide only the indirection and heap allocation; they don’t have any
 other special capabilities, like those we’ll see with the other smart pointer
-types. They also don’t have any performance overhead that these special
+types. They also don’t have the performance overhead that these special
 capabilities incur, so they can be useful in cases like the cons list where the
 indirection is the only feature we need. We’ll look at more use cases for boxes
 in Chapter 17, too.
@@ -29468,35 +29483,39 @@ in Chapter 17, too.
 The `Box<T>` type is a smart pointer because it implements the `Deref` trait,
 which allows `Box<T>` values to be treated like references. When a `Box<T>`
 value goes out of scope, the heap data that the box is pointing to is cleaned
-up as well because of the `Drop` trait implementation. Let’s explore these two
-traits in more detail. These two traits will be even more important to the
-functionality provided by the other smart pointer types we’ll discuss in the
-rest of this chapter.
+up as well because of the `Drop` trait implementation. These two traits will be
+even more important to the functionality provided by the other smart pointer
+types we’ll discuss in the rest of this chapter. Let’s explore these two traits
+in more detail.
 -->
 <p><code>Box&lt;T&gt;</code>型がスマートポインタなのは、<code>Deref</code>トレイトを実装しているからです。
 このトレイトにより<code>Box&lt;T&gt;</code>の値を参照のように扱うことができます。
 <code>Box&lt;T&gt;</code>値がスコープを抜けると、ボックスが参照しているヒープデータも片付けられます。これは<code>Drop</code>トレイト実装のおかげです。
-これら2つのトレイトをより詳しく探究しましょう。これら2つのトレイトは、他のスマートポインタ型が提供する機能にとってさらに重要なものです。それらついてはこの章の残りで議論します。</p>
+これら2つのトレイトは、他のスマートポインタ型が提供する機能にとってさらに重要なものです。それらついてはこの章の残りで議論します。
+これら2つのトレイトをより詳しく探究しましょう。</p>
+<!--
+[trait-objects]: ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Treating Smart Pointers Like Regular References with the `Deref` Trait
 -->
 <h2 id="derefトレイトでスマートポインタを普通の参照のように扱う"><a class="header" href="#derefトレイトでスマートポインタを普通の参照のように扱う"><code>Deref</code>トレイトでスマートポインタを普通の参照のように扱う</a></h2>
 <!--
 Implementing the `Deref` trait allows you to customize the behavior of the
-*dereference operator*, `*` (as opposed to the multiplication or glob
+*dereference operator* `*` (not to be confused with the multiplication or glob
 operator). By implementing `Deref` in such a way that a smart pointer can be
 treated like a regular reference, you can write code that operates on
 references and use that code with smart pointers too.
 -->
-<p><code>Deref</code>トレイトを実装することで、<em>参照外し演算子</em>の<code>*</code>（掛け算やグロブ演算子とは違います）の振る舞いをカスタマイズできます。
+<p><code>Deref</code>トレイトを実装することで、<em>参照外し演算子</em>の<code>*</code>（掛け算やグロブ演算子と混同しないてください）の振る舞いをカスタマイズできます。
 <code>Deref</code>を実装してスマートポインタを普通の参照みたいに扱えるようにすれば、
 参照に対して処理を行うコードを書いて、そのコードをスマートポインタに対しても使うことができるのです。</p>
 <!--
-Let’s first look at how dereference operator works with regular references.
-Then we'll try to define a custom type that behaves like `Box<T>`, and see why
-the dereference operator doesn't work like a reference on our newly defined
+Let’s first look at how the dereference operator works with regular references.
+Then we’ll try to define a custom type that behaves like `Box<T>`, and see why
+the dereference operator doesn’t work like a reference on our newly defined
 type. We’ll explore how implementing the `Deref` trait makes it possible for
-smart pointers to work in a similar way as references. Then we’ll look at
+smart pointers to work in ways similar to references. Then we’ll look at
 Rust’s *deref coercion* feature and how it lets us work with either references
 or smart pointers.
 -->
@@ -29505,17 +29524,33 @@ or smart pointers.
 <code>Deref</code>トレイトを実装すればスマートポインタは参照と同じように機能するので、そのやり方を調べましょう。
 そして、Rustには<em>参照外し型強制</em>という機能があり、その機能のおかげで参照やスマートポインタをうまく使うことができるので、それに目を向けてみましょう。</p>
 <!--
-### Following the Pointer to the Value with the Dereference Operator
+> Note: there’s one big difference between the `MyBox<T>` type we’re about to
+> build and the real `Box<T>`: our version will not store its data on the heap.
+> We are focusing this example on `Deref`, so where the data is actually stored
+> is less important than the pointer-like behavior.
 -->
-<h3 id="参照外し演算子で値までポインタを追いかける"><a class="header" href="#参照外し演算子で値までポインタを追いかける">参照外し演算子で値までポインタを追いかける</a></h3>
+<blockquote>
+<p>注釈: 私たちが構築しようとしている<code>MyBox&lt;T&gt;</code>型と本物の<code>Box&lt;T&gt;</code>との間には、1つ大きな違いがあります:
+私たちのバージョンはヒープ上にデータを保存しません。
+私たちは<code>Deref</code>の例として注目しているので、データが実際にどこに保存されるかは、
+ポインタのように振る舞うかどうかに比べて、重要ではありません。</p>
+</blockquote>
+<!-- Old link, do not remove -->
+<!--
+<a id="following-the-pointer-to-the-value-with-the-dereference-operator"></a>
+-->
+<!--
+### Following the Pointer to the Value
+-->
+<h3 id="値までポインタを追いかける"><a class="header" href="#値までポインタを追いかける">値までポインタを追いかける</a></h3>
 <!--
 A regular reference is a type of pointer, and one way to think of a pointer is
 as an arrow to a value stored somewhere else. In Listing 15-6, we create a
 reference to an `i32` value and then use the dereference operator to follow the
-reference to the data:
+reference to the value:
 -->
 <p>普通の参照は1種のポインタであり、ポインタはどこか他の場所に格納された値への矢印と見なすことができます。
-リスト15-6では、<code>i32</code>値への参照を生成してから参照外し演算子を使ってデータまで参照を辿ります。</p>
+リスト15-6では、<code>i32</code>値への参照を生成してから参照外し演算子を使って値まで参照を辿ります。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -29533,37 +29568,55 @@ reference to an `i32` value</span>
 -->
 <p><span class="caption">リスト15-6: 参照外し演算子を使用して参照を<code>i32</code>値まで追いかける</span></p>
 <!--
-The variable `x` holds an `i32` value, `5`. We set `y` equal to a reference to
+The variable `x` holds an `i32` value `5`. We set `y` equal to a reference to
 `x`. We can assert that `x` is equal to `5`. However, if we want to make an
 assertion about the value in `y`, we have to use `*y` to follow the reference
-to the value it’s pointing to (hence *dereference*). Once we dereference `y`,
-we have access to the integer value `y` is pointing to that we can compare with
-`5`.
+to the value it’s pointing to (hence *dereference*) so the compiler can compare
+the actual value. Once we dereference `y`, we have access to the integer value
+`y` is pointing to that we can compare with `5`.
 -->
 <p>変数<code>x</code>は<code>i32</code>値の<code>5</code>を保持しています。<code>y</code>は<code>x</code>への参照として設定します。<code>x</code>は<code>5</code>に等しいとアサートできます。
-しかしながら、<code>y</code>の値に関するアサートを行いたい場合、<code>*y</code>を使用して参照が指している値まで追いかけなければなりません（そのため<em>参照外し</em>です）。
+しかしながら、<code>y</code>の値に関するアサートを行いたい場合、コンパイラが実際の値と比較できるように、
+<code>*y</code>を使用して参照が指している値まで追いかけなければなりません（そのため<em>参照外し</em>です）。
 一旦<code>y</code>の参照を外せば、<code>y</code>が指している整数値にアクセスできます。これは<code>5</code>と比較可能です。</p>
 <!--
 If we tried to write `assert_eq!(5, y);` instead, we would get this compilation
 error:
 -->
 <p>代わりに<code>assert_eq!(5, y);</code>と書こうとしたら、こんなコンパイルエラーが出るでしょう。</p>
-<pre><code class="language-text">error[E0277]: the trait bound `{integer}: std::cmp::PartialEq&lt;&amp;{integer}&gt;` is
-not satisfied
-(エラー: トレイト境界`{integer}: std::cmp::PartialEq&lt;&amp;{integer}&gt;`は満たされていません)
+<pre><code class="language-console">$ cargo run
+   Compiling deref-example v0.1.0 (file:///projects/deref-example)
+error[E0277]: can't compare `{integer}` with `&amp;{integer}`
+(エラー: `{integer}`を`&amp;{integer}`と比較することはできません)
  --&gt; src/main.rs:6:5
   |
 6 |     assert_eq!(5, y);
-  |     ^^^^^^^^^^^^^^^^^ can't compare `{integer}` with `&amp;{integer}`
+  |     ^^^^^^^^^^^^^^^^ no implementation for `{integer} == &amp;{integer}`
+  |                     (`{integer} == &amp;{integer}`のための実装はありません)
   |
-  = help: the trait `std::cmp::PartialEq&lt;&amp;{integer}&gt;` is not implemented for
-  `{integer}`
-  (助言: トレイト`std::cmp::PartialEq&lt;&amp;{integer}&gt;`は`{integer}`に対して実装されていません)
+  = help: the trait `PartialEq&lt;&amp;{integer}&gt;` is not implemented for `{integer}`
+   (ヘルプ: トレイト`PartialEq&lt;&amp;{integer}&gt;`は`{integer}`に対して実装されていません)
+  = help: the following other types implement trait `PartialEq&lt;Rhs&gt;`:
+   (ヘルプ: 以下の型であればトレイト`PartialEq&lt;Rhs&gt;`を実装しています:)
+            isize
+            i8
+            i16
+            i32
+            i64
+            i128
+            usize
+            u8
+          and 6 others
+  = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+    (注釈: このエラーはマクロ`assert_eq`に由来します (nightlyビルドでは、詳細を得るには-Z macro-bactraceを実行してください))
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `deref-example` (bin &quot;deref-example&quot;) due to 1 previous error
 </code></pre>
 <!--
 Comparing a number and a reference to a number isn’t allowed because they’re
 different types. We must use the dereference operator to follow the reference
-to the value it's pointing to.
+to the value it’s pointing to.
 -->
 <p>数値と数値への参照の比較は許されていません。これらは異なる型だからです。参照外し演算子を使用して、
 参照が指している値まで追いかけなければならないのです。</p>
@@ -29573,10 +29626,13 @@ to the value it's pointing to.
 <h3 id="boxtを参照のように使う"><a class="header" href="#boxtを参照のように使う"><code>Box&lt;T&gt;</code>を参照のように使う</a></h3>
 <!--
 We can rewrite the code in Listing 15-6 to use a `Box<T>` instead of a
-reference; the dereference operator will work as shown in Listing 15-7:
+reference; the dereference operator used on the `Box<T>` in Listing 15-7
+functions in the same way as the dereference operator used on the reference in
+Listing 15-6:
 -->
 <p>リスト15-6のコードを、参照の代わりに<code>Box&lt;T&gt;</code>を使うように書き直すことができます。
-参照外し演算子は、リスト15-7に示したように動くでしょう。</p>
+リスト15-7に<code>Box&lt;T&gt;</code>に対して使用されている参照外し演算子は、
+リスト15-6で参照に対して使用されている参照外し演算子と同じように機能するでしょう:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -29594,24 +29650,25 @@ reference; the dereference operator will work as shown in Listing 15-7:
 -->
 <p><span class="caption">リスト15-7: <code>Box&lt;i32&gt;</code>に対して参照外し演算子を使用する</span></p>
 <!--
-The only difference between Listing 15-7 and Listing 15-6 is that here we set
-`y` to be an instance of a box pointing to the value in `x` rather than a
-reference pointing to the value of `x`. In the last assertion, we can use the
-dereference operator to follow the box’s pointer in the same way that we did
-when `y` was a reference. Next, we’ll explore what is special about `Box<T>`
-that enables us to use the dereference operator by defining our own box type.
+The main difference between Listing 15-7 and Listing 15-6 is that here we set
+`y` to be an instance of a `Box<T>` pointing to a copied value of `x` rather
+than a reference pointing to the value of `x`. In the last assertion, we can
+use the dereference operator to follow the pointer of the `Box<T>` in the same
+way that we did when `y` was a reference. Next, we’ll explore what is special
+about `Box<T>` that enables us to use the dereference operator by defining our
+own type.
 -->
-<p>リスト15-7とリスト15-6の唯一の違いは、ここでは<code>y</code>が、<code>x</code>の値を指す参照ではなく、
-<code>x</code>の値を指すボックスのインスタンスとして設定されている点にあります。
-最後のアサートでは、参照外し演算子を使ってボックスのポインタを辿ることができます。これは<code>y</code>が参照だった時と同じやり方です。
-参照外し演算子が使える以上<code>Box&lt;T&gt;</code>には特別な何かがあるので、次はそれについて調べることにします。そのために、独自にボックス型を定義します。</p>
+<p>リスト15-7とリスト15-6の主な違いは、ここでは<code>y</code>が、<code>x</code>の値を指す参照ではなく、
+<code>x</code>からコピーされた値を指す<code>Box&lt;T&gt;</code>のインスタンスとして設定されている点にあります。
+最後のアサートでは、参照外し演算子を使って<code>Box&lt;T&gt;</code>のポインタを辿ることができます。これは<code>y</code>が参照だった時と同じやり方です。
+参照外し演算子が使える以上<code>Box&lt;T&gt;</code>には特別な何かがあるので、次はそれについて調べることにします。そのために、独自の型を定義します。</p>
 <!--
 ### Defining Our Own Smart Pointer
 -->
 <h3 id="独自のスマートポインタを定義する"><a class="header" href="#独自のスマートポインタを定義する">独自のスマートポインタを定義する</a></h3>
 <!--
 Let’s build a smart pointer similar to the `Box<T>` type provided by the
-standard library to experience how smart pointers behave differently than
+standard library to experience how smart pointers behave differently from
 references by default. Then we’ll look at how to add the ability to use the
 dereference operator.
 -->
@@ -29628,16 +29685,15 @@ Listing 15-8 defines a `MyBox<T>` type in the same way. We’ll also define a
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct MyBox&lt;T&gt;(T);
+<pre><pre class="playground"><code class="language-rust">struct MyBox&lt;T&gt;(T);
 
 impl&lt;T&gt; MyBox&lt;T&gt; {
     fn new(x: T) -&gt; MyBox&lt;T&gt; {
         MyBox(x)
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 15-8: Defining a `MyBox<T>` type</span>
 -->
@@ -29663,7 +29719,15 @@ code in Listing 15-9 won’t compile because Rust doesn’t know how to derefere
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn main() {
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">struct MyBox&lt;T&gt;(T);
+</span><span class="boring">
+</span><span class="boring">impl&lt;T&gt; MyBox&lt;T&gt; {
+</span><span class="boring">    fn new(x: T) -&gt; MyBox&lt;T&gt; {
+</span><span class="boring">        MyBox(x)
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span>fn main() {
     let x = 5;
     let y = MyBox::new(x);
 
@@ -29679,12 +29743,17 @@ way we used references and `Box<T>`</span>
 Here’s the resulting compilation error:
 -->
 <p>こちらが結果として出るコンパイルエラーです。</p>
-<pre><code class="language-text">error[E0614]: type `MyBox&lt;{integer}&gt;` cannot be dereferenced
+<pre><code class="language-console">$ cargo run
+   Compiling deref-example v0.1.0 (file:///projects/deref-example)
+error[E0614]: type `MyBox&lt;{integer}&gt;` cannot be dereferenced
 (エラー: 型`MyBox&lt;{integer}&gt;`は参照外しできません)
   --&gt; src/main.rs:14:19
    |
 14 |     assert_eq!(5, *y);
    |                   ^^
+
+For more information about this error, try `rustc --explain E0614`.
+error: could not compile `deref-example` (bin &quot;deref-example&quot;) due to 1 previous error
 </code></pre>
 <!--
 Our `MyBox<T>` type can’t be dereferenced because we haven’t implemented that
@@ -29698,13 +29767,14 @@ implement the `Deref` trait.
 -->
 <h3 id="derefトレイトを実装して型を参照のように扱う"><a class="header" href="#derefトレイトを実装して型を参照のように扱う"><code>Deref</code>トレイトを実装して型を参照のように扱う</a></h3>
 <!--
-As discussed in Chapter 10, to implement a trait, we need to provide
+As discussed in the [“Implementing a Trait on a Type”][impl-trait]
+section of Chapter 10, to implement a trait, we need to provide
 implementations for the trait’s required methods. The `Deref` trait, provided
 by the standard library, requires us to implement one method named `deref` that
 borrows `self` and returns a reference to the inner data. Listing 15-10
 contains an implementation of `Deref` to add to the definition of `MyBox`:
 -->
-<p>第10章で議論したように、トレイトを実装するにはトレイトの必須メソッドに実装を与える必要があります。
+<p>第10章の<a href="ch10-02-traits.html#%E3%83%88%E3%83%AC%E3%82%A4%E3%83%88%E3%82%92%E5%9E%8B%E3%81%AB%E5%AE%9F%E8%A3%85%E3%81%99%E3%82%8B">「トレイトを型に実装する」</a>節で議論したように、トレイトを実装するにはトレイトの必須メソッドに実装を与える必要があります。
 <code>Deref</code>トレイトは標準ライブラリで提供されており、<code>deref</code>という1つのメソッドの実装を要求します。<code>deref</code>は<code>self</code>を借用し、
 内部のデータへの参照を返すメソッドです。
 リスト15-10には、<code>MyBox</code>の定義に付け足す<code>Deref</code>の実装が含まれています。</p>
@@ -29712,37 +29782,55 @@ contains an implementation of `Deref` to add to the definition of `MyBox`:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::ops::Deref;
+<pre><pre class="playground"><code class="language-rust">use std::ops::Deref;
 
-<span class="boring">struct MyBox&lt;T&gt;(T);
-</span>impl&lt;T&gt; Deref for MyBox&lt;T&gt; {
+impl&lt;T&gt; Deref for MyBox&lt;T&gt; {
     type Target = T;
 
-    fn deref(&amp;self) -&gt; &amp;T {
+    fn deref(&amp;self) -&gt; &amp;Self::Target {
         &amp;self.0
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">struct MyBox&lt;T&gt;(T);
+</span><span class="boring">
+</span><span class="boring">impl&lt;T&gt; MyBox&lt;T&gt; {
+</span><span class="boring">    fn new(x: T) -&gt; MyBox&lt;T&gt; {
+</span><span class="boring">        MyBox(x)
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let x = 5;
+</span><span class="boring">    let y = MyBox::new(x);
+</span><span class="boring">
+</span><span class="boring">    assert_eq!(5, x);
+</span><span class="boring">    assert_eq!(5, *y);
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 15-10: Implementing `Deref` on `MyBox<T>`</span>
 -->
 <p><span class="caption">リスト15-10: <code>MyBox&lt;T&gt;</code>に<code>Deref</code>を実装する</span></p>
 <!--
-The `type Target = T;` syntax defines an associated type for the `Deref` trait
-to use. Associated types are a slightly different way of declaring a generic
-parameter, but you don’t need to worry about them for now; we’ll cover them in
-more detail in Chapter 19.
+The `type Target = T;` syntax defines an associated type for the `Deref`
+trait to use. Associated types are a slightly different way of declaring a
+generic parameter, but you don’t need to worry about them for now; we’ll cover
+them in more detail in Chapter 19.
 -->
-<p><code>type Target = T;</code>という記法は、<code>Deref</code>トレイトが使用する関連型を定義しています。関連型はまた少し違ったやり方でジェネリック引数を宣言するためのものですが、今は気にする必要はありません。第19章でより詳しく扱います。</p>
+<p><code>type Target = T;</code>という記法は、<code>Deref</code>トレイトが使用する関連型を定義しています。
+関連型はまた少し違ったやり方でジェネリック引数を宣言するためのものですが、今は気にする必要はありません。
+第19章でより詳しく扱います。</p>
 <!--
 We fill in the body of the `deref` method with `&self.0` so `deref` returns a
-reference to the value we want to access with the `*` operator. The `main`
-function in Listing 15-9 that calls `*` on the `MyBox<T>` value now compiles,
-and the assertions pass!
+reference to the value we want to access with the `*` operator; recall from the
+[“Using Tuple Structs without Named Fields to Create Different
+Types”][tuple-structs] section of Chapter 5 that `.0` accesses
+the first value in a tuple struct. The `main` function in Listing 15-9 that
+calls `*` on the `MyBox<T>` value now compiles, and the assertions pass!
 -->
-<p><code>deref</code>メソッドの本体は<code>&amp;self.0</code>だけなので、<code>deref</code>が返すのは私達が<code>*</code>演算子でアクセスしたい値への参照なわけです。
+<p><code>deref</code>が<code>*</code>演算子でアクセスしたい値への参照を返すように、<code>deref</code>メソッドの本体は<code>&amp;self.0</code>で埋めました;
+第5章の<a href="ch05-01-defining-structs.html#%E7%95%B0%E3%81%AA%E3%82%8B%E5%9E%8B%E3%82%92%E7%94%9F%E6%88%90%E3%81%99%E3%82%8B%E5%90%8D%E5%89%8D%E4%BB%98%E3%81%8D%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB%E3%83%89%E3%81%AE%E3%81%AA%E3%81%84%E3%82%BF%E3%83%97%E3%83%AB%E6%A7%8B%E9%80%A0%E4%BD%93%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%99%E3%82%8B">「異なる型を生成する名前付きフィールドのないタプル構造体を使用する」</a>節で触れたように、
+<code>.0</code>はタプル構造体の最初の値にアクセスするということを思い出してください。
 リスト15-9の<code>MyBox&lt;T&gt;</code>に<code>*</code>を呼び出す<code>main</code>関数はこれでコンパイルでき、アサートも通ります！</p>
 <!--
 Without the `Deref` trait, the compiler can only dereference `&` references.
@@ -29769,41 +29857,44 @@ identically whether we have a regular reference or a type that implements
 私達は<code>deref</code>メソッドを呼び出す必要があるかどうかを考えなくて済むわけです。このRustの機能により、
 普通の参照か<code>Deref</code>を実装した型であるかどうかに関わらず、等しく機能するコードを書くことができます。</p>
 <!--
-The reason the `deref` method returns a reference to a value and that the plain
-dereference outside the parentheses in `*(y.deref())` is still necessary is the
-ownership system. If the `deref` method returned the value directly instead of
-a reference to the value, the value would be moved out of `self`. We don't want
-to take ownership of the inner value inside `MyBox<T>` in this case or in most
-cases where we use the dereference operator.
+The reason the `deref` method returns a reference to a value, and that the
+plain dereference outside the parentheses in `*(y.deref())` is still necessary,
+is to do with the ownership system. If the `deref` method returned the value
+directly instead of a reference to the value, the value would be moved out of
+`self`. We don’t want to take ownership of the inner value inside `MyBox<T>` in
+this case or in most cases where we use the dereference operator.
 -->
 <p><code>deref</code>メソッドが値への参照を返し、<code>*(y.deref())</code>のかっこの外にある普通の参照外しがそれでも必要になるのは、
-所有権システムがあるからです。<code>deref</code>メソッドが値への参照ではなく値を直接返したら、値は<code>self</code>から外にムーブされてしまいます。
+所有権システムに関係します。<code>deref</code>メソッドが値への参照ではなく値を直接返したら、値は<code>self</code>から外にムーブされてしまいます。
 今回もそうですが、参照外し演算子を使用するときはほとんどの場合、<code>MyBox&lt;T&gt;</code>の中の値の所有権を奪いたくはありません。</p>
 <!--
 Note that the `*` operator is replaced with a call to the `deref` method and
-then a call to `*` operator just once, each time we type a `*` in our code.
+then a call to the `*` operator just once, each time we use a `*` in our code.
 Because the substitution of the `*` operator does not recurse infinitely, we
 end up with data of type `i32`, which matches the `5` in `assert_eq!` in
 Listing 15-9.
 -->
-<p><code>*</code>演算子が<code>deref</code>メソッドの呼び出しと<code>*</code>演算子の呼び出しに置き換えられるのは、コード内で<code>*</code>を打つ毎にただ1回だけ、という点に注意して下さい。
+<p><code>*</code>演算子が<code>deref</code>メソッドの呼び出しと<code>*</code>演算子の呼び出しに置き換えられるのは、コード内で<code>*</code>を使用する毎にただ1回だけ、という点に注意して下さい。
 <code>*</code>演算子の置き換えは無限に繰り返されないので、型<code>i32</code>のデータに行き着きます。これはリスト15-9で<code>assert_eq!</code>の<code>5</code>と合致します。</p>
 <!--
 ### Implicit Deref Coercions with Functions and Methods
 -->
 <h3 id="関数やメソッドで暗黙的な参照外し型強制"><a class="header" href="#関数やメソッドで暗黙的な参照外し型強制">関数やメソッドで暗黙的な参照外し型強制</a></h3>
 <!--
-*Deref coercion* is a convenience that Rust performs on arguments to functions
-and methods. Deref coercion converts a reference to a type that implements
-`Deref` into a reference to a type that `Deref` can convert the original type
-into. Deref coercion happens automatically when we pass a reference to a
-particular type’s value as an argument to a function or method that doesn’t
-match the parameter type in the function or method definition. A sequence of
-calls to the `deref` method converts the type we provided into the type the
-parameter needs.
+*Deref coercion* converts a reference to a type that implements the `Deref`
+trait into a reference to another type. For example, deref coercion can convert
+`&String` to `&str` because `String` implements the `Deref` trait such that it
+returns `&str`. Deref coercion is a convenience Rust performs on arguments to
+functions and methods, and works only on types that implement the `Deref`
+trait. It happens automatically when we pass a reference to a particular type’s
+value as an argument to a function or method that doesn’t match the parameter
+type in the function or method definition. A sequence of calls to the `deref`
+method converts the type we provided into the type the parameter needs.
 -->
-<p><em>参照外し型強制</em>は、コンパイラが関数やメソッドの実引数に行う便利なものです。参照外し型強制は、
-<code>Deref</code>を実装する型への参照を<code>Deref</code>が元の型を変換できる型への参照に変換します。参照外し型強制は、
+<p><em>参照外し型強制</em>は、<code>Deref</code>トレイトを実装する型への参照を、別の型への参照に変換します。
+例えば、<code>String</code>は<code>&amp;str</code>を返すように<code>Deref</code>トレイトを実装しているので、参照外し型強制で<code>&amp;String</code>を<code>&amp;str</code>に変換することができます。
+参照外し型強制は、コンパイラが関数やメソッドの実引数に行う便利なもので、
+<code>Deref</code>トレイトを実装する型に対してのみ機能します。参照外し型強制は、
 特定の型の値への参照を関数やメソッド定義の引数型と一致しない引数として関数やメソッドに渡すときに自動的に発生します。
 一連の<code>deref</code>メソッドの呼び出しが、提供した型を引数が必要とする型に変換します。</p>
 <!--
@@ -29830,12 +29921,11 @@ parameter:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>fn hello(name: &amp;str) {
-    println!(&quot;Hello, {}!&quot;, name);
+<pre><pre class="playground"><code class="language-rust">fn hello(name: &amp;str) {
+    println!(&quot;Hello, {name}!&quot;);
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {}</span></code></pre></pre>
 <!--
 <span class="caption">Listing 15-11: A `hello` function that has the parameter
 `name` of type `&str`</span>
@@ -29854,14 +29944,6 @@ with a reference to a value of type `MyBox<String>`, as shown in Listing 15-12:
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">use std::ops::Deref;
 </span><span class="boring">
-</span><span class="boring">struct MyBox&lt;T&gt;(T);
-</span><span class="boring">
-</span><span class="boring">impl&lt;T&gt; MyBox&lt;T&gt; {
-</span><span class="boring">    fn new(x: T) -&gt; MyBox&lt;T&gt; {
-</span><span class="boring">        MyBox(x)
-</span><span class="boring">    }
-</span><span class="boring">}
-</span><span class="boring">
 </span><span class="boring">impl&lt;T&gt; Deref for MyBox&lt;T&gt; {
 </span><span class="boring">    type Target = T;
 </span><span class="boring">
@@ -29870,8 +29952,16 @@ with a reference to a value of type `MyBox<String>`, as shown in Listing 15-12:
 </span><span class="boring">    }
 </span><span class="boring">}
 </span><span class="boring">
+</span><span class="boring">struct MyBox&lt;T&gt;(T);
+</span><span class="boring">
+</span><span class="boring">impl&lt;T&gt; MyBox&lt;T&gt; {
+</span><span class="boring">    fn new(x: T) -&gt; MyBox&lt;T&gt; {
+</span><span class="boring">        MyBox(x)
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
 </span><span class="boring">fn hello(name: &amp;str) {
-</span><span class="boring">    println!(&quot;Hello, {}!&quot;, name);
+</span><span class="boring">    println!(&quot;Hello, {name}!&quot;);
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn main() {
@@ -29910,14 +30000,6 @@ of type `&MyBox<String>`.
 <p><span class="filename">ファイル名: src/main.rs</span></p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">use std::ops::Deref;
 </span><span class="boring">
-</span><span class="boring">struct MyBox&lt;T&gt;(T);
-</span><span class="boring">
-</span><span class="boring">impl&lt;T&gt; MyBox&lt;T&gt; {
-</span><span class="boring">    fn new(x: T) -&gt; MyBox&lt;T&gt; {
-</span><span class="boring">        MyBox(x)
-</span><span class="boring">    }
-</span><span class="boring">}
-</span><span class="boring">
 </span><span class="boring">impl&lt;T&gt; Deref for MyBox&lt;T&gt; {
 </span><span class="boring">    type Target = T;
 </span><span class="boring">
@@ -29926,8 +30008,16 @@ of type `&MyBox<String>`.
 </span><span class="boring">    }
 </span><span class="boring">}
 </span><span class="boring">
+</span><span class="boring">struct MyBox&lt;T&gt;(T);
+</span><span class="boring">
+</span><span class="boring">impl&lt;T&gt; MyBox&lt;T&gt; {
+</span><span class="boring">    fn new(x: T) -&gt; MyBox&lt;T&gt; {
+</span><span class="boring">        MyBox(x)
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
 </span><span class="boring">fn hello(name: &amp;str) {
-</span><span class="boring">    println!(&quot;Hello, {}!&quot;, name);
+</span><span class="boring">    println!(&quot;Hello, {name}!&quot;);
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn main() {
@@ -29942,13 +30032,13 @@ didn’t have deref coercion</span>
 <!--
 The `(*m)` dereferences the `MyBox<String>` into a `String`. Then the `&` and
 `[..]` take a string slice of the `String` that is equal to the whole string to
-match the signature of `hello`. The code without deref coercions is harder to
+match the signature of `hello`. This code without deref coercions is harder to
 read, write, and understand with all of these symbols involved. Deref coercion
 allows Rust to handle these conversions for us automatically.
 -->
 <p><code>(*m)</code>が<code>MyBox&lt;String&gt;</code>を<code>String</code>に参照外ししています。そして、<code>&amp;</code>と<code>[..]</code>により、
 文字列全体と等しい<code>String</code>の文字列スライスを取り、<code>hello</code>のシグニチャと一致するわけです。
-参照外し型強制のないコードは、これらの記号が関係するので、読むのも書くのも理解するのもより難しくなります。
+参照外し型強制のないこのコードは、これらの記号が関係するので、読むのも書くのも理解するのもより難しくなります。
 参照外し型強制により、コンパイラはこれらの変換を自動的に扱えるのです。</p>
 <!--
 When the `Deref` trait is defined for the types involved, Rust will analyze the
@@ -29965,7 +30055,7 @@ advantage of deref coercion!
 -->
 <h3 id="参照外し型強制が可変性と相互作用する方法"><a class="header" href="#参照外し型強制が可変性と相互作用する方法">参照外し型強制が可変性と相互作用する方法</a></h3>
 <!--
-Similar to how we use the `Deref` trait to override `*` operator on
+Similar to how you use the `Deref` trait to override the `*` operator on
 immutable references, you can use the `DerefMut` trait to override the `*`
 operator on mutable references.
 -->
@@ -29987,16 +30077,13 @@ cases:
 <li><code>T: Deref&lt;Target=U&gt;</code>の時、<code>&amp;mut T</code>から<code>&amp;U</code></li>
 </ul>
 <!--
-The first two cases are the same except for mutability. The first case states
-that if you have a `&T`, and `T` implements `Deref` to some type `U`, you can
-get a `&U` transparently. The second case states that the same deref coercion
-happens for mutable references.
+The first two cases are the same as each other except that the second
+implements mutability. The first case states that if you have a `&T`, and `T`
+implements `Deref` to some type `U`, you can get a `&U` transparently. The
+second case states that the same deref coercion happens for mutable references.
 -->
-<p>前者2つは、可変性を除いて一緒です。最初のケースは、<code>&amp;T</code>があり、<code>T</code>が何らかの型<code>U</code>への<code>Deref</code>を実装しているなら、
+<p>最初の2つは、2番目は可変性を実装している点を除いて、一緒です。最初のケースは、<code>&amp;T</code>があり、<code>T</code>が何らかの型<code>U</code>への<code>Deref</code>を実装しているなら、
 透過的に<code>&amp;U</code>を得られると述べています。2番目のケースは、同じ参照外し型強制が可変参照についても起こることを述べています。</p>
-<!--
-8行目後半、andだが、逆説で訳した
--->
 <!--
 The third case is trickier: Rust will also coerce a mutable reference to an
 immutable one. But the reverse is *not* possible: immutable references will
@@ -30004,17 +30091,22 @@ never coerce to mutable references. Because of the borrowing rules, if you have
 a mutable reference, that mutable reference must be the only reference to that
 data (otherwise, the program wouldn’t compile). Converting one mutable
 reference to one immutable reference will never break the borrowing rules.
-Converting an immutable reference to a mutable reference would require that
-there is only one immutable reference to that data, and the borrowing rules
-don’t guarantee that. Therefore, Rust can’t make the assumption that converting
-an immutable reference to a mutable reference is possible.
+Converting an immutable reference to a mutable reference would require that the
+initial immutable reference is the only immutable reference to that data, but
+the borrowing rules don’t guarantee that. Therefore, Rust can’t make the
+assumption that converting an immutable reference to a mutable reference is
+possible.
 -->
 <p>3番目のケースはもっと巧妙です: Rustはさらに、可変参照を不変参照にも型強制するのです。ですが、逆はできま<em>せん</em>:
 不変参照は、絶対に可変参照に型強制されないのです。借用規則により、可変参照があるなら、
 その可変参照がそのデータへの唯一の参照に違いありません(でなければ、プログラムはコンパイルできません)。
 1つの可変参照を1つの不変参照に変換することは、借用規則を絶対に破壊しません。
-不変参照を可変参照にするには、そのデータへの不変参照がたった1つしかないことが必要ですが、
+不変参照を可変参照にするには、変換元の不変参照がそのデータへの唯一の不変参照であることが必要ですが、
 借用規則はそれを保証してくれません。故に、不変参照を可変参照に変換することが可能であるという前提を敷けません。</p>
+<!--
+[impl-trait]: ch10-02-traits.html#implementing-a-trait-on-a-type
+[tuple-structs]: ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Running Code on Cleanup with the `Drop` Trait
 -->
@@ -30022,50 +30114,55 @@ an immutable reference to a mutable reference is possible.
 <!--
 The second trait important to the smart pointer pattern is `Drop`, which lets
 you customize what happens when a value is about to go out of scope. You can
-provide an implementation for the `Drop` trait on any type, and the code you
-specify can be used to release resources like files or network connections.
-We’re introducing `Drop` in the context of smart pointers because the
-functionality of the `Drop` trait is almost always used when implementing a
-smart pointer. For example, `Box<T>` customizes `Drop` to deallocate the space
-on the heap that the box points to.
+provide an implementation for the `Drop` trait on any type, and that code can
+be used to release resources like files or network connections.
 -->
 <p>スマートポインタパターンにとって重要な2番目のトレイトは、<code>Drop</code>であり、
 これのおかげで値がスコープを抜けそうになった時に起こることをカスタマイズできます。
-どんな型に対しても<code>Drop</code>トレイトの実装を提供することができ、指定したコードは、
-ファイルやネットワーク接続などのリソースを解放するのに活用できます。
-<code>Drop</code>をスマートポインタの文脈で導入しています。<code>Drop</code>トレイトの機能は、ほぼ常にスマートポインタを実装する時に使われるからです。
-例えば、<code>Box&lt;T&gt;</code>は<code>Drop</code>をカスタマイズしてボックスが指しているヒープの領域を解放しています。</p>
+どんな型に対しても<code>Drop</code>トレイトの実装を提供することができ、
+そのコードはファイルやネットワーク接続などのリソースを解放するために使用できます。</p>
 <!--
-In some languages, the programmer must call code to free memory or resources
-every time they finish using an instance of a smart pointer. If they forget,
-the system might become overloaded and crash. In Rust, you can specify that a
-particular bit of code be run whenever a value goes out of scope, and the
-compiler will insert this code automatically. As a result, we don’t need to be
-careful about placing cleanup code everywhere in a program that an instance of
-a particular type is finished with-you still won’t leak resources!
+We’re introducing `Drop` in the context of smart pointers because the
+functionality of the `Drop` trait is almost always used when implementing a
+smart pointer. For example, when a `Box<T>` is dropped it will deallocate the
+space on the heap that the box points to.
 -->
-<p>ある言語では、プログラマがスマートポインタのインスタンスを使い終わる度にメモリやリソースを解放するコードを呼ばなければなりません。
+<p><code>Drop</code>をスマートポインタの文脈で導入しています。<code>Drop</code>トレイトの機能は、ほぼ常にスマートポインタを実装する時に使われるからです。
+例えば<code>Box&lt;T&gt;</code>はドロップされるときに、そのボックスが指しているヒープの領域を解放するでしょう。</p>
+<!--
+In some languages, for some types, the programmer must call code to free memory
+or resources every time they finish using an instance of those types. Examples
+include file handles, sockets, or locks. If they forget, the system might
+become overloaded and crash. In Rust, you can specify that a particular bit of
+code be run whenever a value goes out of scope, and the compiler will insert
+this code automatically. As a result, you don’t need to be careful about
+placing cleanup code everywhere in a program that an instance of a particular
+type is finished with—you still won’t leak resources!
+-->
+<p>言語によっては、さらに型によっては、プログラマがその型のインスタンスを使い終わる度に、
+メモリやリソースを解放するコードを呼ばなければならないことがあります。
+そうした型の例にはファイルハンドル、ソケット、またはロックなどが含まれます。
 忘れてしまったら、システムは詰め込みすぎになりクラッシュする可能性があります。Rustでは、
 値がスコープを抜ける度に特定のコードが走るよう指定でき、コンパイラはこのコードを自動的に挿入します。
 結果として、特定の型のインスタンスを使い終わったプログラムの箇所全部にクリーンアップコードを配置するのに配慮する必要はありません。
 それでもリソースをリークすることはありません。</p>
 <!--
-Specify the code to run when a value goes out of scope by implementing the
+You specify the code to run when a value goes out of scope by implementing the
 `Drop` trait. The `Drop` trait requires you to implement one method named
 `drop` that takes a mutable reference to `self`. To see when Rust calls `drop`,
-let's implement `drop` with `println!` statements for now.
+let’s implement `drop` with `println!` statements for now.
 -->
-<p><code>Drop</code>トレイトを実装することで値がスコープを抜けた時に走るコードを指定してください。
+<p><code>Drop</code>トレイトを実装することで、値がスコープを抜けた時に走るコードを指定します。
 <code>Drop</code>トレイトは、<code>self</code>への可変参照を取る<code>drop</code>という1つのメソッドを実装する必要があります。
 いつRustが<code>drop</code>を呼ぶのか確認するために、今は<code>println!</code>文のある<code>drop</code>を実装しましょう。</p>
 <!--
 Listing 15-14 shows a `CustomSmartPointer` struct whose only custom
 functionality is that it will print `Dropping CustomSmartPointer!` when the
-instance goes out of scope. This example demonstrates when Rust runs the `drop`
-function.
+instance goes out of scope, to show when Rust runs the `drop` function.
 -->
-<p>リスト15-14は、唯一の独自の機能が、インスタンスがスコープを抜ける時に<code>Dropping CustomSmartPointer!</code>と出力するだけの、
-<code>CustomSmartPointer</code>構造体です。この例は、コンパイラがいつ<code>drop</code>関数を走らせるかをデモしています。</p>
+<p>リスト15-14では、コンパイラがいつ<code>drop</code>関数を走らせるかを示すために、
+インスタンスがスコープを抜ける時に<code>Dropping CustomSmartPointer!</code>と出力するだけの独自の機能を持つ、
+<code>CustomSmartPointer</code>構造体を示します。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
@@ -30076,15 +30173,22 @@ function.
 
 impl Drop for CustomSmartPointer {
     fn drop(&amp;mut self) {
-        // CustomSmartPointerをデータ`{}`とともにドロップするよ
+        //       &quot;データ`{}`を持つCustomSmartPointerをドロップ中!&quot;
         println!(&quot;Dropping CustomSmartPointer with data `{}`!&quot;, self.data);
     }
 }
 
 fn main() {
-    let c = CustomSmartPointer { data: String::from(&quot;my stuff&quot;) };      // 俺のもの
-    let d = CustomSmartPointer { data: String::from(&quot;other stuff&quot;) };   // 別のもの
-    println!(&quot;CustomSmartPointers created.&quot;);                           // CustomSmartPointerが生成された
+    let c = CustomSmartPointer {
+    	//                 &quot;俺のもの&quot;
+        data: String::from(&quot;my stuff&quot;),
+    };
+    let d = CustomSmartPointer {
+    	//                 &quot;別のもの&quot;
+        data: String::from(&quot;other stuff&quot;),
+    };
+    //       &quot;CustomSmartPointerが作成された。&quot;
+    println!(&quot;CustomSmartPointers created.&quot;);
 }</code></pre></pre>
 <!--
 <span class="caption">Listing 15-14: A `CustomSmartPointer` struct that
@@ -30092,20 +30196,20 @@ implements the `Drop` trait where we would put our cleanup code</span>
 -->
 <p><span class="caption">リスト15-14: クリーンアップコードを配置する<code>Drop</code>トレイトを実装する<code>CustomSmartPointer</code>構造体</span></p>
 <!--
-The `Drop` trait is included in the prelude, so we don’t need to import it. We
-implement the `Drop` trait on `CustomSmartPointer` and provide an
+The `Drop` trait is included in the prelude, so we don’t need to bring it into
+scope. We implement the `Drop` trait on `CustomSmartPointer` and provide an
 implementation for the `drop` method that calls `println!`. The body of the
 `drop` function is where you would place any logic that you wanted to run when
 an instance of your type goes out of scope. We’re printing some text here to
-demonstrate when Rust will call `drop`.
+demonstrate visually when Rust will call `drop`.
 -->
-<p><code>Drop</code>トレイトは、初期化処理に含まれるので、インポートする必要はありません。
+<p><code>Drop</code>トレイトは、初期化処理に含まれるので、スコープ内に持ち込む必要はありません。
 <code>CustomSmartPointer</code>に<code>Drop</code>トレイトを実装し、<code>println!</code>を呼び出す<code>drop</code>メソッドの実装を提供しています。
 <code>drop</code>関数の本体は、自分の型のインスタンスがスコープを抜ける時に走らせたいあらゆるロジックを配置する場所です。
-ここで何らかのテキストを出力し、コンパイラがいつ<code>drop</code>を呼ぶのかデモしています。</p>
+コンパイラがいつ<code>drop</code>を呼ぶのかを視覚的に示すために、ここでテキストを出力しています。</p>
 <!--
 In `main`, we create two instances of `CustomSmartPointer` and then print
-`CustomSmartPointers created.`. At the end of `main`, our instances of
+`CustomSmartPointers created`. At the end of `main`, our instances of
 `CustomSmartPointer` will go out of scope, and Rust will call the code we put
 in the `drop` method, printing our final message. Note that we didn’t need to
 call the `drop` method explicitly.
@@ -30117,20 +30221,25 @@ call the `drop` method explicitly.
 When we run this program, we’ll see the following output:
 -->
 <p>このプログラムを実行すると、以下のような出力が出ます:</p>
-<pre><code class="language-text">CustomSmartPointers created.
+<pre><code class="language-console">$ cargo run
+   Compiling drop-example v0.1.0 (file:///projects/drop-example)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.60s
+     Running `target/debug/drop-example`
+CustomSmartPointers created.
 Dropping CustomSmartPointer with data `other stuff`!
 Dropping CustomSmartPointer with data `my stuff`!
 </code></pre>
 <!--
 Rust automatically called `drop` for us when our instances went out of scope,
 calling the code we specified. Variables are dropped in the reverse order of
-their creation, so `d` was dropped before `c`. This example gives you a visual
-guide to how the `drop` method works; usually you would specify the cleanup
-code that your type needs to run rather than a print message.
+their creation, so `d` was dropped before `c`. This example’s purpose is to
+give you a visual guide to how the `drop` method works; usually you would
+specify the cleanup code that your type needs to run rather than a print
+message.
 -->
 <p>インスタンスがスコープを抜けた時に指定したコードを呼び出しながらコンパイラは、<code>drop</code>を自動的に呼び出してくれました。
 変数は、生成されたのと逆の順序でドロップされるので、<code>d</code>は<code>c</code>より先にドロップされました。
-この例は、<code>drop</code>メソッドの動き方を見た目で案内するだけですが、通常は、メッセージ出力ではなく、
+この例の目的は<code>drop</code>メソッドがどう機能するのかを視覚的に案内することですが、通常は、メッセージ出力ではなく、
 自分の型が走らせる必要のあるクリーンアップコードを指定するでしょう。</p>
 <!--
 ### Dropping a Value Early with `std::mem::drop`
@@ -30139,23 +30248,23 @@ code that your type needs to run rather than a print message.
 <!--
 Unfortunately, it’s not straightforward to disable the automatic `drop`
 functionality. Disabling `drop` isn’t usually necessary; the whole point of the
-`Drop` trait is that it’s taken care of automatically. Occasionally, however
+`Drop` trait is that it’s taken care of automatically. Occasionally, however,
 you might want to clean up a value early. One example is when using smart
 pointers that manage locks: you might want to force the `drop` method that
-releases the lock to run so other code in the same scope can acquire the lock.
-Rust doesn't let you call the `Drop` trait’s `drop` method manually; instead
+releases the lock so that other code in the same scope can acquire the lock.
+Rust doesn’t let you call the `Drop` trait’s `drop` method manually; instead
 you have to call the `std::mem::drop` function provided by the standard library
 if you want to force a value to be dropped before the end of its scope.
 -->
 <p>残念ながら、自動的な<code>drop</code>機能を無効化することは、単純ではありません。通常、<code>drop</code>を無効化する必要はありません;
 <code>Drop</code>トレイトの最重要な要点は、自動的に考慮されることです。ですが、時として、値を早期に片付けたくなる可能性があります。
 一例は、ロックを管理するスマートポインタを使用する時です: 同じスコープの他のコードがロックを獲得できるように、
-ロックを解放する<code>drop</code>メソッドを強制的に走らせたくなる可能性があります。Rustは、
+ロックを解放する<code>drop</code>メソッドを強制したくなる可能性があります。Rustは、
 <code>Drop</code>トレイトの<code>drop</code>メソッドを手動で呼ばせてくれません; スコープが終わる前に値を強制的にドロップさせたいなら、
 代わりに標準ライブラリが提供する<code>std::mem::drop</code>関数を呼ばなければなりません。</p>
 <!--
-If we try to call the `Drop` trait's `drop` method manually by modifying the
-`main` function in Listing 15-14, as shown in Listing 15-15, we'll get a
+If we try to call the `Drop` trait’s `drop` method manually by modifying the
+`main` function from Listing 15-14, as shown in Listing 15-15, we’ll get a
 compiler error:
 -->
 <p>リスト15-14の<code>main</code>関数を変更して手動で<code>Drop</code>トレイトの<code>drop</code>メソッドを呼び出そうとしたら、
@@ -30164,11 +30273,23 @@ compiler error:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn main() {
-    let c = CustomSmartPointer { data: String::from(&quot;some data&quot;) };
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">struct CustomSmartPointer {
+</span><span class="boring">    data: String,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl Drop for CustomSmartPointer {
+</span><span class="boring">    fn drop(&amp;mut self) {
+</span><span class="boring">        println!(&quot;Dropping CustomSmartPointer with data `{}`!&quot;, self.data);
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span>fn main() {
+    let c = CustomSmartPointer {
+        data: String::from(&quot;some data&quot;),
+    };
     println!(&quot;CustomSmartPointer created.&quot;);
     c.drop();
-    // mainの終端の前にCustomSmartPointerがドロップされた
+    //       &quot;CustomSmartPointerがmainの終端の前でドロップされた。&quot;
     println!(&quot;CustomSmartPointer dropped before the end of main.&quot;);
 }</code></pre>
 <!--
@@ -30180,12 +30301,24 @@ the `Drop` trait manually to clean up early</span>
 When we try to compile this code, we’ll get this error:
 -->
 <p>このコードをコンパイルしてみようとすると、こんなエラーが出ます:</p>
-<pre><code class="language-text">error[E0040]: explicit use of destructor method
+<pre><code class="language-console">$ cargo run
+   Compiling drop-example v0.1.0 (file:///projects/drop-example)
+error[E0040]: explicit use of destructor method
 (エラー: デストラクタメソッドを明示的に使用しています)
-  --&gt; src/main.rs:14:7
+  --&gt; src/main.rs:16:7
    |
-14 |     c.drop();
+16 |     c.drop();
    |       ^^^^ explicit destructor calls not allowed
+   |           (明示的なデストラクタの呼び出しは許可されません)
+   |
+help: consider using `drop` function
+(ヘルプ: `drop`関数の使用を検討してください)
+   |
+16 |     drop(c);
+   |     +++++ ~
+
+For more information about this error, try `rustc --explain E0040`.
+error: could not compile `drop-example` (bin &quot;drop-example&quot;) due to 1 previous error
 </code></pre>
 <!--
 This error message states that we’re not allowed to explicitly call `drop`. The
@@ -30201,27 +30334,27 @@ particular destructor.
 1種の特定のデストラクタです。</p>
 <!--
 Rust doesn’t let us call `drop` explicitly because Rust would still
-automatically call `drop` on the value at the end of `main`. This would be a
+automatically call `drop` on the value at the end of `main`. This would cause a
 *double free* error because Rust would be trying to clean up the same value
 twice.
 -->
 <p>コンパイラはそれでも、<code>main</code>の終端で値に対して自動的に<code>drop</code>を呼び出すので、<code>drop</code>を明示的に呼ばせてくれません。
-コンパイラが2回同じ値を片付けようとするので、これは<em>二重解放</em>エラーになるでしょう。</p>
+コンパイラが2回同じ値を片付けようとするので、これは<em>二重解放</em>エラーを発生させるでしょう。</p>
 <!--
 We can’t disable the automatic insertion of `drop` when a value goes out of
 scope, and we can’t call the `drop` method explicitly. So, if we need to force
-a value to be cleaned up early, we can use the `std::mem::drop` function.
+a value to be cleaned up early, we use the `std::mem::drop` function.
 -->
 <p>値がスコープを抜けるときに<code>drop</code>が自動的に挿入されるのを無効化できず、<code>drop</code>メソッドを明示的に呼ぶこともできません。
-よって、値を早期に片付けさせる必要があるなら、<code>std::mem::drop</code>関数を使用できます。</p>
+よって、値を早期に片付けさせる必要があるなら、<code>std::mem::drop</code>関数を使用します。</p>
 <!--
-The `std::mem::drop` function is different than the `drop` method in the `Drop`
-trait. We call it by passing the value we want to force to be dropped early as
-an argument. The function is in the prelude, so we can modify `main` in Listing
-15-15 to call the `drop` function, as shown in Listing 15-16:
+The `std::mem::drop` function is different from the `drop` method in the `Drop`
+trait. We call it by passing as an argument the value we want to force drop.
+The function is in the prelude, so we can modify `main` in Listing 15-15 to
+call the `drop` function, as shown in Listing 15-16:
 -->
 <p><code>std::mem::drop</code>関数は、<code>Drop</code>トレイトの<code>drop</code>メソッドとは異なります。
-早期に強制的にドロップさせたい値を引数で渡すことで呼びます。この関数は初期化処理に含まれているので、
+強制ドロップさせたい値を引数として渡して呼び出します。この関数はpreludeに含まれているので、
 リスト15-15の<code>main</code>を変更して<code>drop</code>関数を呼び出せます。リスト15-16のようにですね:</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
@@ -30233,15 +30366,17 @@ an argument. The function is in the prelude, so we can modify `main` in Listing
 </span><span class="boring">
 </span><span class="boring">impl Drop for CustomSmartPointer {
 </span><span class="boring">    fn drop(&amp;mut self) {
-</span><span class="boring">        println!(&quot;Dropping CustomSmartPointer!&quot;);
+</span><span class="boring">        println!(&quot;Dropping CustomSmartPointer with data `{}`!&quot;, self.data);
 </span><span class="boring">    }
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn main() {
-    let c = CustomSmartPointer { data: String::from(&quot;some data&quot;) };
+    let c = CustomSmartPointer {
+        data: String::from(&quot;some data&quot;),
+    };
     println!(&quot;CustomSmartPointer created.&quot;);
     drop(c);
-    // CustomSmartPointerはmainが終わる前にドロップされた
+    //       &quot;CustomSmartPointerがmainの終端の前でドロップされた。&quot;
     println!(&quot;CustomSmartPointer dropped before the end of main.&quot;);
 }</code></pre></pre>
 <!--
@@ -30253,7 +30388,11 @@ drop a value before it goes out of scope</span>
 Running this code will print the following:
 -->
 <p>このコードを実行すると、以下のように出力されます:</p>
-<pre><code class="language-text">CustomSmartPointer created.
+<pre><code class="language-console">$ cargo run
+   Compiling drop-example v0.1.0 (file:///projects/drop-example)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.73s
+     Running `target/debug/drop-example`
+CustomSmartPointer created.
 Dropping CustomSmartPointer with data `some data`!
 CustomSmartPointer dropped before the end of main.
 </code></pre>
@@ -30271,9 +30410,9 @@ drop `c` at that point.
 -->
 <!--
 You can use code specified in a `Drop` trait implementation in many ways to
-make cleanup convenient and safe: for instance, we could use it to create your
+make cleanup convenient and safe: for instance, you could use it to create your
 own memory allocator! With the `Drop` trait and Rust’s ownership system, you
-don't have to remember to clean up because Rust does it automatically.
+don’t have to remember to clean up because Rust does it automatically.
 -->
 <p><code>Drop</code>トレイト実装で指定されたコードをいろんな方法で使用し、片付けを便利で安全にすることができます:
 例を挙げれば、これを使用して独自のメモリアロケータを作ることもできるでしょう！<code>Drop</code>トレイトとRustの所有権システムがあれば、
@@ -30302,22 +30441,23 @@ owns a given value. However, there are cases when a single value might have
 multiple owners. For example, in graph data structures, multiple edges might
 point to the same node, and that node is conceptually owned by all of the edges
 that point to it. A node shouldn’t be cleaned up unless it doesn’t have any
-edges pointing to it.
+edges pointing to it and so has no owners.
 -->
 <p>大多数の場合、所有権は明らかです: 一体どの変数が与えられた値を所有しているかわかるのです。
 ところが、単独の値が複数の所有者を持つ可能性のある場合もあります。例えば、グラフデータ構造では、
 複数の辺が同じノードを指す可能性があり、概念的にそのノードはそれを指す全ての辺に所有されるわけです。
-指す辺がなくならない限り、ノードは片付けられるべきではありません。</p>
+指す辺がなくならない限り、つまり所有者がなくならない限り、ノードは片付けられるべきではありません。</p>
 <!--
-To enable multiple ownership, Rust has a type called `Rc<T>`, which is an
-abbreviation for *reference counting*. The `Rc<T>` type keeps track of the
-number of references to a value which determines whether or not a value is
-still in use. If there are zero references to a value, the value can be cleaned
-up without any references becoming invalid.
+You have to enable multiple ownership explicitly by using the Rust type
+`Rc<T>`, which is an abbreviation for *reference counting*. The `Rc<T>` type
+keeps track of the number of references to a value to determine whether or not
+the value is still in use. If there are zero references to a value, the value
+can be cleaned up without any references becoming invalid.
 -->
-<p>複数の所有権を可能にするため、Rustには<code>Rc&lt;T&gt;</code>という型があり、これは、<em>reference counting</em>(参照カウント)の省略形です。
-<code>Rc&lt;T&gt;</code>型は、値がまだ使用中かどうか決定する値への参照の数を追跡します。値への参照が0なら、どの参照も無効にすることなく、
-値は片付けられます。</p>
+<p><code>Rc&lt;T&gt;</code>というRustの型を使用することで、明示的に複数の所有権を可能にしなくてはなりません。
+これは、<em>reference counting</em>(参照カウント)の省略形です。
+<code>Rc&lt;T&gt;</code>型は、値がまだ使用中かどうか決定するために、値への参照の数を追跡します。
+値への参照が0なら、どの参照も無効にすることなく、値は片付けられます。</p>
 <!--
 Imagine `Rc<T>` as a TV in a family room. When one person enters to watch TV,
 they turn it on. Others can come into the room and watch the TV. When the last
@@ -30387,17 +30527,15 @@ won’t work, as shown in Listing 15-17:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">enum List {
+<pre><code class="language-rust ignore does_not_compile">enum List {
     Cons(i32, Box&lt;List&gt;),
     Nil,
 }
 
-use List::{Cons, Nil};
+use crate::List::{Cons, Nil};
 
 fn main() {
-    let a = Cons(5,
-        Box::new(Cons(10,
-            Box::new(Nil))));
+    let a = Cons(5, Box::new(Cons(10, Box::new(Nil))));
     let b = Cons(3, Box::new(a));
     let c = Cons(4, Box::new(a));
 }</code></pre>
@@ -30410,16 +30548,20 @@ two lists using `Box<T>` that try to share ownership of a third list</span>
 When we compile this code, we get this error:
 -->
 <p>このコードをコンパイルすると、こんなエラーが出ます:</p>
-<pre><code class="language-text">error[E0382]: use of moved value: `a`
-  --&gt; src/main.rs:13:30
+<pre><code class="language-console">$ cargo run
+   Compiling cons-list v0.1.0 (file:///projects/cons-list)
+error[E0382]: use of moved value: `a`
+  --&gt; src/main.rs:11:30
    |
-12 |     let b = Cons(3, Box::new(a));
+9  |     let a = Cons(5, Box::new(Cons(10, Box::new(Nil))));
+   |         - move occurs because `a` has type `List`, which does not implement the `Copy` trait
+10 |     let b = Cons(3, Box::new(a));
    |                              - value moved here
-13 |     let c = Cons(4, Box::new(a));
+11 |     let c = Cons(4, Box::new(a));
    |                              ^ value used here after move
-   |
-   = note: move occurs because `a` has type `List`, which does not implement
-   the `Copy` trait
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `cons-list` (bin &quot;cons-list&quot;) due to 1 previous error
 </code></pre>
 <!--
 The `Cons` variants own the data they hold, so when we create the `b` list, `a`
@@ -30433,15 +30575,13 @@ creating `c`, we’re not allowed to because `a` has been moved.
 We could change the definition of `Cons` to hold references instead, but then
 we would have to specify lifetime parameters. By specifying lifetime
 parameters, we would be specifying that every element in the list will live at
-least as long as the entire list. The borrow checker wouldn’t let us compile
-`let a = Cons(10, &Nil);` for example, because the temporary `Nil` value would
-be dropped before `a` could take a reference to it.
+least as long as the entire list. This is the case for the elements and lists
+in Listing 15-17, but not in every scenario.
 -->
 <p><code>Cons</code>の定義を代わりに参照を保持するように変更することもできますが、そうしたら、
 ライフタイム引数を指定しなければなりません。ライフタイム引数を指定することで、
 リストの各要素が最低でもリスト全体と同じ期間だけ生きることを指定することになります。
-例えば、借用チェッカーは<code>let a = Cons(10, &amp;Nil);</code>をコンパイルさせてくれません。
-一時的な<code>Nil</code>値が、<code>a</code>が参照を得られるより前にドロップされてしまうからです。</p>
+これはリスト15-17での要素とリストに対しては当てはまりますが、すべての用途で当てはまるものではありません。</p>
 <!--
 Instead, we’ll change our definition of `List` to use `Rc<T>` in place of
 `Box<T>`, as shown in Listing 15-18. Each `Cons` variant will now hold a value
@@ -30469,7 +30609,7 @@ it.
     Nil,
 }
 
-use List::{Cons, Nil};
+use crate::List::{Cons, Nil};
 use std::rc::Rc;
 
 fn main() {
@@ -30535,22 +30675,22 @@ then we can see how the reference count changes when `c` goes out of scope.
 </span><span class="boring">    Nil,
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">use List::{Cons, Nil};
+</span><span class="boring">use crate::List::{Cons, Nil};
 </span><span class="boring">use std::rc::Rc;
 </span><span class="boring">
 </span>fn main() {
     let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
-    // a生成後のカウント = {}
+    //       &quot;a作成後のカウント = {}&quot;
     println!(&quot;count after creating a = {}&quot;, Rc::strong_count(&amp;a));
     let b = Cons(3, Rc::clone(&amp;a));
-    // b生成後のカウント = {}
+    //       &quot;b作成後のカウント = {}&quot;
     println!(&quot;count after creating b = {}&quot;, Rc::strong_count(&amp;a));
     {
         let c = Cons(4, Rc::clone(&amp;a));
-        // c生成後のカウント = {}
+        //       &quot;c作成後のカウント = {}&quot;
         println!(&quot;count after creating c = {}&quot;, Rc::strong_count(&amp;a));
     }
-    // cがスコープを抜けた後のカウント = {}
+    //       &quot;cがスコープを抜けた後のカウント = {}&quot;
     println!(&quot;count after c goes out of scope = {}&quot;, Rc::strong_count(&amp;a));
 }</code></pre></pre>
 <!--
@@ -30559,20 +30699,25 @@ then we can see how the reference count changes when `c` goes out of scope.
 <p><span class="caption">リスト15-19: 参照カウントを出力する</span></p>
 <!--
 At each point in the program where the reference count changes, we print the
-reference count, which we can get by calling the `Rc::strong_count` function.
-This function is named `strong_count` rather than `count` because the `Rc<T>`
-type also has a `weak_count`; we’ll see what `weak_count` is used for in the
-“Preventing Reference Cycles” section.
+reference count, which we get by calling the `Rc::strong_count` function. This
+function is named `strong_count` rather than `count` because the `Rc<T>` type
+also has a `weak_count`; we’ll see what `weak_count` is used for in the
+[“Preventing Reference Cycles: Turning an `Rc<T>` into a
+`Weak<T>`”][preventing-ref-cycles] section.
 -->
 <p>プログラム内で参照カウントが変更される度に、参照カウントを出力します。参照カウントは、
-<code>Rc::strong_count</code>関数を呼び出すことで得られます。<code>Rc&lt;T&gt;</code>型には<code>weak_count</code>もあるので、
+<code>Rc::strong_count</code>関数を呼び出すことで得ています。<code>Rc&lt;T&gt;</code>型には<code>weak_count</code>もあるので、
 この関数は<code>count</code>ではなく<code>strong_count</code>と命名されています; <code>weak_count</code>の使用目的は、
-「循環参照を回避する」節で確かめます。</p>
+<a href="ch15-06-reference-cycles.html#%E5%BE%AA%E7%92%B0%E5%8F%82%E7%85%A7%E3%82%92%E5%9B%9E%E9%81%BF%E3%81%99%E3%82%8B-rct%E3%82%92weakt%E3%81%AB%E5%A4%89%E6%8F%9B%E3%81%99%E3%82%8B">「循環参照を回避する: <code>Rc&lt;T&gt;</code>を<code>Weak&lt;T&gt;</code>に変換する」</a>節で確かめます。</p>
 <!--
 This code prints the following:
 -->
 <p>このコードは、以下の出力をします:</p>
-<pre><code class="language-text">count after creating a = 1
+<pre><code class="language-console">$ cargo run
+   Compiling cons-list v0.1.0 (file:///projects/cons-list)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.45s
+     Running `target/debug/cons-list`
+count after creating a = 1
 count after creating b = 2
 count after creating c = 3
 count after c goes out of scope = 2
@@ -30592,16 +30737,16 @@ automatically when an `Rc<T>` value goes out of scope.
 <!--
 What we can’t see in this example is that when `b` and then `a` go out of scope
 at the end of `main`, the count is then 0, and the `Rc<List>` is cleaned up
-completely at that point. Using `Rc<T>` allows a single value to have
-multiple owners, and the count ensures that the value remains valid as long as
-any of the owners still exist.
+completely. Using `Rc<T>` allows a single value to have multiple owners, and
+the count ensures that the value remains valid as long as any of the owners
+still exist.
 -->
 <p>この例でわからないことは、<code>b</code>そして<code>a</code>が、<code>main</code>の終端でスコープを抜ける時に、カウントが0になり、
-その時点で<code>Rc&lt;List&gt;</code>が完全に片付けられることです。<code>Rc&lt;T&gt;</code>を使用すると、単独の値に複数の所有者を持たせることができ、
+<code>Rc&lt;List&gt;</code>が完全に片付けられることです。<code>Rc&lt;T&gt;</code>を使用すると、単独の値に複数の所有者を持たせることができ、
 所有者のいずれかが存在している限り、値が有効であり続けることをカウントは保証します。</p>
 <!--
 Via immutable references, `Rc<T>` allows you to share data between multiple
-parts of our program for reading only. If `Rc<T>` allowed you to have multiple
+parts of your program for reading only. If `Rc<T>` allowed you to have multiple
 mutable references too, you might violate one of the borrowing rules discussed
 in Chapter 4: multiple mutable borrows to the same place can cause data races
 and inconsistencies. But being able to mutate data is very useful! In the next
@@ -30614,6 +30759,9 @@ immutability restriction.
 同じ場所への複数の可変借用は、データ競合や矛盾を引き起こすことがあるのです。しかし、
 データを可変化する能力はとても有用です！次の節では、内部可変性パターンと、
 <code>Rc&lt;T&gt;</code>と絡めて使用してこの不変性制限を手がけられる<code>RefCell&lt;T&gt;</code>型について議論します。</p>
+<!--
+[preventing-ref-cycles]: ch15-06-reference-cycles.html#preventing-reference-cycles-turning-an-rct-into-a-weakt
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## `RefCell<T>` and the Interior Mutability Pattern
 -->
@@ -30623,16 +30771,22 @@ immutability restriction.
 data even when there are immutable references to that data; normally, this
 action is disallowed by the borrowing rules. To mutate data, the pattern uses
 `unsafe` code inside a data structure to bend Rust’s usual rules that govern
-mutation and borrowing. We haven’t yet covered unsafe code; we will in
-Chapter 19. We can use types that use the interior mutability pattern when we
-can ensure that the borrowing rules will be followed at runtime, even though
-the compiler can’t guarantee that. The `unsafe` code involved is then wrapped
-in a safe API, and the outer type is still immutable.
+mutation and borrowing. Unsafe code indicates to the compiler that we’re
+checking the rules manually instead of relying on the compiler to check them
+for us; we will discuss unsafe code more in Chapter 19.
 -->
 <p>内部可変性は、そのデータへの不変参照がある時でさえもデータを可変化できるRustでのデザインパターンです:
 普通、この行動は借用規則により許可されません。データを可変化するために、このパターンは、データ構造内で<code>unsafe</code>コードを使用して、
-可変性と借用を支配するRustの通常の規則を捻じ曲げています。まだ、unsafeコードについては講義していません;
-第19章で行います。たとえ、コンパイラが保証できなくても、借用規則に実行時に従うことが保証できる時、
+可変性と借用を支配するRustの通常の規則を捻じ曲げています。
+unsafeコードは、コンパイラが規則をチェックしてくれることに頼らず、自分でチェックしていることをコンパイラに表明します;
+unsafeコードについては第19章で詳しく議論します。</p>
+<!--
+We can use types that use the interior mutability pattern only when we can
+ensure that the borrowing rules will be followed at runtime, even though the
+compiler can’t guarantee that. The `unsafe` code involved is then wrapped in a
+safe API, and the outer type is still immutable.
+-->
+<p>たとえ、コンパイラが保証できなくても、借用規則に実行時に従うことが保証できる時に限り、
 内部可変性パターンを使用した型を使用できます。関係する<code>unsafe</code>コードはそうしたら、安全なAPIにラップされ、
 外側の型は、それでも不変です。</p>
 <!--
@@ -30652,12 +30806,12 @@ Recall the borrowing rules you learned in Chapter 4:
 <p><code>Rc&lt;T&gt;</code>と異なり、<code>RefCell&lt;T&gt;</code>型は、保持するデータに対して単独の所有権を表します。では、
 どうして<code>RefCell&lt;T&gt;</code>が<code>Box&lt;T&gt;</code>のような型と異なるのでしょうか？第4章で学んだ借用規則を思い出してください:</p>
 <!--
-* At any given time, you can have *either* (but not both of) one mutable
-reference or any number of immutable references.
+* At any given time, you can have *either* (but not both) one mutable reference
+  or any number of immutable references.
 * References must always be valid.
 -->
 <ul>
-<li>いかなる時も(以下の両方ではなく、)1つの可変参照かいくつもの不変参照の<em>どちらか</em>が可能になる</li>
+<li>いかなる時点においても、1個の可変参照または任意個の不変参照の<em>どちらか</em>(両方ではない)が存在できる。</li>
 <li>参照は常に有効でなければならない。</li>
 </ul>
 <!--
@@ -30684,13 +30838,13 @@ majority of cases, which is why this is Rust’s default.
 多くの場合でコンパイル時に借用規則を精査することが最善の選択肢であり、これがRustの既定になっているのです。</p>
 <!--
 The advantage of checking the borrowing rules at runtime instead is that
-certain memory-safe scenarios are then allowed, whereas they are disallowed by
-the compile-time checks. Static analysis, like the Rust compiler, is inherently
-conservative. Some properties of code are impossible to detect by analyzing the
-code: the most famous example is the Halting Problem, which is beyond the scope
-of this book but is an interesting topic to research.
+certain memory-safe scenarios are then allowed, where they would’ve been
+disallowed by the compile-time checks. Static analysis, like the Rust compiler,
+is inherently conservative. Some properties of code are impossible to detect by
+analyzing the code: the most famous example is the Halting Problem, which is
+beyond the scope of this book but is an interesting topic to research.
 -->
-<p>借用規則を実行時に代わりに精査する利点は、コンパイル時の精査では許容されない特定のメモリ安全な筋書きが許容されることです。
+<p>借用規則を実行時に代わりに精査する利点は、コンパイル時の精査では許容されなかった特定のメモリ安全な筋書きが許容されることです。
 Rustコンパイラのような静的解析は、本質的に保守的です。コードの特性には、コードを解析するだけでは検知できないものもあります:
 最も有名な例は停止性問題であり、この本の範疇を超えていますが、調べると面白い話題です。</p>
 <!--
@@ -30724,13 +30878,13 @@ Here is a recap of the reasons to choose `Box<T>`, `Rc<T>`, or `RefCell<T>`:
 <p>こちらに<code>Box&lt;T&gt;</code>, <code>Rc&lt;T&gt;</code>, <code>RefCell&lt;T&gt;</code>を選択する理由を要約しておきます:</p>
 <!--
 * `Rc<T>` enables multiple owners of the same data; `Box<T>` and `RefCell<T>`
-have single owners.
+  have single owners.
 * `Box<T>` allows immutable or mutable borrows checked at compile time; `Rc<T>`
-allows only immutable borrows checked at compile time; `RefCell<T>` allows
-immutable or mutable borrows checked at runtime.
+  allows only immutable borrows checked at compile time; `RefCell<T>` allows
+  immutable or mutable borrows checked at runtime.
 * Because `RefCell<T>` allows mutable borrows checked at runtime, you can
-mutate the value inside the `RefCell<T>` even when the `RefCell<T>` is
-immutable.
+  mutate the value inside the `RefCell<T>` even when the `RefCell<T>` is
+  immutable.
 -->
 <ul>
 <li><code>Rc&lt;T&gt;</code>は、同じデータに複数の所有者を持たせてくれる; <code>Box&lt;T&gt;</code>と<code>RefCell&lt;T&gt;</code>は単独の所有者。</li>
@@ -30756,28 +30910,38 @@ you can’t borrow it mutably. For example, this code won’t compile:
 -->
 <p>借用規則の結果は、不変値がある時、可変で借用することはできないということです。
 例えば、このコードはコンパイルできません:</p>
-<pre><code class="language-rust ignore">fn main() {
+<pre><code class="language-rust ignore does_not_compile">fn main() {
     let x = 5;
     let y = &amp;mut x;
 }</code></pre>
 <!--
-If you tried to compile this code, you'd get the following error:
+If you tried to compile this code, you’d get the following error:
 -->
 <p>このコードをコンパイルしようとしたら、以下のようなエラーが出るでしょう:</p>
-<pre><code class="language-text">error[E0596]: cannot borrow immutable local variable `x` as mutable
-(エラー: 不変なローカル変数`x`を可変で借用することはできません)
- --&gt; src/main.rs:3:18
+<pre><code class="language-console">$ cargo run
+   Compiling borrowing v0.1.0 (file:///projects/borrowing)
+error[E0596]: cannot borrow `x` as mutable, as it is not declared as mutable
+(エラー: `x`は可変として宣言されていないので、可変として借用することはできません)
+ --&gt; src/main.rs:3:13
   |
-2 |     let x = 5;
-  |         - consider changing this to `mut x`
 3 |     let y = &amp;mut x;
-  |                  ^ cannot borrow mutably
+  |             ^^^^^^ cannot borrow as mutable
+  |                   (可変として借用できません)
+  |
+help: consider changing this to be mutable
+(ヘルプ: これを可変に変更することを考慮してください)
+  |
+2 |     let mut x = 5;
+  |         +++
+
+For more information about this error, try `rustc --explain E0596`.
+error: could not compile `borrowing` (bin &quot;borrowing&quot;) due to 1 previous error
 </code></pre>
 <!--
 However, there are situations in which it would be useful for a value to mutate
 itself in its methods but appear immutable to other code. Code outside the
 value’s methods would not be able to mutate the value. Using `RefCell<T>` is
-one way to get the ability to have interior mutability. But `RefCell<T>`
+one way to get the ability to have interior mutability, but `RefCell<T>`
 doesn’t get around the borrowing rules completely: the borrow checker in the
 compiler allows this interior mutability, and the borrowing rules are checked
 at runtime instead. If you violate the rules, you’ll get a `panic!` instead of
@@ -30798,17 +30962,21 @@ an immutable value and see why that is useful.
 -->
 <h4 id="内部可変性のユースケース-モックオブジェクト"><a class="header" href="#内部可変性のユースケース-モックオブジェクト">内部可変性のユースケース: モックオブジェクト</a></h4>
 <!--
-A *test double* is the general programming concept for a type used in place of
-another type during testing. *Mock objects* are specific types of test doubles
+Sometimes during testing a programmer will use a type in place of another type,
+in order to observe particular behavior and assert it’s implemented correctly.
+This placeholder type is called a *test double*. Think of it in the sense of a
+“stunt double” in filmmaking, where a person steps in and substitutes for an
+actor to do a particular tricky scene. Test doubles stand in for other types
+when we’re running tests. *Mock objects* are specific types of test doubles
 that record what happens during a test so you can assert that the correct
 actions took place.
 -->
-<p><em>テストダブル</em>は、テスト中に別の型の代わりに使用される型の一般的なプログラミングの概念です。
+<p>プログラマはテスト中に、特定の振る舞いを観測して、それが適切に実装されていることを確認するために、
+ある型の代わりに他の型を使用することがあるでしょう。このプレースホルダ型は<em>テストダブル</em>と呼ばれます。
+映画撮影において特定のトリッキーなシーンを演じるために、役者の代わりとして参加する人を指す、
+「スタントダブル」と同じような意味で考えてください。テストダブルはテストの実行時に、他の型の代役を務めます。
 <em>モックオブジェクト</em>は、テスト中に起きることを記録するテストダブルの特定の型なので、
 正しい動作が起きたことをアサートできます。</p>
-<blockquote>
-<p><code>編注</code>: テストダブルとは、ソフトウェアテストにおいて、テスト対象が依存しているコンポーネントを置き換える代用品のこと。</p>
-</blockquote>
 <!--
 Rust doesn’t have objects in the same sense as other languages have objects,
 and Rust doesn’t have mock object functionality built into the standard library
@@ -30843,21 +31011,21 @@ called `Messenger`. Listing 15-20 shows the library code:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait Messenger {
+<pre><code class="language-rust noplayground">pub trait Messenger {
     fn send(&amp;self, msg: &amp;str);
 }
 
-pub struct LimitTracker&lt;'a, T: 'a + Messenger&gt; {
+pub struct LimitTracker&lt;'a, T: Messenger&gt; {
     messenger: &amp;'a T,
     value: usize,
     max: usize,
 }
 
 impl&lt;'a, T&gt; LimitTracker&lt;'a, T&gt;
-    where T: Messenger {
-    pub fn new(messenger: &amp;T, max: usize) -&gt; LimitTracker&lt;T&gt; {
+where
+    T: Messenger,
+{
+    pub fn new(messenger: &amp;'a T, max: usize) -&gt; LimitTracker&lt;'a, T&gt; {
         LimitTracker {
             messenger,
             value: 0,
@@ -30870,19 +31038,20 @@ impl&lt;'a, T&gt; LimitTracker&lt;'a, T&gt;
 
         let percentage_of_max = self.value as f64 / self.max as f64;
 
-        if percentage_of_max &gt;= 0.75 &amp;&amp; percentage_of_max &lt; 0.9 {
-            // 警告: 割り当ての75％以上を使用してしまいました
-            self.messenger.send(&quot;Warning: You've used up over 75% of your quota!&quot;);
-        } else if percentage_of_max &gt;= 0.9 &amp;&amp; percentage_of_max &lt; 1.0 {
-            // 切迫した警告: 割り当ての90%以上を使用してしまいました
-            self.messenger.send(&quot;Urgent warning: You've used up over 90% of your quota!&quot;);
-        } else if percentage_of_max &gt;= 1.0 {
-            // エラー: 割り当てを超えています
+        if percentage_of_max &gt;= 1.0 {
+            //                  &quot;エラー: 割り当てを超えています!&quot;
             self.messenger.send(&quot;Error: You are over your quota!&quot;);
+        } else if percentage_of_max &gt;= 0.9 {
+            //        &quot;緊急警告: 割り当ての90%以上を使用してしまいました!&quot;
+            self.messenger
+                .send(&quot;Urgent warning: You've used up over 90% of your quota!&quot;);
+        } else if percentage_of_max &gt;= 0.75 {
+            //        &quot;警告: 割り当ての75%以上を使用してしまいました!&quot;
+            self.messenger
+                .send(&quot;Warning: You've used up over 75% of your quota!&quot;);
         }
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 15-20: A library to keep track of how close a
 value is to a maximum value and warn when the value is at certain levels</span>
@@ -30891,18 +31060,18 @@ value is to a maximum value and warn when the value is at certain levels</span>
 <!--
 One important part of this code is that the `Messenger` trait has one method
 called `send` that takes an immutable reference to `self` and the text of the
-message. This is the interface our mock object needs to have. The other
-important part is that we want to test the behavior of the `set_value` method
-on the `LimitTracker`. We can change what we pass in for the `value` parameter,
-but `set_value` doesn’t return anything for us to make assertions on. We want
-to be able to say that if we create a `LimitTracker` with something that
-implements the `Messenger` trait and a particular value for `max`, when we pass
-different numbers for `value`, the messenger is told to send the appropriate
-messages.
+message. This trait is the interface our mock object needs to implement so that
+the mock can be used in the same way a real object is. The other important part
+is that we want to test the behavior of the `set_value` method on the
+`LimitTracker`. We can change what we pass in for the `value` parameter, but
+`set_value` doesn’t return anything for us to make assertions on. We want to be
+able to say that if we create a `LimitTracker` with something that implements
+the `Messenger` trait and a particular value for `max`, when we pass different
+numbers for `value`, the messenger is told to send the appropriate messages.
 -->
 <p>このコードの重要な部分の1つは、<code>Messenger</code>トレイトには、<code>self</code>への不変参照とメッセージのテキストを取る<code>send</code>というメソッドが1つあることです。
-これが、モックオブジェクトが持つ必要のあるインターフェイスなのです。もう1つの重要な部分は、
-<code>LimitTracker</code>の<code>set_value</code>メソッドの振る舞いをテストしたいということです。<code>value</code>引数に渡すものを変えることができますが、
+このトレイトが、モックが実際のオブジェクトと同じように使用できるために、モックオブジェクトが実装する必要のあるインターフェイスなのです。
+もう1つの重要な部分は、<code>LimitTracker</code>の<code>set_value</code>メソッドの振る舞いをテストしたいということです。<code>value</code>引数に渡すものを変えることができますが、
 <code>set_value</code>はアサートを行えるものは何も返してくれません。<code>LimitTracker</code>を<code>Messenger</code>トレイトを実装する何かと、
 <code>max</code>の特定の値で生成したら、<code>value</code>に異なる数値を渡した時にメッセンジャーは適切なメッセージを送ると指示されると言えるようになりたいです。</p>
 <!--
@@ -30921,8 +31090,45 @@ implement a mock object to do just that, but the borrow checker won’t allow it
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">pub trait Messenger {
+</span><span class="boring">    fn send(&amp;self, msg: &amp;str);
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub struct LimitTracker&lt;'a, T: Messenger&gt; {
+</span><span class="boring">    messenger: &amp;'a T,
+</span><span class="boring">    value: usize,
+</span><span class="boring">    max: usize,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl&lt;'a, T&gt; LimitTracker&lt;'a, T&gt;
+</span><span class="boring">where
+</span><span class="boring">    T: Messenger,
+</span><span class="boring">{
+</span><span class="boring">    pub fn new(messenger: &amp;'a T, max: usize) -&gt; LimitTracker&lt;'a, T&gt; {
+</span><span class="boring">        LimitTracker {
+</span><span class="boring">            messenger,
+</span><span class="boring">            value: 0,
+</span><span class="boring">            max,
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn set_value(&amp;mut self, value: usize) {
+</span><span class="boring">        self.value = value;
+</span><span class="boring">
+</span><span class="boring">        let percentage_of_max = self.value as f64 / self.max as f64;
+</span><span class="boring">
+</span><span class="boring">        if percentage_of_max &gt;= 1.0 {
+</span><span class="boring">            self.messenger.send(&quot;Error: You are over your quota!&quot;);
+</span><span class="boring">        } else if percentage_of_max &gt;= 0.9 {
+</span><span class="boring">            self.messenger
+</span><span class="boring">                .send(&quot;Urgent warning: You've used up over 90% of your quota!&quot;);
+</span><span class="boring">        } else if percentage_of_max &gt;= 0.75 {
+</span><span class="boring">            self.messenger
+</span><span class="boring">                .send(&quot;Warning: You've used up over 75% of your quota!&quot;);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
 </span>#[cfg(test)]
 mod tests {
     use super::*;
@@ -30933,7 +31139,9 @@ mod tests {
 
     impl MockMessenger {
         fn new() -&gt; MockMessenger {
-            MockMessenger { sent_messages: vec![] }
+            MockMessenger {
+                sent_messages: vec![],
+            }
         }
     }
 
@@ -30952,8 +31160,7 @@ mod tests {
 
         assert_eq!(mock_messenger.sent_messages.len(), 1);
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 15-21: An attempt to implement a `MockMessenger`
 that isn’t allowed by the borrow checker</span>
@@ -30992,14 +31199,24 @@ of should now have one message in it.
 However, there’s one problem with this test, as shown here:
 -->
 <p>ところが、以下のようにこのテストには1つ問題があります:</p>
-<pre><code class="language-text">error[E0596]: cannot borrow immutable field `self.sent_messages` as mutable
-(エラー: 不変なフィールド`self.sent_messages`を可変で借用できません)
-  --&gt; src/lib.rs:52:13
+<pre><code class="language-console">$ cargo test
+   Compiling limit-tracker v0.1.0 (file:///projects/limit-tracker)
+error[E0596]: cannot borrow `self.sent_messages` as mutable, as it is behind a `&amp;` reference
+(エラー: `self.sent_messages`は`&amp;`参照の後ろにあるので、可変として借用できません)
+  --&gt; src/lib.rs:58:13
    |
-51 |         fn send(&amp;self, message: &amp;str) {
-   |                 ----- use `&amp;mut self` here to make mutable
-52 |             self.sent_messages.push(String::from(message));
-   |             ^^^^^^^^^^^^^^^^^^ cannot mutably borrow immutable field
+58 |             self.sent_messages.push(String::from(message));
+   |             ^^^^^^^^^^^^^^^^^^ `self` is a `&amp;` reference, so the data it refers to cannot be borrowed as mutable
+   |                               (`self`は`&amp;`参照なので、それが参照するデータは可変として借用できません)
+   |
+help: consider changing this to be a mutable reference
+(ヘルプ: 可変参照に変更することを検討してください)
+   |
+2  |     fn send(&amp;mut self, msg: &amp;str);
+   |             ~~~~~~~~~
+
+For more information about this error, try `rustc --explain E0596`.
+error: could not compile `limit-tracker` (lib test) due to 1 previous error
 </code></pre>
 <!--
 We can’t modify the `MockMessenger` to keep track of the messages, because the
@@ -31013,19 +31230,56 @@ definition (feel free to try and see what error message you get).
 そうしたら、<code>send</code>のシグニチャが、<code>Messenger</code>トレイト定義のシグニチャと一致しなくなるからです(気軽に試してエラーメッセージを確認してください)。</p>
 <!--
 This is a situation in which interior mutability can help! We’ll store the
-`sent_messages` within a `RefCell<T>`, and then the `send` message will be
+`sent_messages` within a `RefCell<T>`, and then the `send` method will be
 able to modify `sent_messages` to store the messages we’ve seen. Listing 15-22
 shows what that looks like:
 -->
 <p>これは、内部可変性が役に立つ場面なのです！<code>sent_messages</code>を<code>RefCell&lt;T&gt;</code>内部に格納し、
-そうしたら<code>send</code>メッセージは、<code>sent_messages</code>を変更して見かけたメッセージを格納できるようになるでしょう。
+そうしたら<code>send</code>メソッドは、<code>sent_messages</code>を変更して見かけたメッセージを格納できるようになるでしょう。
 リスト15-22は、それがどんな感じかを示しています:</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
+<pre><code class="language-rust noplayground"><span class="boring">pub trait Messenger {
+</span><span class="boring">    fn send(&amp;self, msg: &amp;str);
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub struct LimitTracker&lt;'a, T: Messenger&gt; {
+</span><span class="boring">    messenger: &amp;'a T,
+</span><span class="boring">    value: usize,
+</span><span class="boring">    max: usize,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl&lt;'a, T&gt; LimitTracker&lt;'a, T&gt;
+</span><span class="boring">where
+</span><span class="boring">    T: Messenger,
+</span><span class="boring">{
+</span><span class="boring">    pub fn new(messenger: &amp;'a T, max: usize) -&gt; LimitTracker&lt;'a, T&gt; {
+</span><span class="boring">        LimitTracker {
+</span><span class="boring">            messenger,
+</span><span class="boring">            value: 0,
+</span><span class="boring">            max,
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn set_value(&amp;mut self, value: usize) {
+</span><span class="boring">        self.value = value;
+</span><span class="boring">
+</span><span class="boring">        let percentage_of_max = self.value as f64 / self.max as f64;
+</span><span class="boring">
+</span><span class="boring">        if percentage_of_max &gt;= 1.0 {
+</span><span class="boring">            self.messenger.send(&quot;Error: You are over your quota!&quot;);
+</span><span class="boring">        } else if percentage_of_max &gt;= 0.9 {
+</span><span class="boring">            self.messenger
+</span><span class="boring">                .send(&quot;Urgent warning: You've used up over 90% of your quota!&quot;);
+</span><span class="boring">        } else if percentage_of_max &gt;= 0.75 {
+</span><span class="boring">            self.messenger
+</span><span class="boring">                .send(&quot;Warning: You've used up over 75% of your quota!&quot;);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
 </span>#[cfg(test)]
 mod tests {
     use super::*;
@@ -31037,7 +31291,9 @@ mod tests {
 
     impl MockMessenger {
         fn new() -&gt; MockMessenger {
-            MockMessenger { sent_messages: RefCell::new(vec![]) }
+            MockMessenger {
+                sent_messages: RefCell::new(vec![]),
+            }
         }
     }
 
@@ -31052,12 +31308,12 @@ mod tests {
         // --snip--
 <span class="boring">        let mock_messenger = MockMessenger::new();
 </span><span class="boring">        let mut limit_tracker = LimitTracker::new(&amp;mock_messenger, 100);
-</span><span class="boring">        limit_tracker.set_value(75);
+</span><span class="boring">
+</span><span class="boring">        limit_tracker.set_value(80);
 </span>
         assert_eq!(mock_messenger.sent_messages.borrow().len(), 1);
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 15-22: Using `RefCell<T>` to mutate an inner
 value while the outer value is considered immutable</span>
@@ -31074,9 +31330,9 @@ instance around the empty vector.
 For the implementation of the `send` method, the first parameter is still an
 immutable borrow of `self`, which matches the trait definition. We call
 `borrow_mut` on the `RefCell<Vec<String>>` in `self.sent_messages` to get a
-mutable reference to the value inside the `RefCell<Vec<String>>`, which is
-the vector. Then we can call `push` on the mutable reference to the vector to
-keep track of the messages sent during the test.
+mutable reference to the value inside the `RefCell<Vec<String>>`, which is the
+vector. Then we can call `push` on the mutable reference to the vector to keep
+track of the messages sent during the test.
 -->
 <p><code>send</code>メソッドの実装については、最初の引数はそれでも<code>self</code>への不変借用で、トレイト定義と合致しています。
 <code>RefCell&lt;Vec&lt;String&gt;&gt;</code>の<code>borrow_mut</code>を<code>self.sent_messages</code>に呼び出し、
@@ -31094,7 +31350,7 @@ Now that you’ve seen how to use `RefCell<T>`, let’s dig into how it works!
 -->
 <p><code>RefCell&lt;T&gt;</code>の使用法を見かけたので、動作の仕方を深掘りしましょう！</p>
 <!--
-#### Keeping track of Borrows at Runtime with `RefCell<T>`
+#### Keeping Track of Borrows at Runtime with `RefCell<T>`
 -->
 <h4 id="refcelltで実行時に借用を追いかける"><a class="header" href="#refcelltで実行時に借用を追いかける"><code>RefCell&lt;T&gt;</code>で実行時に借用を追いかける</a></h4>
 <!--
@@ -31136,15 +31392,82 @@ at runtime.
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><code class="language-rust ignore">impl Messenger for MockMessenger {
-    fn send(&amp;self, message: &amp;str) {
-        let mut one_borrow = self.sent_messages.borrow_mut();
-        let mut two_borrow = self.sent_messages.borrow_mut();
+<pre><code class="language-rust ignore panics"><span class="boring">pub trait Messenger {
+</span><span class="boring">    fn send(&amp;self, msg: &amp;str);
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub struct LimitTracker&lt;'a, T: Messenger&gt; {
+</span><span class="boring">    messenger: &amp;'a T,
+</span><span class="boring">    value: usize,
+</span><span class="boring">    max: usize,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl&lt;'a, T&gt; LimitTracker&lt;'a, T&gt;
+</span><span class="boring">where
+</span><span class="boring">    T: Messenger,
+</span><span class="boring">{
+</span><span class="boring">    pub fn new(messenger: &amp;'a T, max: usize) -&gt; LimitTracker&lt;'a, T&gt; {
+</span><span class="boring">        LimitTracker {
+</span><span class="boring">            messenger,
+</span><span class="boring">            value: 0,
+</span><span class="boring">            max,
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn set_value(&amp;mut self, value: usize) {
+</span><span class="boring">        self.value = value;
+</span><span class="boring">
+</span><span class="boring">        let percentage_of_max = self.value as f64 / self.max as f64;
+</span><span class="boring">
+</span><span class="boring">        if percentage_of_max &gt;= 1.0 {
+</span><span class="boring">            self.messenger.send(&quot;Error: You are over your quota!&quot;);
+</span><span class="boring">        } else if percentage_of_max &gt;= 0.9 {
+</span><span class="boring">            self.messenger
+</span><span class="boring">                .send(&quot;Urgent warning: You've used up over 90% of your quota!&quot;);
+</span><span class="boring">        } else if percentage_of_max &gt;= 0.75 {
+</span><span class="boring">            self.messenger
+</span><span class="boring">                .send(&quot;Warning: You've used up over 75% of your quota!&quot;);
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">#[cfg(test)]
+</span><span class="boring">mod tests {
+</span><span class="boring">    use super::*;
+</span><span class="boring">    use std::cell::RefCell;
+</span><span class="boring">
+</span><span class="boring">    struct MockMessenger {
+</span><span class="boring">        sent_messages: RefCell&lt;Vec&lt;String&gt;&gt;,
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    impl MockMessenger {
+</span><span class="boring">        fn new() -&gt; MockMessenger {
+</span><span class="boring">            MockMessenger {
+</span><span class="boring">                sent_messages: RefCell::new(vec![]),
+</span><span class="boring">            }
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    impl Messenger for MockMessenger {
+        fn send(&amp;self, message: &amp;str) {
+            let mut one_borrow = self.sent_messages.borrow_mut();
+            let mut two_borrow = self.sent_messages.borrow_mut();
 
-        one_borrow.push(String::from(message));
-        two_borrow.push(String::from(message));
+            one_borrow.push(String::from(message));
+            two_borrow.push(String::from(message));
+        }
     }
-}</code></pre>
+<span class="boring">
+</span><span class="boring">    #[test]
+</span><span class="boring">    fn it_sends_an_over_75_percent_warning_message() {
+</span><span class="boring">        let mock_messenger = MockMessenger::new();
+</span><span class="boring">        let mut limit_tracker = LimitTracker::new(&amp;mock_messenger, 100);
+</span><span class="boring">
+</span><span class="boring">        limit_tracker.set_value(80);
+</span><span class="boring">
+</span><span class="boring">        assert_eq!(mock_messenger.sent_messages.borrow().len(), 1);
+</span><span class="boring">    }
+</span><span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 15-23: Creating two mutable references in the
 same scope to see that `RefCell<T>` will panic</span>
@@ -31161,12 +31484,30 @@ which isn’t allowed. When we run the tests for our library, the code in Listin
 そして、同様にして変数<code>two_borrow</code>にも別の可変借用を生成しています。これにより同じスコープで2つの可変参照ができ、
 これは許可されないことです。このテストを自分のライブラリ用に走らせると、リスト15-23のコードはエラーなくコンパイルできますが、
 テストは失敗するでしょう:</p>
-<pre><code class="language-text">---- tests::it_sends_an_over_75_percent_warning_message stdout ----
-	thread 'tests::it_sends_an_over_75_percent_warning_message' panicked at
-'already borrowed: BorrowMutError', src/libcore/result.rs:906:4
-  (スレッド'tests::it_sends_an_over_75_percent_warning_message'は、
-'すでに借用されています: BorrowMutError', src/libcore/result.rs:906:4でパニックしました)
-note: Run with `RUST_BACKTRACE=1` for a backtrace.
+<pre><code class="language-console">$ cargo test
+   Compiling limit-tracker v0.1.0 (file:///projects/limit-tracker)
+    Finished test [unoptimized + debuginfo] target(s) in 0.91s
+     Running unittests src/lib.rs (target/debug/deps/limit_tracker-e599811fa246dbde)
+
+running 1 test
+test tests::it_sends_an_over_75_percent_warning_message ... FAILED
+
+failures:
+
+---- tests::it_sends_an_over_75_percent_warning_message stdout ----
+thread 'tests::it_sends_an_over_75_percent_warning_message' panicked at src/lib.rs:60:53:
+already borrowed: BorrowMutError
+(スレッド'tests::it_sends_an_over_75_percent_warning_message'は、src/lib.rs:60:53でパニックしました:
+すでに借用されています: BorrowMutError)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::it_sends_an_over_75_percent_warning_message
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`
 </code></pre>
 <!--
 Notice that the code panicked with the message `already borrowed:
@@ -31176,18 +31517,20 @@ rules at runtime.
 <p>コードは、<code>already borrowed: BorrowMutError</code>というメッセージとともにパニックしたことに注目してください。
 このようにして<code>RefCell&lt;T&gt;</code>は実行時に借用規則の侵害を扱うのです。</p>
 <!--
-Catching borrowing errors at runtime rather than compile time means that you
-would find a mistake in your code later in the development process and possibly
-not until our code was deployed to production. Also, your code will incur a
-small runtime performance penalty as a result of keeping track of the borrows
-at runtime rather than compile time. However, using `RefCell<T>` makes it
-possible to write a mock object that can modify itself to keep track of the
-messages it has seen while you're using it in a context where only immutable
-values are allowed. You can use `RefCell<T>` despite its trade-offs to get more
-functionality than regular references provide.
+Choosing to catch borrowing errors at runtime rather than compile time, as
+we’ve done here, means you’d potentially be finding mistakes in your code later
+in the development process: possibly not until your code was deployed to
+production. Also, your code would incur a small runtime performance penalty as
+a result of keeping track of the borrows at runtime rather than compile time.
+However, using `RefCell<T>` makes it possible to write a mock object that can
+modify itself to keep track of the messages it has seen while you’re using it
+in a context where only immutable values are allowed. You can use `RefCell<T>`
+despite its trade-offs to get more functionality than regular references
+provide.
 -->
-<p>コンパイル時ではなく実行時に借用エラーをキャッチするということは、開発過程の遅い段階でコードのミスを発見し、
-コードをプロダクションにデプロイする時まで発見しない可能性もあることを意味します。また、
+<p>ここで行ったように、コンパイル時ではなく実行時に借用エラーをキャッチすることを選択するということは、
+開発過程のより遅い段階でコードのミスを発見することになる可能性があることを意味します:
+コードをプロダクションにデプロイする時までに発見できないかもしれません。また、
 コンパイル時ではなく、実行時に借用を追いかける結果として、少し実行時にパフォーマンスを犠牲にするでしょう。
 しかしながら、<code>RefCell&lt;T&gt;</code>を使うことで、不変値のみが許可される文脈で使用しつつ、
 自身を変更して見かけたメッセージを追跡するモックオブジェクトを書くことが可能になります。
@@ -31228,17 +31571,17 @@ enum List {
     Nil,
 }
 
-use List::{Cons, Nil};
-use std::rc::Rc;
+use crate::List::{Cons, Nil};
 use std::cell::RefCell;
+use std::rc::Rc;
 
 fn main() {
     let value = Rc::new(RefCell::new(5));
 
     let a = Rc::new(Cons(Rc::clone(&amp;value), Rc::new(Nil)));
 
-    let b = Cons(Rc::new(RefCell::new(6)), Rc::clone(&amp;a));
-    let c = Cons(Rc::new(RefCell::new(10)), Rc::clone(&amp;a));
+    let b = Cons(Rc::new(RefCell::new(3)), Rc::clone(&amp;a));
+    let c = Cons(Rc::new(RefCell::new(4)), Rc::clone(&amp;a));
 
     *value.borrow_mut() += 10;
 
@@ -31270,15 +31613,16 @@ can both refer to `a`, which is what we did in Listing 15-18.
 <p>リスト<code>a</code>を<code>Rc&lt;T&gt;</code>に包んでいるので、リスト<code>b</code>と<code>c</code>を生成する時に、どちらも<code>a</code>を参照できます。
 リスト15-18ではそうしていました。</p>
 <!--
-After we’ve created the lists in `a`, `b`, and `c`, we add 10 to the value in
-`value`. We do this by calling `borrow_mut` on `value`, which uses the
+After we’ve created the lists in `a`, `b`, and `c`, we want to add 10 to the
+value in `value`. We do this by calling `borrow_mut` on `value`, which uses the
 automatic dereferencing feature we discussed in Chapter 5 (see the section
-“Where’s the `->` Operator?”) to dereference the `Rc<T>` to the inner
-`RefCell<T>` value. The `borrow_mut` method returns a `RefMut<T>` smart
-pointer, and we use the dereference operator on it and change the inner value.
+[“Where’s the `->` Operator?”][wheres-the---operator]) to
+dereference the `Rc<T>` to the inner `RefCell<T>` value. The `borrow_mut`
+method returns a `RefMut<T>` smart pointer, and we use the dereference operator
+on it and change the inner value.
 -->
-<p><code>a</code>、<code>b</code>、<code>c</code>のリストを作成した後、<code>value</code>の値に10を足しています。これを<code>value</code>の<code>borrow_mut</code>を呼び出すことで行い、
-これは、第5章で議論した自動参照外し機能(「<code>-&gt;</code>演算子はどこに行ったの？」節をご覧ください)を使用して、
+<p><code>a</code>、<code>b</code>、<code>c</code>のリストを作成した後、<code>value</code>の値に10を足したいとします。これを<code>value</code>の<code>borrow_mut</code>を呼び出すことで行い、
+これは、第5章で議論した自動参照外し機能(<a href="ch05-03-method-syntax.html#-%E6%BC%94%E7%AE%97%E5%AD%90%E3%81%AF%E3%81%A9%E3%81%93%E3%81%AB%E8%A1%8C%E3%81%A3%E3%81%9F%E3%81%AE">「<code>-&gt;</code>演算子はどこに行ったの？」</a>節をご覧ください)を使用して、
 <code>Rc&lt;T&gt;</code>を内部の<code>RefCell&lt;T&gt;</code>値に参照外ししています。<code>borrow_mut</code>メソッドは、
 <code>RefMut&lt;T&gt;</code>スマートポインタを返し、それに対して参照外し演算子を使用し、中の値を変更します。</p>
 <!--
@@ -31286,9 +31630,13 @@ When we print `a`, `b`, and `c`, we can see that they all have the modified
 value of 15 rather than 5:
 -->
 <p><code>a</code>、<code>b</code>、<code>c</code>を出力すると、全て5ではなく、変更された15という値になっていることがわかります。</p>
-<pre><code class="language-text">a after = Cons(RefCell { value: 15 }, Nil)
-b after = Cons(RefCell { value: 6 }, Cons(RefCell { value: 15 }, Nil))
-c after = Cons(RefCell { value: 10 }, Cons(RefCell { value: 15 }, Nil))
+<pre><code class="language-console">$ cargo run
+   Compiling cons-list v0.1.0 (file:///projects/cons-list)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.63s
+     Running `target/debug/cons-list`
+a after = Cons(RefCell { value: 15 }, Nil)
+b after = Cons(RefCell { value: 3 }, Cons(RefCell { value: 15 }, Nil))
+c after = Cons(RefCell { value: 4 }, Cons(RefCell { value: 15 }, Nil))
 </code></pre>
 <!--
 This technique is pretty neat! By using `RefCell<T>`, we have an outwardly
@@ -31296,23 +31644,18 @@ immutable `List` value. But we can use the methods on `RefCell<T>` that provide
 access to its interior mutability so we can modify our data when we need to.
 The runtime checks of the borrowing rules protect us from data races, and it’s
 sometimes worth trading a bit of speed for this flexibility in our data
-structures.
+structures. Note that `RefCell<T>` does not work for multithreaded code!
+`Mutex<T>` is the thread-safe version of `RefCell<T>` and we’ll discuss
+`Mutex<T>` in Chapter 16.
 -->
 <p>このテクニックは非常に綺麗です！<code>RefCell&lt;T&gt;</code>を使用することで表面上は不変な<code>List</code>値を持てます。
 しかし、内部可変性へのアクセスを提供する<code>RefCell&lt;T&gt;</code>のメソッドを使用できるので、必要な時にはデータを変更できます。
-借用規則を実行時に精査することでデータ競合を防ぎ、時としてデータ構造でちょっとのスピードを犠牲にこの柔軟性を得るのは価値があります。</p>
+借用規則を実行時に精査することでデータ競合を防ぎ、時としてデータ構造でちょっとのスピードを犠牲にこの柔軟性を得るのは価値があります。
+<code>RefCell&lt;T&gt;</code>は、マルチスレッドで実行されるコードに対しては機能しないことに注意してください！
+<code>RefCell&lt;T&gt;</code>のスレッドセーフなバージョンは<code>Mutex&lt;T&gt;</code>で、<code>Mutex&lt;T&gt;</code>については第16章で議論しましょう。</p>
 <!--
-The standard library has other types that provide interior mutability, such as
-`Cell<T>`, which is similar except that instead of giving references to the
-inner value, the value is copied in and out of the `Cell<T>`. There’s also
-`Mutex<T>`, which offers interior mutability that’s safe to use across threads;
-we’ll discuss its use in Chapter 16. Check out the standard library docs for
-more details on the differences between these types.
+[wheres-the---operator]: ch05-03-method-syntax.html#wheres-the---operator
 -->
-<p>標準ライブラリには、<code>Cell&lt;T&gt;</code>などの内部可変性を提供する他の型もあり、この型は、内部値への参照を与える代わりに、
-値は<code>Cell&lt;T&gt;</code>の内部や外部へコピーされる点を除き似ています。また<code>Mutex&lt;T&gt;</code>もあり、
-これはスレッド間で使用するのが安全な内部可変性を提供します; 第16章でその使いみちについて議論しましょう。
-これらの型の違いをより詳しく知るには、標準ライブラリのドキュメンテーションをチェックしてください。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Reference Cycles Can Leak Memory
 -->
@@ -31320,16 +31663,16 @@ more details on the differences between these types.
 <!--
 Rust’s memory safety guarantees make it difficult, but not impossible, to
 accidentally create memory that is never cleaned up (known as a *memory leak*).
-Preventing memory leaks entirely is not one of Rust’s guarantees in the same
-way that disallowing data races at compile time is, meaning memory leaks are
-memory safe in Rust. We can see that Rust allows memory leaks by using `Rc<T>`
-and `RefCell<T>`: it’s possible to create references where items refer to each
-other in a cycle. This creates memory leaks because the reference count of each
-item in the cycle will never reach 0, and the values will never be dropped.
+Preventing memory leaks entirely is not one of Rust’s guarantees, meaning
+memory leaks are memory safe in Rust. We can see that Rust allows memory leaks
+by using `Rc<T>` and `RefCell<T>`: it’s possible to create references where
+items refer to each other in a cycle. This creates memory leaks because the
+reference count of each item in the cycle will never reach 0, and the values
+will never be dropped.
 -->
 <p>Rustのメモリ安全保証により誤って絶対に片付けられることのないメモリ(<em>メモリリーク</em>として知られています)を生成してしまいにくくなりますが、
-不可能にはなりません。コンパイル時にデータ競合を防ぐのと同じようにメモリリークを完全に回避することは、
-Rustの保証の一つではなく、メモリリークはRustにおいてはメモリ安全であることを意味します。
+不可能にはなりません。メモリリークを完全に回避することは、Rustの保証の一つではなく、
+メモリリークはRustにおいてはメモリ安全であることを意味します。
 Rustでは、<code>Rc&lt;T&gt;</code>と<code>RefCell&lt;T&gt;</code>を使用してメモリリークを許可するとわかります:
 要素がお互いに循環して参照する参照を生成することも可能ということです。循環の各要素の参照カウントが絶対に0にならないので、
 これはメモリリークを起こし、値は絶対にドロップされません。</p>
@@ -31347,12 +31690,9 @@ starting with the definition of the `List` enum and a `tail` method in Listing
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<!-- Hidden fn main is here to disable the automatic wrapping in fn main that
-doc tests do; the `use List` fails if this listing is put within a main -->
-<pre><pre class="playground"><code class="language-rust"><span class="boring">fn main() {}
-</span>use std::rc::Rc;
+<pre><pre class="playground"><code class="language-rust">use crate::List::{Cons, Nil};
 use std::cell::RefCell;
-use List::{Cons, Nil};
+use std::rc::Rc;
 
 #[derive(Debug)]
 enum List {
@@ -31362,27 +31702,29 @@ enum List {
 
 impl List {
     fn tail(&amp;self) -&gt; Option&lt;&amp;RefCell&lt;Rc&lt;List&gt;&gt;&gt; {
-        match *self {
-            Cons(_, ref item) =&gt; Some(item),
+        match self {
+            Cons(_, item) =&gt; Some(item),
             Nil =&gt; None,
         }
     }
-}</code></pre></pre>
+}
+
+fn main() {}</code></pre></pre>
 <!--
 <span class="caption">Listing 15-25: A cons list definition that holds a
 `RefCell<T>` so we can modify what a `Cons` variant is referring to</span>
 -->
 <p><span class="caption">リスト15-25: <code>Cons</code>列挙子が参照しているものを変更できるように<code>RefCell&lt;T&gt;</code>を抱えているコンスリストの定義</span></p>
 <!--
-We’re using another variation of the `List` definition in Listing 15-5. The
+We’re using another variation of the `List` definition from Listing 15-5. The
 second element in the `Cons` variant is now `RefCell<Rc<List>>`, meaning that
 instead of having the ability to modify the `i32` value as we did in Listing
-15-24, we want to modify which `List` value a `Cons` variant is pointing to.
-We're also adding a `tail` method to make it convenient for us to access the
+15-24, we want to modify the `List` value a `Cons` variant is pointing to.
+We’re also adding a `tail` method to make it convenient for us to access the
 second item if we have a `Cons` variant.
 -->
 <p>リスト15-5の<code>List</code>定義の別バリエーションを使用しています。<code>Cons</code>列挙子の2番目の要素はこれで<code>RefCell&lt;Rc&lt;List&gt;&gt;</code>になり、
-リスト15-24のように<code>i32</code>値を変更する能力があるのではなく、<code>Cons</code>列挙子が指している<code>List</code>値の先を変えたいということです。
+リスト15-24のように<code>i32</code>値を変更する能力があるのではなく、<code>Cons</code>列挙子が指している先の<code>List</code>値を変えたいということです。
 また、<code>tail</code>メソッドを追加して<code>Cons</code>列挙子があるときに2番目の要素にアクセスするのが便利になるようにしています。</p>
 <!--
 In Listing 15-26, we’re adding a `main` function that uses the definitions in
@@ -31398,9 +31740,10 @@ reference counts are at various points in this process.
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">use List::{Cons, Nil};
-</span><span class="boring">use std::rc::Rc;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use crate::List::{Cons, Nil};
 </span><span class="boring">use std::cell::RefCell;
+</span><span class="boring">use std::rc::Rc;
+</span><span class="boring">
 </span><span class="boring">#[derive(Debug)]
 </span><span class="boring">enum List {
 </span><span class="boring">    Cons(i32, RefCell&lt;Rc&lt;List&gt;&gt;),
@@ -31409,8 +31752,8 @@ reference counts are at various points in this process.
 </span><span class="boring">
 </span><span class="boring">impl List {
 </span><span class="boring">    fn tail(&amp;self) -&gt; Option&lt;&amp;RefCell&lt;Rc&lt;List&gt;&gt;&gt; {
-</span><span class="boring">        match *self {
-</span><span class="boring">            Cons(_, ref item) =&gt; Some(item),
+</span><span class="boring">        match self {
+</span><span class="boring">            Cons(_, item) =&gt; Some(item),
 </span><span class="boring">            Nil =&gt; None,
 </span><span class="boring">        }
 </span><span class="boring">    }
@@ -31419,33 +31762,35 @@ reference counts are at various points in this process.
 </span>fn main() {
     let a = Rc::new(Cons(5, RefCell::new(Rc::new(Nil))));
 
-    // aの最初の参照カウント = {}
+    //       &quot;aの最初の参照カウント = {}&quot;
     println!(&quot;a initial rc count = {}&quot;, Rc::strong_count(&amp;a));
-    // aの次の要素は = {:?}
+    //       &quot;aの次の要素は = {:?}&quot;
     println!(&quot;a next item = {:?}&quot;, a.tail());
 
     let b = Rc::new(Cons(10, RefCell::new(Rc::clone(&amp;a))));
 
-    // b作成後のaの参照カウント = {}
+    //       &quot;b作成後のaの参照カウント = {}&quot;
     println!(&quot;a rc count after b creation = {}&quot;, Rc::strong_count(&amp;a));
-    // bの最初の参照カウント = {}
+    //       &quot;bの最初の参照カウント = {}&quot;
     println!(&quot;b initial rc count = {}&quot;, Rc::strong_count(&amp;b));
-    // bの次の要素 = {:?}
+    //       &quot;bの次の要素 = {:?}&quot;
     println!(&quot;b next item = {:?}&quot;, b.tail());
 
     if let Some(link) = a.tail() {
         *link.borrow_mut() = Rc::clone(&amp;b);
     }
 
-    // aを変更後のbの参照カウント = {}
+    //       &quot;aを変更後のbの参照カウント = {}&quot;
     println!(&quot;b rc count after changing a = {}&quot;, Rc::strong_count(&amp;b));
-    // aを変更後のaの参照カウント = {}
+    //       &quot;aを変更後のaの参照カウント = {}&quot;
     println!(&quot;a rc count after changing a = {}&quot;, Rc::strong_count(&amp;a));
 
     // Uncomment the next line to see that we have a cycle;
     // it will overflow the stack
-    // 次の行のコメントを外して循環していると確認してください; スタックオーバーフローします
-    // println!(&quot;a next item = {:?}&quot;, a.tail());        // aの次の要素 = {:?}
+    // 次の行のコメントを外して循環していると確認してください;
+    // スタックオーバーフローします
+    // //       &quot;aの次の要素 = {:?}&quot;
+    // println!(&quot;a next item = {:?}&quot;, a.tail());
 }</code></pre></pre>
 <!--
 <span class="caption">Listing 15-26: Creating a reference cycle of two `List`
@@ -31457,18 +31802,18 @@ in the variable `a` or `b`がかかる先が不明瞭だが、コード例を見
 -->
 <!--
 We create an `Rc<List>` instance holding a `List` value in the variable `a`
-with an initial list of `5, Nil`. We then create an `Rc<List>` instance
-holding another `List` value in the variable `b` that contains the value 10 and
-points to the list in `a`.
+with an initial list of `5, Nil`. We then create an `Rc<List>` instance holding
+another `List` value in the variable `b` that contains the value 10 and points
+to the list in `a`.
 -->
 <p>最初のリストが<code>5, Nil</code>の<code>List</code>値を保持する<code>Rc&lt;List&gt;</code>インスタンスを変数<code>a</code>に生成します。
 そして、値10と<code>a</code>のリストを指す別の<code>List</code>値を保持する<code>Rc&lt;List&gt;</code>インスタンスを変数<code>b</code>に生成します。</p>
 <!--
-We modify `a` so it points to `b` instead of `Nil`, creating a cycle. We
-do that by using the `tail` method to get a reference to the
-`RefCell<Rc<List>>` in `a`, which we put in the variable `link`. Then we use
-the `borrow_mut` method on the `RefCell<Rc<List>>` to change the value inside
-from an `Rc<List>` that holds a `Nil` value to the `Rc<List>` in `b`.
+We modify `a` so it points to `b` instead of `Nil`, creating a cycle. We do
+that by using the `tail` method to get a reference to the `RefCell<Rc<List>>`
+in `a`, which we put in the variable `link`. Then we use the `borrow_mut`
+method on the `RefCell<Rc<List>>` to change the value inside from an `Rc<List>`
+that holds a `Nil` value to the `Rc<List>` in `b`.
 -->
 <p><code>a</code>が<code>Nil</code>ではなく<code>b</code>を指すように変更して、循環させます。<code>tail</code>メソッドを使用して、
 <code>a</code>の<code>RefCell&lt;Rc&lt;List&gt;&gt;</code>への参照を得ることで循環させて、この参照は変数<code>link</code>に配置します。
@@ -31479,7 +31824,11 @@ When we run this code, keeping the last `println!` commented out for the
 moment, we’ll get this output:
 -->
 <p>最後の<code>println!</code>を今だけコメントアウトしたまま、このコードを実行すると、こんな出力が得られます:</p>
-<pre><code class="language-text">a initial rc count = 1
+<pre><code class="language-console">$ cargo run
+   Compiling cons-list v0.1.0 (file:///projects/cons-list)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.53s
+     Running `target/debug/cons-list`
+a initial rc count = 1
 a next item = Some(RefCell { value: Nil })
 a rc count after b creation = 2
 b initial rc count = 1
@@ -31488,23 +31837,24 @@ b rc count after changing a = 2
 a rc count after changing a = 2
 </code></pre>
 <!--
-The reference count of the `Rc<List>` instances in both `a` and `b` are 2
-after we change the list in `a` to point to `b`. At the end of `main`, Rust
-will try to drop `b` first, which will decrease the count in each of the
-`Rc<List>` instances in `a` and `b` by 1.
+The reference count of the `Rc<List>` instances in both `a` and `b` are 2 after
+we change the list in `a` to point to `b`. At the end of `main`, Rust drops the
+variable `b`, which decreases the reference count of the `b` `Rc<List>` instance
+from 2 to 1. The memory that `Rc<List>` has on the heap won’t be dropped at
+this point, because its reference count is 1, not 0. Then Rust drops `a`, which
+decreases the reference count of the `a` `Rc<List>` instance from 2 to 1 as
+well. This instance’s memory can’t be dropped either, because the other
+`Rc<List>` instance still refers to it. The memory allocated to the list will
+remain uncollected forever. To visualize this reference cycle, we’ve created a
+diagram in Figure 15-4.
 -->
 <p><code>a</code>のリストを<code>b</code>を指すように変更した後の<code>a</code>と<code>b</code>の<code>Rc&lt;List&gt;</code>インスタンスの参照カウントは2です。
-<code>main</code>の終端で、コンパイラはまず<code>b</code>をドロップしようとし、<code>a</code>と<code>b</code>の各<code>Rc&lt;List&gt;</code>インスタンスのカウントを1減らします。</p>
-<!--
-However, because `a` is still referencing the `Rc<List>` that was in `b`, that
-`Rc<List>` has a count of 1 rather than 0, so the memory the `Rc<List>` has on
-the heap won’t be dropped. The memory will just sit there with a count of 1,
-forever. To visualize this reference cycle, we’ve created a diagram in Figure
-15-4:
--->
-<p>しかしながら、それでも<code>a</code>は<code>b</code>にあった<code>Rc&lt;List&gt;</code>を参照しているので、その<code>Rc&lt;List&gt;</code>のカウントは0ではなく1になり、
-その<code>Rc&lt;List&gt;</code>がヒープに確保していたメモリはドロップされません。メモリはただ、カウント1のままそこに永遠に居座るのです。
-この循環参照を可視化するために、図15-4に図式を作成しました:</p>
+<code>main</code>の終端で、コンパイラは変数<code>b</code>をドロップし、<code>b</code> <code>Rc&lt;List&gt;</code>インスタンスの参照カウントを2から1に減らします。
+<code>Rc&lt;List&gt;</code>の参照カウントが0ではなく1なので、<code>Rc&lt;List&gt;</code>がヒープに確保していたメモリは、この時点ではドロップされません。
+次に、コンパイラは<code>a</code>をドロップし、<code>a</code> <code>Rc&lt;List&gt;</code> インスタンスの参照カウントも同様に2から1に減らします。
+他の<code>Rc&lt;List&gt;</code>インスタンスがまだ参照しているので、このインスタンスのメモリもドロップされません。
+リストに割り当てられたメモリは、永遠に回収されないままになるでしょう。
+この循環参照を可視化するために、図15-4に図式を作成しました。</p>
 <!--
 <img alt="Reference cycle of lists" src="img/trpl15-04.svg" class="center" />
 -->
@@ -31522,13 +31872,15 @@ overflows the stack.
 <p>最後の<code>println!</code>のコメントを外してプログラムを実行したら、<code>a</code>が<code>b</code>を指して、<code>b</code>が<code>a</code>を指してと、
 スタックがオーバーフローするまでコンパイラはこの循環を出力しようとするでしょう。</p>
 <!--
-In this case, right after we create the reference cycle, the program ends. The
-consequences of this cycle aren’t very dire. However, if a more complex program
-allocated lots of memory in a cycle and held onto it for a long time, the
-program would use more memory than it needed and might overwhelm the system,
-causing it to run out of available memory.
+Compared to a real-world program, the consequences of creating a reference cycle
+in this example aren’t very dire: right after we create the reference cycle,
+the program ends. However, if a more complex program allocated lots of memory
+in a cycle and held onto it for a long time, the program would use more memory
+than it needed and might overwhelm the system, causing it to run out of
+available memory.
 -->
-<p>この場合、循環参照を作る直後にプログラムは終了します。この循環の結果は、それほど悲壮なものではありません。しかしながら、
+<p>現実世界のプログラムと比較すれば、この例で循環参照を作成してしまうという結果は、それほど悲壮なものではありません:
+循環参照を作った直後にプログラムが終了するからです。しかしながら、
 より複雑なプログラムが多くのメモリを循環で確保し長い間その状態を保ったら、プログラムは必要以上のメモリを使用し、
 使用可能なメモリを枯渇させてシステムを参らせてしまう可能性があります。</p>
 <!--
@@ -31568,43 +31920,45 @@ So far, we’ve demonstrated that calling `Rc::clone` increases the
 `strong_count` of an `Rc<T>` instance, and an `Rc<T>` instance is only cleaned
 up if its `strong_count` is 0. You can also create a *weak reference* to the
 value within an `Rc<T>` instance by calling `Rc::downgrade` and passing a
-reference to the `Rc<T>`. When you call `Rc::downgrade`, you get a smart
-pointer of type `Weak<T>`. Instead of increasing the `strong_count` in the
-`Rc<T>` instance by 1, calling `Rc::downgrade` increases the `weak_count` by 1.
-The `Rc<T>` type uses `weak_count` to keep track of how many `Weak<T>`
-references exist, similar to `strong_count`. The difference is the `weak_count`
-doesn’t need to be 0 for the `Rc<T>` instance to be cleaned up.
+reference to the `Rc<T>`. Strong references are how you can share ownership of
+an `Rc<T>` instance. Weak references don’t express an ownership relationship,
+and their count doesn’t affect when an `Rc<T>` instance is cleaned up. They
+won’t cause a reference cycle because any cycle involving some weak references
+will be broken once the strong reference count of values involved is 0.
 -->
 <p>ここまで、<code>Rc::clone</code>を呼び出すと<code>Rc&lt;T&gt;</code>インスタンスの<code>strong_count</code>が増えることと、
 <code>strong_count</code>が0になった時に<code>Rc&lt;T&gt;</code>インスタンスは片付けられることをデモしてきました。
 <code>Rc::downgrade</code>を呼び出し、<code>Rc&lt;T&gt;</code>への参照を渡すことで、<code>Rc&lt;T&gt;</code>インスタンス内部の値への<em>弱い参照</em>(weak reference)を作ることもできます。
-<code>Rc::downgrade</code>を呼び出すと、型<code>Weak&lt;T&gt;</code>のスマートポインタが得られます。
+強い参照は、<code>Rc&lt;T&gt;</code>インスタンスの所有権を共有する方法です。弱い参照は所有関係を表現せず、
+そのカウントは<code>Rc&lt;T&gt;</code>インスタンスが片付けられるときに影響を与えません。
+ひとたび、関係する値の強い参照カウントが0になれば、弱い参照が関わる循環はなんでも破壊されるので、
+循環参照にはなりません。</p>
+<!--
+When you call `Rc::downgrade`, you get a smart pointer of type `Weak<T>`.
+Instead of increasing the `strong_count` in the `Rc<T>` instance by 1, calling
+`Rc::downgrade` increases the `weak_count` by 1. The `Rc<T>` type uses
+`weak_count` to keep track of how many `Weak<T>` references exist, similar to
+`strong_count`. The difference is the `weak_count` doesn’t need to be 0 for the
+`Rc<T>` instance to be cleaned up.
+-->
+<p><code>Rc::downgrade</code>を呼び出すと、型<code>Weak&lt;T&gt;</code>のスマートポインタが得られます。
 <code>Rc&lt;T&gt;</code>インスタンスの<code>strong_count</code>を1増やす代わりに、<code>Rc::downgrade</code>を呼び出すと、<code>weak_count</code>が1増えます。
 <code>strong_count</code>同様、<code>Rc&lt;T&gt;</code>型は<code>weak_count</code>を使用して、幾つの<code>Weak&lt;T&gt;</code>参照が存在しているかを追跡します。
 違いは、<code>Rc&lt;T&gt;</code>が片付けられるのに、<code>weak_count</code>が0である必要はないということです。</p>
-<!--
-Strong references are how you can share ownership of an `Rc<T>` instance. Weak
-references don’t express an ownership relationship. They won’t cause a
-reference cycle because any cycle involving some weak references will be broken
-once the strong reference count of values involved is 0.
--->
-<p>強い参照は、<code>Rc&lt;T&gt;</code>インスタンスの所有権を共有する方法です。弱い参照は、所有権関係を表現しません。
-ひとたび、関係する値の強い参照カウントが0になれば、弱い参照が関わる循環はなんでも破壊されるので、
-循環参照にはなりません。</p>
 <!--
 Because the value that `Weak<T>` references might have been dropped, to do
 anything with the value that a `Weak<T>` is pointing to, you must make sure the
 value still exists. Do this by calling the `upgrade` method on a `Weak<T>`
 instance, which will return an `Option<Rc<T>>`. You’ll get a result of `Some`
 if the `Rc<T>` value has not been dropped yet and a result of `None` if the
-`Rc<T>` value has been dropped. Because `upgrade` returns an `Option<T>`, Rust
-will ensure that the `Some` case and the `None` case are handled, and there
-won't be an invalid pointer.
+`Rc<T>` value has been dropped. Because `upgrade` returns an `Option<Rc<T>>`,
+Rust will ensure that the `Some` case and the `None` case are handled, and
+there won’t be an invalid pointer.
 -->
 <p><code>Weak&lt;T&gt;</code>が参照する値はドロップされてしまっている可能性があるので、<code>Weak&lt;T&gt;</code>が指す値に何かをするには、
 値がまだ存在することを確認しなければなりません。<code>Weak&lt;T&gt;</code>の<code>upgrade</code>メソッドを呼び出すことでこれをしてください。
 このメソッドは<code>Option&lt;Rc&lt;T&gt;&gt;</code>を返します。<code>Rc&lt;T&gt;</code>値がまだドロップされていなければ、<code>Some</code>の結果が、
-<code>Rc&lt;T&gt;</code>値がドロップ済みなら、<code>None</code>の結果が得られます。<code>upgrade</code>が<code>Option&lt;T&gt;</code>を返すので、
+<code>Rc&lt;T&gt;</code>値がドロップ済みなら、<code>None</code>の結果が得られます。<code>upgrade</code>が<code>Option&lt;Rc&lt;T&gt;&gt;</code>を返すので、
 コンパイラは、<code>Some</code>ケースと<code>None</code>ケースが扱われていることを確かめてくれ、無効なポインタは存在しません。</p>
 <!--
 As an example, rather than using a list whose items know only about the next
@@ -31626,17 +31980,26 @@ references to its children `Node` values:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::rc::Rc;
-use std::cell::RefCell;
+<pre><pre class="playground"><code class="language-rust">use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Debug)]
 struct Node {
     value: i32,
     children: RefCell&lt;Vec&lt;Rc&lt;Node&gt;&gt;&gt;,
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let leaf = Rc::new(Node {
+</span><span class="boring">        value: 3,
+</span><span class="boring">        children: RefCell::new(vec![]),
+</span><span class="boring">    });
+</span><span class="boring">
+</span><span class="boring">    let branch = Rc::new(Node {
+</span><span class="boring">        value: 5,
+</span><span class="boring">        children: RefCell::new(vec![Rc::clone(&amp;leaf)]),
+</span><span class="boring">    });
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 We want a `Node` to own its children, and we want to share that ownership with
 variables so we can access each `Node` in the tree directly. To do this, we
@@ -31659,13 +32022,13 @@ with the value 5 and `leaf` as one of its children, as shown in Listing 15-27:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::rc::Rc;
-</span><span class="boring">use std::cell::RefCell;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::cell::RefCell;
+</span><span class="boring">use std::rc::Rc;
 </span><span class="boring">
 </span><span class="boring">#[derive(Debug)]
 </span><span class="boring">struct Node {
 </span><span class="boring">    value: i32,
-</span><span class="boring">   children: RefCell&lt;Vec&lt;Rc&lt;Node&gt;&gt;&gt;,
+</span><span class="boring">    children: RefCell&lt;Vec&lt;Rc&lt;Node&gt;&gt;&gt;,
 </span><span class="boring">}
 </span><span class="boring">
 </span>fn main() {
@@ -31732,10 +32095,8 @@ like this:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::rc::{Rc, Weak};
-use std::cell::RefCell;
+<pre><pre class="playground"><code class="language-rust">use std::cell::RefCell;
+use std::rc::{Rc, Weak};
 
 #[derive(Debug)]
 struct Node {
@@ -31743,7 +32104,27 @@ struct Node {
     parent: RefCell&lt;Weak&lt;Node&gt;&gt;,
     children: RefCell&lt;Vec&lt;Rc&lt;Node&gt;&gt;&gt;,
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">fn main() {
+</span><span class="boring">    let leaf = Rc::new(Node {
+</span><span class="boring">        value: 3,
+</span><span class="boring">        parent: RefCell::new(Weak::new()),
+</span><span class="boring">        children: RefCell::new(vec![]),
+</span><span class="boring">    });
+</span><span class="boring">
+</span><span class="boring">    //       &quot;leafの親 = {:?}&quot;
+</span><span class="boring">    println!(&quot;leaf parent = {:?}&quot;, leaf.parent.borrow().upgrade());
+</span><span class="boring">
+</span><span class="boring">    let branch = Rc::new(Node {
+</span><span class="boring">        value: 5,
+</span><span class="boring">        parent: RefCell::new(Weak::new()),
+</span><span class="boring">        children: RefCell::new(vec![Rc::clone(&amp;leaf)]),
+</span><span class="boring">    });
+</span><span class="boring">
+</span><span class="boring">    *leaf.parent.borrow_mut() = Rc::downgrade(&amp;branch);
+</span><span class="boring">
+</span><span class="boring">    println!(&quot;leaf parent = {:?}&quot;, leaf.parent.borrow().upgrade());
+</span><span class="boring">}</span></code></pre></pre>
 <!--
 A node will be able to refer to its parent node but doesn’t own its parent.
 In Listing 15-28, we update `main` to use this new definition so the `leaf`
@@ -31755,8 +32136,8 @@ node will have a way to refer to its parent, `branch`:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::rc::{Rc, Weak};
-</span><span class="boring">use std::cell::RefCell;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::cell::RefCell;
+</span><span class="boring">use std::rc::{Rc, Weak};
 </span><span class="boring">
 </span><span class="boring">#[derive(Debug)]
 </span><span class="boring">struct Node {
@@ -31772,7 +32153,7 @@ node will have a way to refer to its parent, `branch`:
         children: RefCell::new(vec![]),
     });
 
-    // leafの親 = {:?}
+    //       &quot;leafの親 = {:?}&quot;
     println!(&quot;leaf parent = {:?}&quot;, leaf.parent.borrow().upgrade());
 
     let branch = Rc::new(Node {
@@ -31791,11 +32172,11 @@ parent node `branch`</span>
 -->
 <p><span class="caption">リスト15-28: 親ノードの<code>branch</code>への弱い参照がある<code>leaf</code>ノード</span></p>
 <!--
-Creating the `leaf` node looks similar to how creating the `leaf` node looked
-in Listing 15-27 with the exception of the `parent` field: `leaf` starts out
-without a parent, so we create a new, empty `Weak<Node>` reference instance.
+Creating the `leaf` node looks similar to Listing 15-27 with the exception of
+the `parent` field: `leaf` starts out without a parent, so we create a new,
+empty `Weak<Node>` reference instance.
 -->
-<p><code>leaf</code>ノードを作成することは、<code>parent</code>フィールドの例外を除いてリスト15-27での<code>leaf</code>ノードの作成法の見た目に似ています:
+<p><code>leaf</code>ノードを作成することは、<code>parent</code>フィールドの例外を除いてリスト15-27に似ています:
 <code>leaf</code>は親なしで始まるので、新しく空の<code>Weak&lt;Node&gt;</code>参照インスタンスを作ります。</p>
 <!--
 At this point, when we try to get a reference to the parent of `leaf` by using
@@ -31860,8 +32241,8 @@ in Listing 15-29:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::rc::{Rc, Weak};
-</span><span class="boring">use std::cell::RefCell;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use std::cell::RefCell;
+</span><span class="boring">use std::rc::{Rc, Weak};
 </span><span class="boring">
 </span><span class="boring">#[derive(Debug)]
 </span><span class="boring">struct Node {
@@ -31878,7 +32259,6 @@ in Listing 15-29:
     });
 
     println!(
-        // leafのstrong_count = {}, weak_count = {}
         &quot;leaf strong = {}, weak = {}&quot;,
         Rc::strong_count(&amp;leaf),
         Rc::weak_count(&amp;leaf),
@@ -31894,7 +32274,6 @@ in Listing 15-29:
         *leaf.parent.borrow_mut() = Rc::downgrade(&amp;branch);
 
         println!(
-            // branchのstrong_count = {}, weak_count = {}
             &quot;branch strong = {}, weak = {}&quot;,
             Rc::strong_count(&amp;branch),
             Rc::weak_count(&amp;branch),
@@ -31974,7 +32353,7 @@ and memory leaks.
 <h2 id="まとめ-14"><a class="header" href="#まとめ-14">まとめ</a></h2>
 <!--
 This chapter covered how to use smart pointers to make different guarantees and
-trade-offs than those Rust makes by default with regular references. The
+trade-offs from those Rust makes by default with regular references. The
 `Box<T>` type has a known size and points to data allocated on the heap. The
 `Rc<T>` type keeps track of the number of references to data on the heap so
 that data can have multiple owners. The `RefCell<T>` type with its interior
@@ -32008,6 +32387,9 @@ Next, we’ll talk about concurrency in Rust. You’ll even learn about a few ne
 smart pointers.
 -->
 <p>次は、Rustでの並行性について語ります。もういくつか新しいスマートポインタについてさえも学ぶでしょう。</p>
+<!--
+[nomicon]: ../nomicon/index.html
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Fearless Concurrency
 -->
