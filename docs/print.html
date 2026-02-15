@@ -34245,24 +34245,24 @@ ch16-03-shared-state.html#sharing-a-mutext-between-multiple-threads
 -->
 <h1 id="rustのオブジェクト指向プログラミング機能"><a class="header" href="#rustのオブジェクト指向プログラミング機能">Rustのオブジェクト指向プログラミング機能</a></h1>
 <!--
-Object-oriented programming (OOP) is a way of modeling programs. Objects came
-from Simula in the 1960s. Those objects influenced Alan Kay’s programming
-architecture in which objects pass messages to each other. He coined the term
-*object-oriented programming* in 1967 to describe this architecture. Many
-competing definitions describe what OOP is; some definitions would classify
-Rust as object oriented, but other definitions would not. In this chapter,
-we'll explore certain characteristics that are commonly considered object
-oriented and how those characteristics translate to idiomatic Rust. We’ll then
-show you how to implement an object-oriented design pattern in Rust and discuss
-the trade-offs of doing so versus implementing a solution using some of Rust’s
-strengths instead.
+Object-oriented programming (OOP) is a way of modeling programs. Objects as a
+programmatic concept were introduced in the programming language Simula in the
+1960s. Those objects influenced Alan Kay’s programming architecture in which
+objects pass messages to each other. To describe this architecture, he coined
+the term *object-oriented programming* in 1967. Many competing definitions
+describe what OOP is, and by some of these definitions Rust is object-oriented,
+but by others it is not. In this chapter, we’ll explore certain characteristics
+that are commonly considered object-oriented and how those characteristics
+translate to idiomatic Rust. We’ll then show you how to implement an
+object-oriented design pattern in Rust and discuss the trade-offs of doing so
+versus implementing a solution using some of Rust’s strengths instead.
 -->
-<p>オブジェクト指向プログラミング(OOP)は、プログラムをモデル化する手段です。オブジェクトは、
-1960年代のSimulaに端緒を発しています。このオブジェクトは、
+<p>オブジェクト指向プログラミング(OOP)は、プログラムをモデル化する手段です。プログラム上の概念としてのオブジェクトは、
+1960年代のプログラミング言語Simulaで導入されました。このオブジェクトは、
 お互いにメッセージを渡し合うというアラン・ケイ(Alan Kay)のプログラミングアーキテクチャに影響を及ぼしました。
-彼は、このアーキテクチャを解説するために、<em>オブジェクト指向プログラミング</em>という用語を造語しました。
-多くの競合する定義がOOPが何かを解説しています; Rustをオブジェクト指向と区分する定義もありますし、
-しない定義もあります。この章では、広くオブジェクト指向と捉えられる特定の特徴と、
+彼は、このアーキテクチャを記述するために、<em>オブジェクト指向プログラミング</em>という用語を造語しました。
+多くの競合する定義がOOPが何かを記述しており、こうした定義の一部によれば、Rustはオブジェクト指向であり
+他の定義によれば、Rustはオブジェクト指向ではありません。この章では、広くオブジェクト指向と捉えられる特定の特徴と、
 それらの特徴がこなれたRustでどう表現されるかを探究します。それからオブジェクト指向のデザインパターンをRustで実装する方法を示し、
 そうすることとRustの強みを活用して代わりの解決策を実装する方法の代償を議論します。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
@@ -34271,12 +34271,12 @@ strengths instead.
 <h2 id="オブジェクト指向言語の特徴"><a class="header" href="#オブジェクト指向言語の特徴">オブジェクト指向言語の特徴</a></h2>
 <!--
 There is no consensus in the programming community about what features a
-language must have to be considered object oriented. Rust is influenced by many
+language must have to be considered object-oriented. Rust is influenced by many
 programming paradigms, including OOP; for example, we explored the features
 that came from functional programming in Chapter 13. Arguably, OOP languages
 share certain common characteristics, namely objects, encapsulation, and
-inheritance. Let’s look at what each of those characteristics mean and whether
-Rust supports them.
+inheritance. Let’s look at what each of those characteristics means and whether
+Rust supports it.
 -->
 <p>言語がオブジェクト指向と考えられるのになければならない機能について、プログラミングコミュニティ内での総意はありません。
 RustはOOPを含めた多くのプログラミングパラダイムに影響を受けています; 例えば、
@@ -34289,14 +34289,13 @@ OOP言語は特定の一般的な特徴を共有しています。具体的に�
 <h3 id="オブジェクトはデータと振る舞いを含む"><a class="header" href="#オブジェクトはデータと振る舞いを含む">オブジェクトは、データと振る舞いを含む</a></h3>
 <!--
 The book *Design Patterns: Elements of Reusable Object-Oriented Software* by
-Enoch Gamma, Richard Helm, Ralph Johnson, and John Vlissides (Addison-Wasley
-Professional, 1994) colloquially referred to as *The Gang of Four book*, is a
-catlog of object-oriented design patterns. It defines OOP this way:
+Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides (Addison-Wesley
+Professional, 1994), colloquially referred to as *The Gang of Four* book, is a
+catalog of object-oriented design patterns. It defines OOP this way:
 -->
-<p>エーリヒ・ガンマ(Enoch Gamma)、リチャード・ヘルム(Richard Helm)、ラルフ・ジョンソン(Ralph Johnson)、
-ジョン・ブリシディース(John Vlissides)(アディソン・ワズリー・プロ)により、
-1994年に書かれた<em>デザインパターン: 再利用可能なオブジェクト指向ソフトウェアの要素</em>という本は、
-俗に<em>4人のギャングの本</em>(<code>訳注</code>: the Gang of Four book; GoFとよく略される)と呼ばれ、オブジェクト指向デザインパターンのカタログです。
+<p>エーリヒ・ガンマ(Erich Gamma)、リチャード・ヘルム(Richard Helm)、ラルフ・ジョンソン(Ralph Johnson)、
+ジョン・ブリシディース(John Vlissides)による本<em>Design Patterns: Elements of Reusable Object-Oriented Software</em> (Addison-Wesley Professional, 1994)は、
+俗に<em>4人のギャング</em>の本と呼ばれる、オブジェクト指向デザインパターンのカタログです。
 そこでは、OOPは以下のように定義されています:</p>
 <!--
 > Object-oriented programs are made up of objects. An *object* packages both
@@ -34309,7 +34308,7 @@ catlog of object-oriented design patterns. It defines OOP this way:
 典型的に<em>メソッド</em>または<em>オペレーション</em>と呼ばれる。</p>
 </blockquote>
 <!--
-Using this definition, Rust is object oriented: structs and enums have data,
+Using this definition, Rust is object-oriented: structs and enums have data,
 and `impl` blocks provide methods on structs and enums. Even though structs and
 enums with methods aren’t *called* objects, they provide the same
 functionality, according to the Gang of Four’s definition of objects.
@@ -34358,13 +34357,10 @@ cache the calculated average for us. Listing 17-1 has the definition of the
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub struct AveragedCollection {
+<pre><code class="language-rust noplayground">pub struct AveragedCollection {
     list: Vec&lt;i32&gt;,
     average: f64,
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-1: An `AveragedCollection` struct that
 maintains a list of integers and the average of the items in the
@@ -34385,12 +34381,11 @@ on the struct, as shown in Listing 17-2:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub struct AveragedCollection {
+<pre><code class="language-rust noplayground"><span class="boring">pub struct AveragedCollection {
 </span><span class="boring">    list: Vec&lt;i32&gt;,
 </span><span class="boring">    average: f64,
 </span><span class="boring">}
+</span><span class="boring">
 </span>impl AveragedCollection {
     pub fn add(&amp;mut self, value: i32) {
         self.list.push(value);
@@ -34403,7 +34398,7 @@ on the struct, as shown in Listing 17-2:
             Some(value) =&gt; {
                 self.update_average();
                 Some(value)
-            },
+            }
             None =&gt; None,
         }
     }
@@ -34416,29 +34411,28 @@ on the struct, as shown in Listing 17-2:
         let total: i32 = self.list.iter().sum();
         self.average = total as f64 / self.list.len() as f64;
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-2: Implementations of the public methods
 `add`, `remove`, and `average` on `AveragedCollection`</span>
 -->
 <p><span class="caption">リスト17-2: <code>AveragedCollection</code>の<code>add</code>、<code>remove</code>、<code>average</code>公開メソッドの実装</span></p>
 <!--
-The public methods `add`, `remove`, and `average` are the only ways to modify
-an instance of `AveragedCollection`. When an item is added to `list` using the
-`add` method or removed using the `remove` method, the implementations of each
-call the private `update_average` method that handles updating the `average`
-field as well.
+The public methods `add`, `remove`, and `average` are the only ways to access
+or modify data in an instance of `AveragedCollection`. When an item is added
+to `list` using the `add` method or removed using the `remove` method, the
+implementations of each call the private `update_average` method that handles
+updating the `average` field as well.
 -->
-<p><code>add</code>、<code>remove</code>、<code>average</code>の公開メソッドが<code>AveragedCollection</code>のインスタンスを変更する唯一の方法になります。
-要素が<code>add</code>メソッドを使用して<code>list</code>に追加されたり、<code>remove</code>メソッドを使用して削除されたりすると、
+<p><code>add</code>、<code>remove</code>、<code>average</code>の公開メソッドが、<code>AveragedCollection</code>のインスタンス内のデータにアクセスまたは変更するための、
+唯一の方法になります。要素が<code>add</code>メソッドを使用して<code>list</code>に追加されたり、<code>remove</code>メソッドを使用して削除されたりすると、
 各メソッドの実装が<code>average</code>フィールドの更新を扱う非公開の<code>update_average</code>メソッドも呼び出します。</p>
 <!--
 We leave the `list` and `average` fields private so there is no way for
-external code to add or remove items to the `list` field directly; otherwise,
-the `average` field might become out of sync when the `list` changes. The
-`average` method returns the value in the `average` field, allowing external
-code to read the `average` but not modify it.
+external code to add or remove items to or from the `list` field directly;
+otherwise, the `average` field might become out of sync when the `list`
+changes. The `average` method returns the value in the `average` field,
+allowing external code to read the `average` but not modify it.
 -->
 <p><code>list</code>と<code>average</code>フィールドを非公開のままにしているので、外部コードが要素を<code>list</code>フィールドに直接追加したり削除したりする方法はありません;
 そうでなければ、<code>average</code>フィールドは、<code>list</code>が変更された時に同期されなくなる可能性があります。
@@ -34448,7 +34442,7 @@ code to read the `average` but not modify it.
 Because we’ve encapsulated the implementation details of the struct
 `AveragedCollection`, we can easily change aspects, such as the data structure,
 in the future. For instance, we could use a `HashSet<i32>` instead of a
-`Vec<i32>` for the `list` field. As long as the signatures of the `add`
+`Vec<i32>` for the `list` field. As long as the signatures of the `add`,
 `remove`, and `average` public methods stay the same, code using
 `AveragedCollection` wouldn’t need to change. If we made `list` public instead,
 this wouldn’t necessarily be the case: `HashSet<i32>` and `Vec<i32>` have
@@ -34462,9 +34456,9 @@ likely have to change if it were modifying `list` directly.
 要素の追加と削除に異なるメソッドを持っているので、外部コードが直接<code>list</code>を変更しているなら、
 外部コードも変更しなければならない可能性が高いでしょう。</p>
 <!--
-If encapsulation is a required aspect for a language to be considered object
-oriented, then Rust meets that requirement. The option to use `pub` or not for
-different parts of code enables encapsulation of implementation details.
+If encapsulation is a required aspect for a language to be considered
+object-oriented, then Rust meets that requirement. The option to use `pub` or
+not for different parts of code enables encapsulation of implementation details.
 -->
 <p>カプセル化が、言語がオブジェクト指向と考えられるのに必要な側面ならば、Rustはその条件を満たしています。
 コードの異なる部分で<code>pub</code>を使用するかしないかという選択肢のおかげで、実装詳細をカプセル化することが可能になります。</p>
@@ -34473,40 +34467,44 @@ different parts of code enables encapsulation of implementation details.
 -->
 <h3 id="型システムおよびコード共有としての継承"><a class="header" href="#型システムおよびコード共有としての継承">型システム、およびコード共有としての継承</a></h3>
 <!--
-*Inheritance* is a mechanism whereby an object can inherit from another
-object’s definition, thus gaining the parent object’s data and behavior without
-you having to define them again.
+*Inheritance* is a mechanism whereby an object can inherit elements from
+another object’s definition, thus gaining the parent object’s data and behavior
+without you having to define them again.
 -->
-<p><em>継承</em>は、それによってオブジェクトが他のオブジェクトの定義から受け継ぐことができる機構であり、
+<p><em>継承</em>は、それによってオブジェクトが他のオブジェクトの定義から要素を受け継ぐことができる機構であり、
 それ故に、再定義する必要なく、親オブジェクトのデータと振る舞いを得ます。</p>
 <!--
 If a language must have inheritance to be an object-oriented language, then
 Rust is not one. There is no way to define a struct that inherits the parent
-struct’s fields and method implementations. However, if you’re used to having
-inheritance in your programming toolbox, you can use other solutions in Rust,
-depending on your reason for reaching for inheritance in the first place.
+struct’s fields and method implementations without using a macro.
 -->
 <p>言語がオブジェクト指向言語であるために継承がなければならないのならば、Rustは違います。
-親構造体のフィールドとメソッドの実装を受け継ぐ構造体を定義する方法はありません。しかしながら、
-継承がプログラミング道具箱にあることに慣れていれば、そもそも継承に手を伸ばす理由によって、
-Rustで他の解決策を使用することができます。</p>
+親構造体のフィールドとメソッドの実装を受け継ぐ構造体をマクロを使わずに定義する方法はありません。</p>
 <!--
-You choose inheritance for two main reasons. One is for reuse of code: you can
-implement particular behavior for one type, and inheritance enables you to
-reuse that implementation for a different type. You can share Rust code using
-default trait method implementations instead, which you saw in Listing 10-14
-when we added a default implementation of the `summarize` method on the
-`Summary` trait. Any type implementing the `Summary` trait would have the
-`summarize` method available on it without any further code. This is similar to
-a parent class having an implementation of a method and an inheriting child
-class also having the implementation of the method. We can also override the
-default implementation of the `summarize` method when we implement the
-`Summary` trait, which is similar to a child class overriding the
+However, if you’re used to having inheritance in your programming toolbox, you
+can use other solutions in Rust, depending on your reason for reaching for
+inheritance in the first place.
+-->
+<p>しかしながら、継承がプログラミング道具箱にあることに慣れていれば、
+そもそも継承に手を伸ばす理由によって、Rustで他の解決策を使用することができます。</p>
+<!--
+You would choose inheritance for two main reasons. One is for reuse of code:
+you can implement particular behavior for one type, and inheritance enables you
+to reuse that implementation for a different type. You can do this in a limited
+way in Rust code using default trait method implementations, which you saw in
+Listing 10-14 when we added a default implementation of the `summarize` method
+on the `Summary` trait. Any type implementing the `Summary` trait would have
+the `summarize` method available on it without any further code. This is
+similar to a parent class having an implementation of a method and an
+inheriting child class also having the implementation of the method. We can
+also override the default implementation of the `summarize` method when we
+implement the `Summary` trait, which is similar to a child class overriding the
 implementation of a method inherited from a parent class.
 -->
 <p>継承を選択する理由は主に2つあります。1つ目は、コードの再利用です: ある型に特定の振る舞いを実装し、
-継承により、その実装を他の型にも再利用できるわけです。デフォルトのトレイトメソッド実装を代わりに使用して、
-Rustコードを共有でき、これは、リスト10-14で<code>Summary</code>トレイトに<code>summarize</code>メソッドのデフォルト実装を追加した時に見かけました。
+継承により、その実装を他の型にも再利用できるわけです。Rustコードでは、
+デフォルトのトレイトメソッド実装を使用することで、限定された形でこれを行うことができ、
+これは、リスト10-14で<code>Summary</code>トレイトに<code>summarize</code>メソッドのデフォルト実装を追加した時に見かけました。
 <code>Summary</code>トレイトを実装する型は全て、追加のコードなく<code>summarize</code>メソッドが使用できます。
 これは、親クラスにメソッドの実装があり、継承した子クラスにもそのメソッドの実装があることと似ています。
 また、<code>Summary</code>トレイトを実装する時に、<code>summarize</code>メソッドのデフォルト実装を上書きすることもでき、
@@ -34545,29 +34543,30 @@ than necessary. Subclasses shouldn’t always share all characteristics of their
 parent class but will do so with inheritance. This can make a program’s design
 less flexible. It also introduces the possibility of calling methods on
 subclasses that don’t make sense or that cause errors because the methods don’t
-apply to the subclass. Some languages will also only allow a subclass
-to inherit from one class, further restricting the flexibility of a program’s
-design.
+apply to the subclass. In addition, some languages will only allow single
+inheritance (meaning a subclass can only inherit from one class), further
+restricting the flexibility of a program’s design.
 -->
 <p>継承は、近年、多くのプログラミング言語において、プログラムの設計解決策としては軽んじられています。
 というのも、しばしば必要以上にコードを共有してしまう危険性があるからです。サブクラスは、
 必ずしも親クラスの特徴を全て共有するべきではないのに、継承ではそうなってしまうのです。
 これにより、プログラムの設計の柔軟性を失わせることもあります。また、道理に合わなかったり、メソッドがサブクラスには適用されないために、
 エラーを発生させるようなサブクラスのメソッドの呼び出しを引き起こす可能性が出てくるのです。
-さらに、サブクラスに1つのクラスからだけ継承させる言語もあり、さらにプログラムの設計の柔軟性が制限されます。</p>
+さらに、単一継承のみを許可する(サブクラスは1つのクラスからのみ継承できる)言語もあり、さらにプログラムの設計の柔軟性が制限されます。</p>
 <!--
-For these reasons, Rust takes a different approach, using trait objects instead
-of inheritance. Let’s look at how trait objects enable polymorphism in Rust.
+For these reasons, Rust takes the different approach of using trait objects
+instead of inheritance. Let’s look at how trait objects enable polymorphism in
+Rust.
 -->
-<p>これらの理由により、継承ではなくトレイトオブジェクトを使用してRustは異なるアプローチを取っています。
+<p>これらの理由によりRustは、継承ではなくトレイトオブジェクトを使用するという異なるアプローチを取っています。
 Rustにおいて、トレイトオブジェクトがどう多相性を可能にするかを見ましょう。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
-## Using Trait Objects that Allow for Values of Different Types
+## Using Trait Objects That Allow for Values of Different Types
 -->
 <h2 id="トレイトオブジェクトで異なる型の値を許容する"><a class="header" href="#トレイトオブジェクトで異なる型の値を許容する">トレイトオブジェクトで異なる型の値を許容する</a></h2>
 <!--
 In Chapter 8, we mentioned that one limitation of vectors is that they can
-store elements of only one type. We created a workaround in Listing 8-10 where
+store elements of only one type. We created a workaround in Listing 8-9 where
 we defined a `SpreadsheetCell` enum that had variants to hold integers, floats,
 and text. This meant we could store different types of data in each cell and
 still have a vector that represented a row of cells. This is a perfectly good
@@ -34575,7 +34574,7 @@ solution when our interchangeable items are a fixed set of types that we know
 when our code is compiled.
 -->
 <p>第8章で、ベクタの1つの制限は、たった1つの型の要素を保持することしかできないことだと述べました。
-リスト8-10で整数、浮動小数点数、テキストを保持する列挙子のある<code>SpreadsheetCell</code> enumを定義して、
+リスト8-9で整数、浮動小数点数、テキストを保持する列挙子のある<code>SpreadsheetCell</code> enumを定義して、
 これを回避しました。つまり、各セルに異なる型のデータを格納しつつ、1行のセルを表すベクタを保持するということです。
 コンパイル時にわかるある固定されたセットの型にしか取り替え可能な要素がならない場合には、
 完璧な解決策です。</p>
@@ -34634,26 +34633,29 @@ allow users to extend it with new types.
 <!--
 To implement the behavior we want `gui` to have, we’ll define a trait named
 `Draw` that will have one method named `draw`. Then we can define a vector that
-takes a *trait object*. A trait object points to an instance of a type that
-implements the trait we specify. We create a trait object by specifying some
-sort of pointer, such as a `&` reference or a `Box<T>` smart pointer, and then
-specifying the relevant trait. (we’ll talk about the reason trait objects must
-use a pointer in Chapter 19 in the section “Dynamically Sized Types & Sized”.)
-We can use trait objects in place of a generic or concrete type. Wherever we
-use a trait object, Rust’s type system will ensure at compile time that any
-value used in that context will implement the trait object’s trait.
-Consequently, we don’t need to know all the possible types at compile time.
+takes a *trait object*. A trait object points to both an instance of a type
+implementing our specified trait and a table used to look up trait methods on
+that type at runtime. We create a trait object by specifying some sort of
+pointer, such as a `&` reference or a `Box<T>` smart pointer, then the `dyn`
+keyword, and then specifying the relevant trait. (We’ll talk about the reason
+trait objects must use a pointer in Chapter 19 in the section [“Dynamically
+Sized Types and the `Sized` Trait.”][dynamically-sized]) We can
+use trait objects in place of a generic or concrete type. Wherever we use a
+trait object, Rust’s type system will ensure at compile time that any value
+used in that context will implement the trait object’s trait. Consequently, we
+don’t need to know all the possible types at compile time.
 -->
 <p><code>gui</code>に欲しい振る舞いを実装するには、<code>draw</code>という1つのメソッドを持つ<code>Draw</code>というトレイトを定義します。
 それから<em>トレイトオブジェクト</em>を取るベクタを定義できます。トレイトオブジェクトは、
-指定したトレイトを実装するある型のインスタンスを指します。<code>&amp;</code>参照や<code>Box&lt;T&gt;</code>スマートポインタなどの、
-何らかのポインタを指定し、それから関係のあるトレイトを指定する(トレイトオブジェクトがポインタを使用しなければならない理由については、
-第19章の「動的サイズ決定型とSizedトレイト」節で語ります)ことでトレイトオブジェクトを作成します。
+指定されたトレイトを実装するある型のインスタンスと、実行時にその型に対するトレイトメソッドを探すのに使用されるテーブルの、
+両方を指します。<code>&amp;</code>参照や<code>Box&lt;T&gt;</code>スマートポインタなどの、何らかのポインタを指定し、
+それから<code>dyn</code>キーワード、そして対象のトレイトを指定する(トレイトオブジェクトがポインタを使用しなければならない理由については、
+第19章の<a href="ch19-04-advanced-types.html#%E5%8B%95%E7%9A%84%E3%82%B5%E3%82%A4%E3%82%BA%E6%B1%BA%E5%AE%9A%E5%9E%8B%E3%81%A8sized%E3%83%88%E3%83%AC%E3%82%A4%E3%83%88">「動的サイズ決定型と<code>Sized</code>トレイト」</a>節で語ります)ことでトレイトオブジェクトを作成します。
 ジェネリックまたは具体的な型があるところにトレイトオブジェクトは使用できます。どこでトレイトオブジェクトを使用しようと、
 Rustの型システムは、コンパイル時にその文脈で使用されているあらゆる値がそのトレイトオブジェクトのトレイトを実装していることを保証します。
 結果としてコンパイル時に可能性のある型を全て知る必要はなくなるのです。</p>
 <!--
-We’ve mentioned that in Rust, we refrain from calling structs and enums
+We’ve mentioned that, in Rust, we refrain from calling structs and enums
 “objects” to distinguish them from other languages’ objects. In a struct or
 enum, the data in the struct fields and the behavior in `impl` blocks are
 separated, whereas in other languages, the data and behavior combined into one
@@ -34680,12 +34682,9 @@ Listing 17-3 shows how to define a trait named `Draw` with one method named
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait Draw {
+<pre><code class="language-rust noplayground">pub trait Draw {
     fn draw(&amp;self);
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-3: Definition of the `Draw` trait</span>
 -->
@@ -34694,26 +34693,24 @@ Listing 17-3 shows how to define a trait named `Draw` with one method named
 This syntax should look familiar from our discussions on how to define traits
 in Chapter 10. Next comes some new syntax: Listing 17-4 defines a struct named
 `Screen` that holds a vector named `components`. This vector is of type
-`Box<Draw>`, which is a trait object; it’s a stand-in for any type inside a
-`Box` that implements the `Draw` trait.
+`Box<dyn Draw>`, which is a trait object; it’s a stand-in for any type inside
+a `Box` that implements the `Draw` trait.
 -->
 <p>この記法は、第10章のトレイトの定義方法に関する議論で馴染み深いはずです。その次は、新しい記法です:
 リスト17-4では、<code>components</code>というベクタを保持する<code>Screen</code>という名前の構造体を定義しています。
-このベクタの型は<code>Box&lt;Draw&gt;</code>で、これはトレイトオブジェクトです; <code>Draw</code>トレイトを実装する<code>Box</code>内部の任意の型に対する代役です。</p>
+このベクタの型は<code>Box&lt;dyn Draw&gt;</code>で、これはトレイトオブジェクトです; <code>Draw</code>トレイトを実装する<code>Box</code>内部の任意の型に対する代役です。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub trait Draw {
+<pre><code class="language-rust noplayground"><span class="boring">pub trait Draw {
 </span><span class="boring">    fn draw(&amp;self);
 </span><span class="boring">}
 </span><span class="boring">
 </span>pub struct Screen {
-    pub components: Vec&lt;Box&lt;Draw&gt;&gt;,
+    pub components: Vec&lt;Box&lt;dyn Draw&gt;&gt;,
 }
-<span class="boring">}</span></code></pre></pre>
+</code></pre>
 <!--
 <span class="caption">Listing 17-4: Definition of the `Screen` struct with a
 `components` field holding a vector of trait objects that implement the `Draw`
@@ -34731,14 +34728,12 @@ On the `Screen` struct, we’ll define a method named `run` that will call the
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub trait Draw {
+<pre><code class="language-rust noplayground"><span class="boring">pub trait Draw {
 </span><span class="boring">    fn draw(&amp;self);
 </span><span class="boring">}
 </span><span class="boring">
 </span><span class="boring">pub struct Screen {
-</span><span class="boring">    pub components: Vec&lt;Box&lt;Draw&gt;&gt;,
+</span><span class="boring">    pub components: Vec&lt;Box&lt;dyn Draw&gt;&gt;,
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Screen {
@@ -34747,15 +34742,14 @@ On the `Screen` struct, we’ll define a method named `run` that will call the
             component.draw();
         }
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-5: A `run` method on `Screen` that calls the
 `draw` method on each component</span>
 -->
 <p><span class="caption">リスト17-5: 各コンポーネントに対して<code>draw</code>メソッドを呼び出す<code>Screen</code>の<code>run</code>メソッド</span></p>
 <!--
-This works differently than defining a struct that uses a generic type
+This works differently from defining a struct that uses a generic type
 parameter with trait bounds. A generic type parameter can only be substituted
 with one concrete type at a time, whereas trait objects allow for multiple
 concrete types to fill in for the trait object at runtime. For example, we
@@ -34770,9 +34764,7 @@ as in Listing 17-6:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub trait Draw {
+<pre><code class="language-rust noplayground"><span class="boring">pub trait Draw {
 </span><span class="boring">    fn draw(&amp;self);
 </span><span class="boring">}
 </span><span class="boring">
@@ -34781,14 +34773,15 @@ as in Listing 17-6:
 }
 
 impl&lt;T&gt; Screen&lt;T&gt;
-    where T: Draw {
+where
+    T: Draw,
+{
     pub fn run(&amp;self) {
         for component in self.components.iter() {
             component.draw();
         }
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-6: An alternate implementation of the `Screen`
 struct and its `run` method using generics and trait bounds</span>
@@ -34831,10 +34824,20 @@ might have fields for `width`, `height`, and `label`, as shown in Listing 17-7:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub trait Draw {
+<pre><code class="language-rust noplayground"><span class="boring">pub trait Draw {
 </span><span class="boring">    fn draw(&amp;self);
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub struct Screen {
+</span><span class="boring">    pub components: Vec&lt;Box&lt;dyn Draw&gt;&gt;,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl Screen {
+</span><span class="boring">    pub fn run(&amp;self) {
+</span><span class="boring">        for component in self.components.iter() {
+</span><span class="boring">            component.draw();
+</span><span class="boring">        }
+</span><span class="boring">    }
 </span><span class="boring">}
 </span><span class="boring">
 </span>pub struct Button {
@@ -34848,8 +34851,7 @@ impl Draw for Button {
         // code to actually draw a button
         // 実際にボタンを描画するコード
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-7: A `Button` struct that implements the
 `Draw` trait</span>
@@ -34857,20 +34859,20 @@ impl Draw for Button {
 <p><span class="caption">リスト17-7: <code>Draw</code>トレイトを実装するある<code>Button</code>構造体</span></p>
 <!--
 The `width`, `height`, and `label` fields on `Button` will differ from the
-fields on other components, such as a `TextField` type, that might have those
-fields plus a `placeholder` field instead. Each of the types we want to draw on
+fields on other components; for example, a `TextField` type might have those
+same fields plus a `placeholder` field. Each of the types we want to draw on
 the screen will implement the `Draw` trait but will use different code in the
 `draw` method to define how to draw that particular type, as `Button` has here
-(without the actual GUI code that is beyond the scope of this chapter). The
-`Button` type, for instance, might have an additional `impl` block containing
-methods related to what happens when a user clicks the button. These kinds of
-methods won’t apply to types like `TextField`.
+(without the actual GUI code, as mentioned). The `Button` type, for instance,
+might have an additional `impl` block containing methods related to what
+happens when a user clicks the button. These kinds of methods won’t apply to
+types like `TextField`.
 -->
-<p><code>Button</code>の<code>width</code>、<code>height</code>、<code>label</code>フィールドは、<code>TextField</code>型のように、
-それらのフィールドプラス<code>placeholder</code>フィールドを代わりに持つ可能性のある他のコンポーネントのフィールドとは異なるでしょう。
+<p><code>Button</code>の<code>width</code>、<code>height</code>、<code>label</code>フィールドは、他のコンポーネントのフィールドとは異なるでしょう;
+例えば<code>TextField</code>型は、それらと同じフィールドに加えて<code>placeholder</code>フィールドを持つかもしれません。
 スクリーンに描画したい型のコンポーネントはそれぞれ<code>Draw</code>トレイトを実装しますが、
-<code>Button</code>がここでしているように、<code>draw</code>メソッドでは異なるコードを使用してその特定の型を描画する方法を定義しています(実際のGUIコードは、
-この章の範疇を超えるのでありませんが)。例えば、<code>Button</code>には、ユーザがボタンをクリックした時に起こることに関連するメソッドを含む、
+<code>Button</code>がここでしているように、<code>draw</code>メソッドでは異なるコードを使用してその特定の型を描画する方法を定義しています
+(先にも書いた通り、実際のGUIコードはありませんが)。例えば、<code>Button</code>には、ユーザがボタンをクリックした時に起こることに関連するメソッドを含む、
 追加の<code>impl</code>ブロックがある可能性があります。この種のメソッドは、<code>TextField</code>のような型には適用されません。</p>
 <!--
 If someone using our library decides to implement a `SelectBox` struct that has
@@ -34883,8 +34885,7 @@ If someone using our library decides to implement a `SelectBox` struct that has
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">extern crate gui;
-use gui::Draw;
+<pre><code class="language-rust ignore">use gui::Draw;
 
 struct SelectBox {
     width: u32,
@@ -34897,7 +34898,9 @@ impl Draw for SelectBox {
         // code to actually draw a select box
         //セレクトボックスを実際に描画するコード
     }
-}</code></pre>
+}
+<span class="boring">
+</span><span class="boring">fn main() {}</span></code></pre>
 <!--
 <span class="caption">Listing 17-8: Another crate using `gui` and implementing
 the `Draw` trait on a `SelectBox` struct</span>
@@ -34918,7 +34921,21 @@ components. Listing 17-9 shows this implementation:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">use gui::{Screen, Button};
+<pre><code class="language-rust ignore"><span class="boring">use gui::Draw;
+</span><span class="boring">
+</span><span class="boring">struct SelectBox {
+</span><span class="boring">    width: u32,
+</span><span class="boring">    height: u32,
+</span><span class="boring">    options: Vec&lt;String&gt;,
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl Draw for SelectBox {
+</span><span class="boring">    fn draw(&amp;self) {
+</span><span class="boring">        // code to actually draw a select box
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span>use gui::{Button, Screen};
 
 fn main() {
     let screen = Screen {
@@ -34932,13 +34949,12 @@ fn main() {
                     // 多分
                     String::from(&quot;Maybe&quot;),
                     // いいえ
-                    String::from(&quot;No&quot;)
+                    String::from(&quot;No&quot;),
                 ],
             }),
             Box::new(Button {
                 width: 50,
                 height: 10,
-                // 了解
                 label: String::from(&quot;OK&quot;),
             }),
         ],
@@ -34954,29 +34970,30 @@ different types that implement the same trait</span>
 <!--
 When we wrote the library, we didn’t know that someone might add the
 `SelectBox` type, but our `Screen` implementation was able to operate on the
-new type and draw it because `SelectBox` implements the `Draw` type, which
+new type and draw it because `SelectBox` implements the `Draw` trait, which
 means it implements the `draw` method.
 -->
 <p>ライブラリを記述した時点では、誰かが<code>SelectBox</code>型を追加する可能性があるなんて知りませんでしたが、
-<code>Screen</code>の実装は、新しい型を処理し、描画することができました。何故なら、<code>SelectBox</code>は<code>Draw</code>型、
+<code>Screen</code>の実装は、新しい型を処理し、描画することができました。何故なら、<code>SelectBox</code>は<code>Draw</code>トレイト、
 つまり、<code>draw</code>メソッドを実装しているからです。</p>
 <!--
 This concept—of being concerned only with the messages a value responds to
-rather than the value’s concrete type—is similar to the concept *duck typing*
-in dynamically typed languages: if it walks like a duck and quacks like a duck,
-then it must be a duck! In the implementation of `run` on `Screen` in Listing
-17-5, `run` doesn’t need to know what the concrete type of each component is.
-It doesn’t check whether a component is an instance of a `Button` or a
-`SelectBox`, it just calls the `draw` method on the component. By specifying
-`Box<Draw>` as the type of the values in the `components` vector, we’ve defined
-`Screen` to need values that we can call the `draw` method on.
+rather than the value’s concrete type—is similar to the concept of *duck
+typing* in dynamically typed languages: if it walks like a duck and quacks
+like a duck, then it must be a duck! In the implementation of `run` on `Screen`
+in Listing 17-5, `run` doesn’t need to know what the concrete type of each
+component is. It doesn’t check whether a component is an instance of a `Button`
+or a `SelectBox`, it just calls the `draw` method on the component. By
+specifying `Box<dyn Draw>` as the type of the values in the `components`
+vector, we’ve defined `Screen` to need values that we can call the `draw`
+method on.
 -->
 <p>この値の具体的な型ではなく、値が応答したメッセージにのみ関係するという概念は、
 動的型付け言語の<em>ダックタイピング</em>に似た概念です: アヒルのように歩き、鳴くならば、
 アヒルに違いないのです！リスト17-5の<code>Screen</code>の<code>run</code>の実装では、<code>run</code>は、
 各コンポーネントの実際の型がなんであるか知る必要はありません。コンポーネントが、
 <code>Button</code>や<code>SelectBox</code>のインスタンスであるかを確認することはなく、コンポーネントの<code>draw</code>メソッドを呼び出すだけです。
-<code>components</code>ベクタで<code>Box&lt;Draw&gt;</code>を値の型として指定することで、<code>Screen</code>を、
+<code>components</code>ベクタで<code>Box&lt;dyn Draw&gt;</code>を値の型として指定することで、<code>Screen</code>を、
 <code>draw</code>メソッドを呼び出せる値を必要とするように定義できたのです。</p>
 <blockquote>
 <h4 id="注釈-ダックタイピングについて"><a class="header" href="#注釈-ダックタイピングについて">注釈: ダックタイピングについて</a></h4>
@@ -35006,14 +35023,11 @@ with a `String` as a component:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">extern crate gui;
-use gui::Screen;
+<pre><code class="language-rust ignore does_not_compile">use gui::Screen;
 
 fn main() {
     let screen = Screen {
-        components: vec![
-            Box::new(String::from(&quot;Hi&quot;)),
-        ],
+        components: vec![Box::new(String::from(&quot;Hi&quot;))],
     };
 
     screen.run();
@@ -35027,21 +35041,23 @@ implement the trait object’s trait</span>
 We’ll get this error because `String` doesn’t implement the `Draw` trait:
 -->
 <p><code>String</code>は<code>Draw</code>トレイトを実装していないので、このようなエラーが出ます:</p>
-<pre><code class="language-text">error[E0277]: the trait bound `std::string::String: gui::Draw` is not satisfied
-  --&gt; src/main.rs:7:13
-   |
- 7 |             Box::new(String::from(&quot;Hi&quot;)),
-   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait gui::Draw is not
-   implemented for `std::string::String`
-   |
-   = note: required for the cast to the object type `gui::Draw`
+<pre><code class="language-console">$ cargo run
+   Compiling gui v0.1.0 (file:///projects/gui)
+error[E0277]: the trait bound `String: Draw` is not satisfied
+ --&gt; src/main.rs:5:26
+  |
+5 |         components: vec![Box::new(String::from(&quot;Hi&quot;))],
+  |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Draw` is not implemented for `String`
+  |
+  = help: the trait `Draw` is implemented for `Button`
+  = note: required for the cast from `Box&lt;String&gt;` to `Box&lt;dyn Draw&gt;`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `gui` (bin &quot;gui&quot;) due to 1 previous error
 </code></pre>
 <!--
-2行目はandだが、順接の理由で訳している
--->
-<!--
 This error lets us know that either we’re passing something to `Screen` we
-didn’t mean to pass and we should pass a different type or we should implement
+didn’t mean to pass and so should pass a different type or we should implement
 `Draw` on `String` so that `Screen` is able to call `draw` on it.
 -->
 <p>このエラーは、渡すことを意図していないものを<code>Screen</code>に渡しているので、異なる型を渡すべきか、
@@ -35051,18 +35067,19 @@ didn’t mean to pass and we should pass a different type or we should implement
 -->
 <h3 id="トレイトオブジェクトはダイナミックディスパッチを行う"><a class="header" href="#トレイトオブジェクトはダイナミックディスパッチを行う">トレイトオブジェクトは、ダイナミックディスパッチを行う</a></h3>
 <!--
-Recall in the “Performance of Code Using Generics” section in Chapter 10 our
-discussion on the monomorphization process performed by the compiler when we
-use trait bounds on generics: the compiler generates nongeneric implementations
-of functions and methods for each concrete type that we use in place of a
-generic type parameter. The code that results from monomorphization is doing
-*static dispatch*, which is when the compiler knows what method you’re calling
-at compile time. This is opposed to *dynamic dispatch*, which is when the
-compiler can’t tell at compile time which method you’re calling. In dynamic
-dispatch cases, the compiler emits code that at runtime will figure out which
-method to call.
+Recall in the [“Performance of Code Using
+Generics”][performance-of-code-using-generics] section in
+Chapter 10 our discussion on the monomorphization process performed by the
+compiler when we use trait bounds on generics: the compiler generates
+nongeneric implementations of functions and methods for each concrete type that
+we use in place of a generic type parameter. The code that results from
+monomorphization is doing *static dispatch*, which is when the compiler knows
+what method you’re calling at compile time. This is opposed to *dynamic
+dispatch*, which is when the compiler can’t tell at compile time which method
+you’re calling. In dynamic dispatch cases, the compiler emits code that at
+runtime will figure out which method to call.
 -->
-<p>第10章の「ジェネリクスを使用したコードのパフォーマンス」節でジェネリクスに対してトレイト境界を使用した時に、
+<p>第10章の<a href="ch10-01-syntax.html#%E3%82%B8%E3%82%A7%E3%83%8D%E3%83%AA%E3%82%AF%E3%82%B9%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%9F%E3%82%B3%E3%83%BC%E3%83%89%E3%81%AE%E3%83%91%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%B3%E3%82%B9">「ジェネリクスを使用したコードのパフォーマンス」</a>節でジェネリクスに対してトレイト境界を使用した時に、
 コンパイラが行う単相化過程の議論を思い出してください: コンパイラは、関数やメソッドのジェネリックでない実装を、
 ジェネリックな型引数の箇所に使用している具体的な型に対して生成するのでした。単相化の結果吐かれるコードは、
 <em>スタティックディスパッチ</em>を行い、これは、コンパイル時にコンパイラがどのメソッドを呼び出しているかわかる時のことです。
@@ -35070,162 +35087,83 @@ method to call.
 ダイナミックディスパッチの場合、コンパイラは、どのメソッドを呼び出すか実行時に弾き出すコードを生成します。</p>
 <!--
 When we use trait objects, Rust must use dynamic dispatch. The compiler doesn’t
-know all the types that might be used with the code that is using trait
-objects, so it doesn’t know which method implemented on which type to call.
-Instead, at runtime, Rust uses the pointers inside the trait object to know
-which method to call. There is a runtime cost when this lookup happens that
-doesn’t occur with static dispatch. Dynamic dispatch also prevents the compiler
-from choosing to inline a method’s code, which in turn prevents some
-optimizations. However, we did get extra flexibility in the code that we wrote
-in Listing 17-5 and were able to support in Listing 17-9, so it’s a trade-off
-to consider.
+know all the types that might be used with the code that’s using trait objects,
+so it doesn’t know which method implemented on which type to call. Instead, at
+runtime, Rust uses the pointers inside the trait object to know which method to
+call. This lookup incurs a runtime cost that doesn’t occur with static
+dispatch. Dynamic dispatch also prevents the compiler from choosing to inline a
+method’s code, which in turn prevents some optimizations. However, we did get
+extra flexibility in the code that we wrote in Listing 17-5 and were able to
+support in Listing 17-9, so it’s a trade-off to consider.
 -->
 <p>トレイトオブジェクトを使用すると、コンパイラはダイナミックディスパッチを使用しなければなりません。
 コンパイラは、トレイトオブジェクトを使用しているコードで使用される可能性のある型全てを把握しないので、
 どの型に実装されたどのメソッドを呼び出すかわからないのです。代わりに実行時に、トレイトオブジェクト内でポインタを使用して、
-コンパイラは、どのメソッドを呼ぶか知ります。スタティックディスパッチでは行われないこの検索が起きる時には、
-実行時コストがあります。また、ダイナミックディスパッチは、コンパイラがメソッドのコードをインライン化することも妨げ、
+コンパイラは、どのメソッドを呼ぶか知ります。この検索は、スタティックディスパッチでは発生しない実行時コストを招きます。
+また、ダイナミックディスパッチは、コンパイラがメソッドのコードをインライン化することも妨げ、
 そのため、ある種の最適化が不可能になります。ですが、リスト17-5で記述し、
 リスト17-9ではサポートできたコードで追加の柔軟性を確かに得られたので、考慮すべき代償です。</p>
 <!--
-### Object Safety Is Required for Trait Objects
+[performance-of-code-using-generics]:
+ch10-01-syntax.html#performance-of-code-using-generics
+[dynamically-sized]: ch19-04-advanced-types.html#dynamically-sized-types-and-the-sized-trait
 -->
-<h3 id="トレイトオブジェクトにはオブジェクト安全性が必要"><a class="header" href="#トレイトオブジェクトにはオブジェクト安全性が必要">トレイトオブジェクトには、オブジェクト安全性が必要</a></h3>
-<!--
-You can only make *object-safe* traits into trait objects. Some complex rules
-govern all the properties that make a trait object safe, but in practice, only
-two rules are relevant. A trait is object safe if all the methods defined in
-the trait have the following properties:
--->
-<p>トレイトオブジェクトには、<em>オブジェクト安全</em>なトレイトしか作成できません。
-トレイトオブジェクトを安全にする特性全てを司る複雑な規則がありますが、実際には、2つの規則だけが関係があります。
-トレイトは、トレイト内で定義されているメソッド全てに以下の特性があれば、オブジェクト安全になります。</p>
-<!--
-* The return type isn’t `Self`.
-* There are no generic type parameters.
--->
-<ul>
-<li>戻り値の型が<code>Self</code>でない。</li>
-<li>ジェネリックな型引数がない。</li>
-</ul>
-<!--
-The `Self` keyword is an alias for the type we’re implementing the traits or
-methods on. Trait objects must be object safe because once you’ve used a trait
-object, Rust no longer knows the concrete type that’s implementing that trait.
-If a trait method returns the concrete `Self` type, but a trait object forgets
-the exact type that `Self` is, there is no way the method can use the original
-concrete type. The same is true of generic type parameters that are filled in
-with concrete type parameters when the trait is used: the concrete types become
-part of the type that implements the trait. When the type is forgotten through
-the use of a trait object, there is no way to know what types to fill in the
-generic type parameters with.
--->
-<p><code>Self</code>キーワードは、トレイトやメソッドを実装しようとしている型の別名です。トレイトオブジェクトは、
-一旦、トレイトオブジェクトを使用したら、コンパイラにはそのトレイトを実装している具体的な型を知りようがないので、
-オブジェクト安全でなければなりません。トレイトメソッドが具体的な<code>Self</code>型を返すのに、
-トレイトオブジェクトが<code>Self</code>の具体的な型を忘れてしまったら、メソッドが元の具体的な型を使用できる手段はなくなってしまいます。
-同じことがトレイトを使用する時に具体的な型引数で埋められるジェネリックな型引数に対しても言えます:
-具体的な型がトレイトを実装する型の一部になるのです。トレイトオブジェクトの使用を通して型が忘却されたら、
-そのジェネリックな型引数を埋める型がなんなのか知る術はないのです。</p>
-<!--
-An example of a trait whose methods are not object safe is the standard
-library’s `Clone` trait. The signature for the `clone` method in the `Clone`
-trait looks like this:
--->
-<p>メソッドがオブジェクト安全でないトレイトの例は、標準ライブラリの<code>Clone</code>トレイトです。
-<code>Clone</code>トレイトの<code>clone</code>メソッドのシグニチャは以下のような感じです:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait Clone {
-    fn clone(&amp;self) -&gt; Self;
-}
-<span class="boring">}</span></code></pre></pre>
-<!--
-The `String` type implements the `Clone` trait, and when we call the `clone`
-method on an instance of `String` we get back an instance of `String`.
-Similarly, if we call `clone` on an instance of `Vec<T>`, we get back an
-instance of `Vec<T>`. The signature of `clone` needs to know what type will
-stand in for `Self`, because that’s the return type.
--->
-<p><code>String</code>型は<code>Clone</code>トレイトを実装していて、<code>String</code>のインスタンスに対して<code>clone</code>メソッドを呼び出すと、
-<code>String</code>のインスタンスが返ってきます。同様に、<code>Vec&lt;T&gt;</code>のインスタンスに対して<code>clone</code>を呼び出すと、
-<code>Vec&lt;T&gt;</code>のインスタンスが返ってきます。<code>clone</code>のシグニチャは、<code>Self</code>の代わりに入る型を知る必要があります。
-それが、戻り値の型になるからです。</p>
-<!--
-The compiler will indicate when you’re trying to do something that violates the
-rules of object safety in regard to trait objects. For example, let’s say we
-tried to implement the `Screen` struct in Listing 17-4 to hold types that
-implement the `Clone` trait instead of the `Draw` trait, like this:
--->
-<p>コンパイラは、トレイトオブジェクトに関していつオブジェクト安全の規則を侵害するようなことを試みているかを示唆します。
-例えば、リスト17-4で<code>Screen</code>構造体を実装して<code>Draw</code>トレイトではなく、
-<code>Clone</code>トレイトを実装した型を保持しようとしたとしましょう。こんな感じで:</p>
-<pre><code class="language-rust ignore">pub struct Screen {
-    pub components: Vec&lt;Box&lt;Clone&gt;&gt;,
-}</code></pre>
-<!--
-We would get this error:
--->
-<p>こんなエラーになるでしょう:</p>
-<pre><code class="language-text">error[E0038]: the trait `std::clone::Clone` cannot be made into an object
-(エラー: `std::clone::Clone`トレイトは、オブジェクトにすることはできません)
- --&gt; src/lib.rs:2:5
-  |
-2 |     pub components: Vec&lt;Box&lt;Clone&gt;&gt;,
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::clone::Clone` cannot be
-made into an object
-  |
-  = note: the trait cannot require that `Self : Sized`
-  (注釈: このトレイトは、`Self : Sized`を満たせません)
-</code></pre>
-<!--
-This error means you can’t use this trait as a trait object in this way. If
-you’re interested in more details on object safety, see [Rust RFC 255].
--->
-<p>このエラーは、このようにこのトレイトをトレイトオブジェクトとして使用することはできないことを意味しています。
-オブジェクト安全性についての詳細に興味があるのなら、<a href="https://github.com/rust-lang/rfcs/blob/master/text/0255-object-safety.md">Rust RFC 255</a>を参照されたし。</p>
 <div style="break-before: page; page-break-before: always;"></div><!--
 ## Implementing an Object-Oriented Design Pattern
 -->
 <h2 id="オブジェクト指向デザインパターンを実装する"><a class="header" href="#オブジェクト指向デザインパターンを実装する">オブジェクト指向デザインパターンを実装する</a></h2>
 <!--
 The *state pattern* is an object-oriented design pattern. The crux of the
-pattern is that a value has some internal state, which is represented by a set
-of *state objects*, and the value’s behavior changes based on the internal
-state. The state objects share functionality: in Rust, of course, we use
-structs and traits rather than objects and inheritance. Each state object is
-responsible for its own behavior and for governing when it should change into
-another state. The value that holds a state object knows nothing about the
-different behavior of the states or when to transition between states.
+pattern is that we define a set of states a value can have internally. The
+states are represented by a set of *state objects*, and the value’s behavior
+changes based on its state. We’re going to work through an example of a blog
+post struct that has a field to hold its state, which will be a state object
+from the set "draft", "review", or "published".
 -->
-<p>ステートパターンは、オブジェクト指向デザインパターンの1つです。このパターンの肝は、
-値が一連の<em>ステートオブジェクト</em>で表されるなんらかの内部状態を持ち、
-その内部の状態に基づいて値の振る舞いが変化するというものです。ステートオブジェクトは、
-機能を共有します: Rustでは、もちろん、オブジェクトと継承ではなく、構造体とトレイトを使用します。
+<p>ステートパターンは、オブジェクト指向デザインパターンの1つです。
+このパターンの肝は、値が内部的に持つことができる状態の集合を定義するということです。
+状態は<em>ステートオブジェクト</em>の集合として表現され、その状態に基づいて値の振る舞いが変化します。
+ここでは、自身の状態を保持するフィールドを持つ、ブログ記事構造体の例に取り組んでいきます。
+この構造体のフィールドは「草稿」、「査読」、「公開済み」からなる集合のうちのいずれかの状態オブジェクトになるでしょう。</p>
+<!--
+The state objects share functionality: in Rust, of course, we use structs and
+traits rather than objects and inheritance. Each state object is responsible
+for its own behavior and for governing when it should change into another
+state. The value that holds a state object knows nothing about the different
+behavior of the states or when to transition between states.
+-->
+<p>ステートオブジェクトは機能を共有します: Rustでは、もちろん、オブジェクトと継承ではなく、構造体とトレイトを使用します。
 各ステートオブジェクトは、自身の振る舞いと別の状態に変化すべき時を司ることに責任を持ちます。
 ステートオブジェクトを保持する値は、状態ごとの異なる振る舞いや、いつ状態が移行するかについては何も知りません。</p>
 <!--
-Using the state pattern means when the business requirements of the program
-change, we won’t need to change the code of the value holding the state or the
-code that uses the value. We’ll only need to update the code inside one of the
-state objects to change its rules or perhaps add more state objects. Let’s look
-at an example of the state design pattern and how to use it in Rust.
+The advantage of using the state pattern is that, when the business
+requirements of the program change, we won’t need to change the code of the
+value holding the state or the code that uses the value. We’ll only need to
+update the code inside one of the state objects to change its rules or perhaps
+add more state objects.
 -->
-<p>ステートパターンを使用することは、プログラムの業務要件が変わる時、状態を保持する値のコードや、
-値を使用するコードを変更する必要はないことを意味します。ステートオブジェクトの1つのコードを更新して、
-規則を変更したり、あるいはおそらくステートオブジェクトを追加する必要しかないのです。
-ステートデザインパターンの例と、そのRustでの使用方法を見ましょう。</p>
+<p>ステートパターンを使用することの利点は、プログラムの業務要件が変わる時、状態を保持する値のコードや、
+値を使用するコードを変更する必要がない点です。ステートオブジェクトの1つのコードを更新して、
+規則を変更したり、あるいはおそらくステートオブジェクトを追加する必要しかないのです。</p>
 <!--
-We’ll implement a blog post workflow in an incremental way. The blog’s final
-functionality will look like this:
+First, we’re going to implement the state pattern in a more traditional
+object-oriented way, then we’ll use an approach that’s a bit more natural in
+Rust. Let’s dig in to incrementally implementing a blog post workflow using the
+state pattern.
 -->
-<p>ブログ記事のワークフローを少しずつ実装していきます。ブログの最終的な機能は以下のような感じになるでしょう:</p>
+<p>まずは、より伝統的なオブジェクト指向の手法でステートパターンを実装し、
+その後、Rustとしてもう少し自然なアプローチを使用します。
+それでは、ステートパターンを利用したブログ記事のワークフローの漸進的な実装に取り組んでいきましょう。</p>
+<!--
+The final functionality will look like this:
+-->
+<p>最終的な機能は以下のような感じになるでしょう:</p>
 <!--
 1. A blog post starts as an empty draft.
 2. When the draft is done, a review of the post is requested.
 3. When the post is approved, it gets published.
 4. Only published blog posts return content to print, so unapproved posts can’t
-accidentally be published.
+   accidentally be published.
 -->
 <ol>
 <li>ブログ記事は、空の草稿から始まる。</li>
@@ -35243,22 +35181,21 @@ should remain an unpublished draft.
 <!--
 Listing 17-11 shows this workflow in code form: this is an example usage of the
 API we’ll implement in a library crate named `blog`. This won’t compile yet
-because we haven’t implemented the `blog` crate yet.
+because we haven’t implemented the `blog` crate.
 -->
 <p>リスト17-11は、このワークフローをコードの形で示しています: これは、
-<code>blog</code>というライブラリクレートに実装するAPIの使用例です。まだ<code>blog</code>クレートを実装していないので、
+<code>blog</code>というライブラリクレートに実装するAPIの使用例です。<code>blog</code>クレートを実装していないので、
 コンパイルはできません。</p>
 <!--
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">extern crate blog;
-use blog::Post;
+<pre><code class="language-rust ignore does_not_compile">use blog::Post;
 
 fn main() {
     let mut post = Post::new();
 
-    // 今日はお昼にサラダを食べた
+    //            &quot;今日はお昼にサラダを食べた&quot;
     post.add_text(&quot;I ate a salad for lunch today&quot;);
     assert_eq!(&quot;&quot;, post.content());
 
@@ -35274,17 +35211,17 @@ behavior we want our `blog` crate to have</span>
 -->
 <p><span class="caption">リスト17-11: <code>blog</code>クレートに欲しい振る舞いをデモするコード</span></p>
 <!--
-We want to allow the user to create a new draft blog post with `Post::new`.
-Then we want to allow text to be added to the blog post while it’s in the draft
-state. If we try to get the post’s content immediately, before approval,
-nothing should happen because the post is still a draft. We’ve added
-`assert_eq!` in the code for demonstration purposes. An excellent unit test for
-this would be to assert that a draft blog post returns an empty string from the
-`content` method, but we’re not going to write tests for this example.
+We want to allow the user to create a new draft blog post with `Post::new`. We
+want to allow text to be added to the blog post. If we try to get the post’s
+content immediately, before approval, we shouldn’t get any text because the
+post is still a draft. We’ve added `assert_eq!` in the code for demonstration
+purposes. An excellent unit test for this would be to assert that a draft blog
+post returns an empty string from the `content` method, but we’re not going to
+write tests for this example.
 -->
-<p>ユーザが<code>Post::new</code>で新しいブログ記事の草稿を作成できるようにしたいです。それから、
-草稿状態の間にブログ記事にテキストを追加できるようにしたいです。承認前に記事の内容を即座に得ようとしたら、
-記事はまだ草稿なので、何も起きるべきではありません。デモ目的でコードに<code>assert_eq!</code>を追加しました。
+<p>ユーザが<code>Post::new</code>で新しいブログ記事の草稿を作成できるようにしたいです。
+ブログ記事にテキストを追加できるようにしたいです。承認前に記事の内容を即座に得ようとしたら、
+記事はまだ草稿なので、何のテキストも得られるべきではありません。デモ目的でコードに<code>assert_eq!</code>を追加しました。
 これに対する素晴らしい単体テストは、ブログ記事の草稿が<code>content</code>メソッドから空の文字列を返すことをアサートすることでしょうが、
 この例に対してテストを書くつもりはありません。</p>
 <!--
@@ -35320,22 +35257,26 @@ Let’s get started on the implementation of the library! We know we need a
 public `Post` struct that holds some content, so we’ll start with the
 definition of the struct and an associated public `new` function to create an
 instance of `Post`, as shown in Listing 17-12. We’ll also make a private
-`State` trait. Then `Post` will hold a trait object of `Box<State>` inside an
-`Option` in a private field named `state`. You’ll see why the `Option` is
-necessary in a bit.
+`State` trait that will define the behavior that all state objects for a `Post`
+must have.
 -->
 <p>ライブラリの実装に取り掛かりましょう！なんらかの内容を保持する公開の<code>Post</code>構造体が必要なことはわかるので、
 構造体の定義と、関連する公開の<code>Post</code>インスタンスを生成する<code>new</code>関数から始めましょう。リスト17-12のようにですね。
-また、非公開の<code>State</code>トレイトも作成します。それから、<code>Post</code>は<code>state</code>という非公開のフィールドに、
-<code>Option</code>で<code>Box&lt;State&gt;</code>のトレイトオブジェクトを保持します。<code>Option</code>が必要な理由はすぐわかります。</p>
+また、<code>Post</code>のすべての状態オブジェクトが持たなくてはならない振る舞いを定義する、
+非公開の<code>State</code>トレイトも作成します。</p>
+<!--
+Then `Post` will hold a trait object of `Box<dyn State>` inside an `Option<T>`
+in a private field named `state` to hold the state object. You’ll see why the
+`Option<T>` is necessary in a bit.
+-->
+<p>それから<code>Post</code>は、状態オブジェクトを保持するための<code>state</code>という非公開のフィールドに、
+<code>Option&lt;T&gt;</code>で<code>Box&lt;dyn State&gt;</code>のトレイトオブジェクトを保持します。<code>Option&lt;T&gt;</code>が必要な理由はすぐわかります。</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub struct Post {
-    state: Option&lt;Box&lt;State&gt;&gt;,
+<pre><code class="language-rust noplayground">pub struct Post {
+    state: Option&lt;Box&lt;dyn State&gt;&gt;,
     content: String,
 }
 
@@ -35352,8 +35293,7 @@ trait State {}
 
 struct Draft {}
 
-impl State for Draft {}
-<span class="boring">}</span></code></pre></pre>
+impl State for Draft {}</code></pre>
 <!--
 <span class="caption">Listing 17-12: Definition of a `Post` struct and a `new`
 function that creates a new `Post` instance, a `State` trait, and a `Draft`
@@ -35362,21 +35302,22 @@ struct</span>
 <p><span class="caption">リスト17-12: <code>Post</code>構造体、新規<code>Post</code>インスタンスを生成する<code>new</code>関数、
 <code>State</code>トレイト、<code>Draft</code>構造体の定義</span></p>
 <!--
-The `State` trait defines the behavior shared by different post states, and the
-`Draft`, `PendingReview`, and `Published` states will all implement the `State`
-trait. For now, the trait doesn’t have any methods, and we’ll start by defining
-just the `Draft` state because that is the state we want a post to start in.
+The `State` trait defines the behavior shared by different post states. The
+state objects are `Draft`, `PendingReview`, and `Published`, and they will all
+implement the `State` trait. For now, the trait doesn’t have any methods, and
+we’ll start by defining just the `Draft` state because that is the state we
+want a post to start in.
 -->
-<p><code>State</code>トレイトは、異なる記事の状態で共有される振る舞いを定義し、<code>Draft</code>、<code>PendingReview</code>、<code>Published</code>状態は全て、
-<code>State</code>トレイトを実装します。今は、トレイトにメソッドは何もなく、<code>Draft</code>が記事の初期状態にしたい状態なので、
+<p><code>State</code>トレイトは、異なる記事の状態で共有される振る舞いを定義します。状態オブジェクトは<code>Draft</code>、<code>PendingReview</code>、<code>Published</code>で、
+これらはすべて<code>State</code>トレイトを実装します。今は、トレイトにメソッドは何もなく、<code>Draft</code>が記事の初期状態にしたい状態なので、
 その状態だけを定義することから始めます。</p>
 <!--
 When we create a new `Post`, we set its `state` field to a `Some` value that
-holds a `Box`. This `Box` points to a new instance of the `Draft` struct. This
-ensures whenever we create a new instance of `Post`, it will start out as a
-draft. Because the `state` field of `Post` is private, there is no way to
+holds a `Box`. This `Box` points to a new instance of the `Draft` struct.
+This ensures whenever we create a new instance of `Post`, it will start out as
+a draft. Because the `state` field of `Post` is private, there is no way to
 create a `Post` in any other state! In the `Post::new` function, we set the
-`content` field to a new, empty `String`
+`content` field to a new, empty `String`.
 -->
 <p>新しい<code>Post</code>を作る時、<code>state</code>フィールドは、<code>Box</code>を保持する<code>Some</code>値にセットします。
 この<code>Box</code>が<code>Draft</code>構造体の新しいインスタンスを指します。これにより、
@@ -35387,35 +35328,46 @@ create a `Post` in any other state! In the `Post::new` function, we set the
 -->
 <h3 id="記事の内容のテキストを格納する"><a class="header" href="#記事の内容のテキストを格納する">記事の内容のテキストを格納する</a></h3>
 <!--
-Listing 17-11 showed that we want to be able to call a method named
-`add_text` and pass it a `&str` that is then added to the text content of the
-blog post. We implement this as a method rather than exposing the `content`
-field as `pub`. This means we can implement a method later that will control
-how the `content` field’s data is read. The `add_text` method is pretty
+We saw in Listing 17-11 that we want to be able to call a method named
+`add_text` and pass it a `&str` that is then added as the text content of the
+blog post. We implement this as a method, rather than exposing the `content`
+field as `pub`, so that later we can implement a method that will control how
+the `content` field’s data is read. The `add_text` method is pretty
 straightforward, so let’s add the implementation in Listing 17-13 to the `impl
 Post` block:
 -->
-<p>リスト17-11は、<code>add_text</code>というメソッドを呼び出し、ブログ記事のテキスト内容に追加される<code>&amp;str</code>を渡せるようになりたいことを示しました。
-これを<code>content</code>フィールドを<code>pub</code>にして晒すのではなく、メソッドとして実装しています。
-これは、後ほど<code>content</code>フィールドデータの読まれ方を制御するメソッドを実装できることを意味しています。
+<p>リスト17-11で、<code>add_text</code>というメソッドを呼び出し、ブログ記事のテキスト内容として追加される<code>&amp;str</code>を渡せるようになりたいことを確認しました。
+後ほど<code>content</code>フィールドデータの読まれ方を制御するメソッドを実装できるように、
+<code>content</code>フィールドを<code>pub</code>にして晒すのではなく、これをメソッドとして実装しています。
 <code>add_text</code>メソッドは非常に素直なので、リスト17-13の実装を<code>impl Post</code>ブロックに追加しましょう:</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub struct Post {
+<pre><code class="language-rust noplayground"><span class="boring">pub struct Post {
+</span><span class="boring">    state: Option&lt;Box&lt;dyn State&gt;&gt;,
 </span><span class="boring">    content: String,
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Post {
     // --snip--
-    pub fn add_text(&amp;mut self, text: &amp;str) {
+<span class="boring">    pub fn new() -&gt; Post {
+</span><span class="boring">        Post {
+</span><span class="boring">            state: Some(Box::new(Draft {})),
+</span><span class="boring">            content: String::new(),
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    pub fn add_text(&amp;mut self, text: &amp;str) {
         self.content.push_str(text);
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">trait State {}
+</span><span class="boring">
+</span><span class="boring">struct Draft {}
+</span><span class="boring">
+</span><span class="boring">impl State for Draft {}</span></code></pre>
 <!--
 <span class="caption">Listing 17-13: Implementing the `add_text` method to add
 text to a post’s `content`</span>
@@ -35441,7 +35393,7 @@ support.
 <!--
 Even after we’ve called `add_text` and added some content to our post, we still
 want the `content` method to return an empty string slice because the post is
-still in the draft state, as shown on line 8 of Listing 17-11. For now, let’s
+still in the draft state, as shown on line 7 of Listing 17-11. For now, let’s
 implement the `content` method with the simplest thing that will fulfill this
 requirement: always returning an empty string slice. We’ll change this later
 once we implement the ability to change a post’s state so it can be published.
@@ -35450,7 +35402,7 @@ be empty. Listing 17-14 shows this placeholder implementation:
 -->
 <p><code>add_text</code>を呼び出して記事に内容を追加した後でさえ、記事はまだ草稿状態なので、
 それでも<code>content</code>メソッドには空の文字列スライスを返してほしいです。
-リスト17-11の8行目で示したようにですね。とりあえず、この要求を実現する最も単純な方法で<code>content</code>メソッドを実装しましょう:
+リスト17-11の7行目で示したようにですね。とりあえず、この要求を実現する最も単純な方法で<code>content</code>メソッドを実装しましょう:
 常に空の文字列スライスを返すことです。一旦、記事の状態を変更する能力を実装したら、公開できるように、
 これを後ほど変更します。ここまで、記事は草稿状態にしかなり得ないので、記事の内容は常に空のはずです。
 リスト17-14は、この仮の実装を表示しています:</p>
@@ -35458,29 +35410,44 @@ be empty. Listing 17-14 shows this placeholder implementation:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub struct Post {
+<pre><code class="language-rust noplayground"><span class="boring">pub struct Post {
+</span><span class="boring">    state: Option&lt;Box&lt;dyn State&gt;&gt;,
 </span><span class="boring">    content: String,
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Post {
     // --snip--
-    pub fn content(&amp;self) -&gt; &amp;str {
+<span class="boring">    pub fn new() -&gt; Post {
+</span><span class="boring">        Post {
+</span><span class="boring">            state: Some(Box::new(Draft {})),
+</span><span class="boring">            content: String::new(),
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn add_text(&amp;mut self, text: &amp;str) {
+</span><span class="boring">        self.content.push_str(text);
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    pub fn content(&amp;self) -&gt; &amp;str {
         &quot;&quot;
     }
 }
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">trait State {}
+</span><span class="boring">
+</span><span class="boring">struct Draft {}
+</span><span class="boring">
+</span><span class="boring">impl State for Draft {}</span></code></pre>
 <!--
 <span class="caption">Listing 17-14: Adding a placeholder implementation for
 the `content` method on `Post` that always returns an empty string slice</span>
 -->
 <p><span class="caption">リスト17-14: <code>Post</code>に常に空の文字列スライスを返す<code>content</code>の仮の実装を追加する</span></p>
 <!--
-With this added `content` method, everything in Listing 17-11 up to line 8
+With this added `content` method, everything in Listing 17-11 up to line 7
 works as intended.
 -->
-<p>この追加された<code>content</code>メソッドとともに、リスト17-11の8行目までのコードは、想定通り動きます。</p>
+<p>この追加された<code>content</code>メソッドとともに、リスト17-11の7行目までのコードは、想定通り動きます。</p>
 <!--
 [Requesting a Review of the Post] Changes ... ともRequesting that [a Review ...]とも読める。どちらがふさわしいだろうか
 次の1行目にrequest a review of a post, whichとあるので、前者で訳しておく。
@@ -35499,16 +35466,29 @@ change its state from `Draft` to `PendingReview`. Listing 17-15 shows this code:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub struct Post {
-</span><span class="boring">    state: Option&lt;Box&lt;State&gt;&gt;,
+<pre><code class="language-rust noplayground"><span class="boring">pub struct Post {
+</span><span class="boring">    state: Option&lt;Box&lt;dyn State&gt;&gt;,
 </span><span class="boring">    content: String,
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Post {
     // --snip--
-    pub fn request_review(&amp;mut self) {
+<span class="boring">    pub fn new() -&gt; Post {
+</span><span class="boring">        Post {
+</span><span class="boring">            state: Some(Box::new(Draft {})),
+</span><span class="boring">            content: String::new(),
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn add_text(&amp;mut self, text: &amp;str) {
+</span><span class="boring">        self.content.push_str(text);
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn content(&amp;self) -&gt; &amp;str {
+</span><span class="boring">        &quot;&quot;
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    pub fn request_review(&amp;mut self) {
         if let Some(s) = self.state.take() {
             self.state = Some(s.request_review())
         }
@@ -35516,13 +35496,13 @@ change its state from `Draft` to `PendingReview`. Listing 17-15 shows this code:
 }
 
 trait State {
-    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt;;
+    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt;;
 }
 
 struct Draft {}
 
 impl State for Draft {
-    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
         Box::new(PendingReview {})
     }
 }
@@ -35530,11 +35510,10 @@ impl State for Draft {
 struct PendingReview {}
 
 impl State for PendingReview {
-    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
         self
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-15: Implementing `request_review` methods on
 `Post` and the `State` trait</span>
@@ -35550,7 +35529,7 @@ current state and returns a new state.
 <code>Post</code>の現在の状態に対して内部の<code>request_review</code>メソッドを呼び出し、
 この2番目の<code>request_review</code>が現在の状態を消費し、新しい状態を返します。</p>
 <!--
-We’ve added the `request_review` method to the `State` trait; all types that
+We add the `request_review` method to the `State` trait; all types that
 implement the trait will now need to implement the `request_review` method.
 Note that rather than having `self`, `&self`, or `&mut self` as the first
 parameter of the method, we have `self: Box<Self>`. This syntax means the
@@ -35558,7 +35537,7 @@ method is only valid when called on a `Box` holding the type. This syntax takes
 ownership of `Box<Self>`, invalidating the old state so the state value of the
 `Post` can transform into a new state.
 -->
-<p><code>State</code>トレイトに<code>request_review</code>メソッドを追加しました; このトレイトを実装する型は全て、
+<p><code>State</code>トレイトに<code>request_review</code>メソッドを追加します; このトレイトを実装する型は全て、
 これで<code>request_review</code>メソッドを実装する必要があります。メソッドの第1引数に<code>self</code>、<code>&amp;self</code>、<code>&amp;mut self</code>ではなく、
 <code>self: Box&lt;Self&gt;</code>としていることに注意してください。この記法は、型を保持する<code>Box</code>に対して呼ばれた時のみ、
 このメソッドが合法になることを意味しています。この記法は、<code>Box&lt;Self&gt;</code>の所有権を奪い、古い状態を無効化するので、
@@ -35587,14 +35566,14 @@ we’ve transformed it into a new state.
 一時的に<code>None</code>に<code>state</code>をセットする必要があります。これにより、新しい状態に変形した後に、
 <code>Post</code>が古い<code>state</code>値を使えないことが保証されるのです。</p>
 <!--
-The `request_review` method on `Draft` needs to return a new, boxed instance of
-a new `PendingReview` struct, which represents the state when a post is waiting
-for a review. The `PendingReview` struct also implements the `request_review`
-method but doesn’t do any transformations. Rather, it returns itself, because
-when we request a review on a post already in the `PendingReview` state, it
-should stay in the `PendingReview` state.
+The `request_review` method on `Draft` returns a new, boxed instance of a new
+`PendingReview` struct, which represents the state when a post is waiting for a
+review. The `PendingReview` struct also implements the `request_review` method
+but doesn’t do any transformations. Rather, it returns itself, because when we
+request a review on a post already in the `PendingReview` state, it should stay
+in the `PendingReview` state.
 -->
-<p><code>Draft</code>の<code>request_review</code>メソッドは、新しい<code>PendingReview</code>構造体の新しいボックスのインスタンスを返す必要があり、
+<p><code>Draft</code>の<code>request_review</code>メソッドは、新しい<code>PendingReview</code>構造体の新しいボックスのインスタンスを返し、
 これが、記事が査読待ちの時の状態を表します。<code>PendingReview</code>構造体も<code>request_review</code>メソッドを実装しますが、
 何も変形はしません。むしろ、自身を返します。というのも、既に<code>PendingReview</code>状態にある記事の査読を要求したら、
 <code>PendingReview</code>状態に留まるべきだからです。</p>
@@ -35609,15 +35588,19 @@ state is responsible for its own rules.
 We’ll leave the `content` method on `Post` as is, returning an empty string
 slice. We can now have a `Post` in the `PendingReview` state as well as in the
 `Draft` state, but we want the same behavior in the `PendingReview` state.
-Listing 17-11 now works up to line 11!
+Listing 17-11 now works up to line 10!
 -->
 <p><code>Post</code>の<code>content</code>メソッドを空の文字列スライスを返してそのままにします。
 これで<code>Post</code>は<code>PendingReview</code>と<code>Draft</code>状態になり得ますが、<code>PendingReview</code>状態でも、
-同じ振る舞いが欲しいです。もうリスト17-11は11行目まで動くようになりました！</p>
+同じ振る舞いが欲しいです。もうリスト17-11は10行目まで動くようになりました！</p>
+<!-- Old headings. Do not remove or links may break. -->
 <!--
-### Adding the `approve` Method that Changes the Behavior of `content`
+<a id="adding-the-approve-method-that-changes-the-behavior-of-content"></a>
 -->
-<h3 id="contentの振る舞いを変化させるapproveメソッドを追加する"><a class="header" href="#contentの振る舞いを変化させるapproveメソッドを追加する"><code>content</code>の振る舞いを変化させる<code>approve</code>メソッドを追加する</a></h3>
+<!--
+### Adding `approve` to Change the Behavior of `content`
+-->
+<h3 id="contentの振る舞いを変化させるapproveを追加する"><a class="header" href="#contentの振る舞いを変化させるapproveを追加する"><code>content</code>の振る舞いを変化させる<code>approve</code>を追加する</a></h3>
 <!--
 The `approve` method will be similar to the `request_review` method: it will
 set `state` to the value that the current state says it should have when that
@@ -35629,16 +35612,35 @@ state is approved, as shown in Listing 17-16:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub struct Post {
-</span><span class="boring">    state: Option&lt;Box&lt;State&gt;&gt;,
+<pre><code class="language-rust noplayground"><span class="boring">pub struct Post {
+</span><span class="boring">    state: Option&lt;Box&lt;dyn State&gt;&gt;,
 </span><span class="boring">    content: String,
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Post {
     // --snip--
-    pub fn approve(&amp;mut self) {
+<span class="boring">    pub fn new() -&gt; Post {
+</span><span class="boring">        Post {
+</span><span class="boring">            state: Some(Box::new(Draft {})),
+</span><span class="boring">            content: String::new(),
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn add_text(&amp;mut self, text: &amp;str) {
+</span><span class="boring">        self.content.push_str(text);
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn content(&amp;self) -&gt; &amp;str {
+</span><span class="boring">        &quot;&quot;
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn request_review(&amp;mut self) {
+</span><span class="boring">        if let Some(s) = self.state.take() {
+</span><span class="boring">            self.state = Some(s.request_review())
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    pub fn approve(&amp;mut self) {
         if let Some(s) = self.state.take() {
             self.state = Some(s.approve())
         }
@@ -35646,19 +35648,19 @@ state is approved, as shown in Listing 17-16:
 }
 
 trait State {
-    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt;;
-    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt;;
+    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt;;
+    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt;;
 }
 
 struct Draft {}
 
 impl State for Draft {
-<span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+    // --snip--
+<span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
 </span><span class="boring">        Box::new(PendingReview {})
 </span><span class="boring">    }
 </span><span class="boring">
-</span>    // --snip--
-    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+</span>    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
         self
     }
 }
@@ -35666,12 +35668,12 @@ impl State for Draft {
 struct PendingReview {}
 
 impl State for PendingReview {
-<span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+    // --snip--
+<span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
 </span><span class="boring">        self
 </span><span class="boring">    }
 </span><span class="boring">
-</span>    // --snip--
-    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+</span>    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
         Box::new(Published {})
     }
 }
@@ -35679,15 +35681,14 @@ impl State for PendingReview {
 struct Published {}
 
 impl State for Published {
-    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
         self
     }
 
-    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;State&gt; {
+    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
         self
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-16: Implementing the `approve` method on
 `Post` and the `State` trait</span>
@@ -35699,48 +35700,110 @@ implements `State`, the `Published` state.
 -->
 <p><code>State</code>トレイトに<code>approve</code>メソッドを追加し、<code>Published</code>状態という<code>State</code>を実装する新しい構造体を追加します。</p>
 <!--
-Similar to `request_review`, if we call the `approve` method on a `Draft`, it
-will have no effect because it will return `self`. When we call `approve` on
-`PendingReview`, it returns a new, boxed instance of the `Published` struct.
-The `Published` struct implements the `State` trait, and for both the
-`request_review` method and the `approve` method, it returns itself, because
-the post should stay in the `Published` state in those cases.
+Similar to the way `request_review` on `PendingReview` works, if we call the
+`approve` method on a `Draft`, it will have no effect because `approve` will
+return `self`. When we call `approve` on `PendingReview`, it returns a new,
+boxed instance of the `Published` struct. The `Published` struct implements the
+`State` trait, and for both the `request_review` method and the `approve`
+method, it returns itself, because the post should stay in the `Published`
+state in those cases.
 -->
-<p><code>request_review</code>のように、<code>Draft</code>に対して<code>approve</code>メソッドを呼び出したら、<code>self</code>を返すので、
+<p><code>PendingReview</code>に対して<code>request_review</code>が行っているのと同様に、
+<code>Draft</code>に対して<code>approve</code>メソッドを呼び出しても、<code>approve</code>は<code>self</code>を返すので、
 何も効果はありません。<code>PendingReview</code>に対して<code>approve</code>を呼び出すと、
 <code>Published</code>構造体の新しいボックス化されたインスタンスを返します。<code>Published</code>構造体は<code>State</code>トレイトを実装し、
 <code>request_review</code>メソッドと<code>approve</code>メソッド両方に対して、自身を返します。
 そのような場合に記事は、<code>Published</code>状態に留まるべきだからです。</p>
 <!--
-Now we need to update the `content` method on `Post`: if the state is
-`Published`, we want to return the value in the post’s `content` field;
-otherwise, we want to return an empty string slice, as shown in Listing 17-17:
+Now we need to update the `content` method on `Post`. We want the value
+returned from `content` to depend on the current state of the `Post`, so we’re
+going to have the `Post` delegate to a `content` method defined on its `state`,
+as shown in Listing 17-17:
 -->
-<p>さて、<code>Post</code>の<code>content</code>メソッドを更新する必要が出てきました: 状態が<code>Published</code>なら、
-記事の<code>content</code>フィールドの値を返したいのです; それ以外なら、空の文字列スライスを返したいです。
+<p>さて、<code>Post</code>の<code>content</code>メソッドを更新する必要が出てきました。
+<code>content</code>から返される値を<code>Post</code>の現在の状態に依存するようにしたいので、
+<code>Post</code>は、その<code>state</code>に定義された<code>content</code>メソッドに委譲するようにします。
 リスト17-17のようにですね:</p>
 <!--
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">trait State {
-</span><span class="boring">    fn content&lt;'a&gt;(&amp;self, post: &amp;'a Post) -&gt; &amp;'a str;
-</span><span class="boring">}
-</span><span class="boring">pub struct Post {
-</span><span class="boring">    state: Option&lt;Box&lt;State&gt;&gt;,
+<pre><code class="language-rust ignore does_not_compile"><span class="boring">pub struct Post {
+</span><span class="boring">    state: Option&lt;Box&lt;dyn State&gt;&gt;,
 </span><span class="boring">    content: String,
 </span><span class="boring">}
 </span><span class="boring">
 </span>impl Post {
     // --snip--
-    pub fn content(&amp;self) -&gt; &amp;str {
-        self.state.as_ref().unwrap().content(&amp;self)
+<span class="boring">    pub fn new() -&gt; Post {
+</span><span class="boring">        Post {
+</span><span class="boring">            state: Some(Box::new(Draft {})),
+</span><span class="boring">            content: String::new(),
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn add_text(&amp;mut self, text: &amp;str) {
+</span><span class="boring">        self.content.push_str(text);
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    pub fn content(&amp;self) -&gt; &amp;str {
+        self.state.as_ref().unwrap().content(self)
     }
     // --snip--
-}
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">    pub fn request_review(&amp;mut self) {
+</span><span class="boring">        if let Some(s) = self.state.take() {
+</span><span class="boring">            self.state = Some(s.request_review())
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn approve(&amp;mut self) {
+</span><span class="boring">        if let Some(s) = self.state.take() {
+</span><span class="boring">            self.state = Some(s.approve())
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span>}
+<span class="boring">
+</span><span class="boring">trait State {
+</span><span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt;;
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt;;
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct Draft {}
+</span><span class="boring">
+</span><span class="boring">impl State for Draft {
+</span><span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        Box::new(PendingReview {})
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct PendingReview {}
+</span><span class="boring">
+</span><span class="boring">impl State for PendingReview {
+</span><span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        Box::new(Published {})
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct Published {}
+</span><span class="boring">
+</span><span class="boring">impl State for Published {
+</span><span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">}</span></code></pre>
 <!--
 <span class="caption">Listing 17-17: Updating the `content` method on `Post` to
 delegate to a `content` method on `State`</span>
@@ -35749,7 +35812,7 @@ delegate to a `content` method on `State`</span>
 <!--
 Because the goal is to keep all these rules inside the structs that implement
 `State`, we call a `content` method on the value in `state` and pass the post
-instance (that is, `self`) as an argument. Then we return the value that is
+instance (that is, `self`) as an argument. Then we return the value that’s
 returned from using the `content` method on the `state` value.
 -->
 <p>目的は、これらの規則全てを<code>State</code>を実装する構造体の内部に押し留めることなので、<code>state</code>の値に対して<code>content</code>メソッドを呼び出し、
@@ -35757,34 +35820,35 @@ returned from using the `content` method on the `state` value.
 <!--
 We call the `as_ref` method on the `Option` because we want a reference to the
 value inside the `Option` rather than ownership of the value. Because `state`
-is an `Option<Box<State>>`, when we call `as_ref`, an `Option<&Box<State>>` is
-returned. If we didn’t call `as_ref`, we would get an error because we can’t
-move `state` out of the borrowed `&self` of the function parameter.
+is an `Option<Box<dyn State>>`, when we call `as_ref`, an `Option<&Box<dyn
+State>>` is returned. If we didn’t call `as_ref`, we would get an error because
+we can’t move `state` out of the borrowed `&self` of the function parameter.
 -->
 <p><code>Option</code>に対して<code>as_ref</code>メソッドを呼び出します。値の所有権ではなく、<code>Option</code>内部の値への参照が欲しいからです。
-<code>state</code>は<code>Option&lt;Box&lt;State&gt;&gt;</code>なので、<code>as_ref</code>を呼び出すと、<code>Option&lt;&amp;Box&lt;State&gt;&gt;</code>が返ってきます。
+<code>state</code>は<code>Option&lt;Box&lt;dyn State&gt;&gt;</code>なので、<code>as_ref</code>を呼び出すと、<code>Option&lt;&amp;Box&lt;dyn State&gt;&gt;</code>が返ってきます。
 <code>as_ref</code>を呼ばなければ、<code>state</code>を関数引数の借用した<code>&amp;self</code>からムーブできないので、エラーになるでしょう。</p>
 <!--
 We then call the `unwrap` method, which we know will never panic, because we
 know the methods on `Post` ensure that `state` will always contain a `Some`
 value when those methods are done. This is one of the cases we talked about in
-the “Cases When You Have More Information Than the Compiler” section of Chapter
-9 when we know that a `None` value is never possible, even though the compiler
-isn’t able to understand that.
+the [“Cases In Which You Have More Information Than the
+Compiler”][more-info-than-rustc] section of Chapter 9 when we
+know that a `None` value is never possible, even though the compiler isn’t able
+to understand that.
 -->
 <p>さらに<code>unwrap</code>メソッドを呼び出し、これは絶対にパニックしないことがわかっています。何故なら、
 <code>Post</code>のメソッドが、それらのメソッドが完了した際に<code>state</code>は常に<code>Some</code>値を含んでいることを保証するからです。
 これは、コンパイラには理解不能であるものの、
-<code>None</code>値が絶対にあり得ないとわかる第9章の「コンパイラよりも情報を握っている場合」節で語った一例です。</p>
+<code>None</code>値が絶対にあり得ないとわかる第9章の<a href="ch09-03-to-panic-or-not-to-panic.html#%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%A9%E3%82%88%E3%82%8A%E3%82%82%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9E%E3%81%8C%E3%82%88%E3%82%8A%E6%83%85%E5%A0%B1%E3%82%92%E6%8C%81%E3%81%A3%E3%81%A6%E3%81%84%E3%82%8B%E5%A0%B4%E5%90%88">「コンパイラよりもプログラマがより情報を持っている場合」</a>節で語った一例です。</p>
 <!--
-At this point, when we call `content` on the `&Box<State>`, deref coercion will
-take effect on the `&` and the `Box` so the `content` method will ultimately be
-called on the type that implements the `State` trait. That means we need to add
-`content` to the `State` trait definition, and that is where we’ll put the
-logic for what content to return depending on which state we have, as shown in
-Listing 17-18:
+At this point, when we call `content` on the `&Box<dyn State>`, deref coercion
+will take effect on the `&` and the `Box` so the `content` method will
+ultimately be called on the type that implements the `State` trait. That means
+we need to add `content` to the `State` trait definition, and that is where
+we’ll put the logic for what content to return depending on which state we
+have, as shown in Listing 17-18:
 -->
-<p>この時点で、<code>&amp;Box&lt;State&gt;</code>に対して<code>content</code>を呼び出すと、参照外し型強制が<code>&amp;</code>と<code>Box</code>に働くので、
+<p>この時点で、<code>&amp;Box&lt;dyn State&gt;</code>に対して<code>content</code>を呼び出すと、参照外し型強制が<code>&amp;</code>と<code>Box</code>に働くので、
 究極的に<code>content</code>メソッドが<code>State</code>トレイトを実装する型に対して呼び出されることになります。
 つまり、<code>content</code>を<code>State</code>トレイト定義に追加する必要があり、そこが現在の状態に応じてどの内容を返すべきかというロジックを配置する場所です。
 リスト17-18のようにですね:</p>
@@ -35792,28 +35856,92 @@ Listing 17-18:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub struct Post {
-</span><span class="boring">    content: String
+<pre><code class="language-rust noplayground"><span class="boring">pub struct Post {
+</span><span class="boring">    state: Option&lt;Box&lt;dyn State&gt;&gt;,
+</span><span class="boring">    content: String,
 </span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">impl Post {
+</span><span class="boring">    pub fn new() -&gt; Post {
+</span><span class="boring">        Post {
+</span><span class="boring">            state: Some(Box::new(Draft {})),
+</span><span class="boring">            content: String::new(),
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn add_text(&amp;mut self, text: &amp;str) {
+</span><span class="boring">        self.content.push_str(text);
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn content(&amp;self) -&gt; &amp;str {
+</span><span class="boring">        self.state.as_ref().unwrap().content(self)
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn request_review(&amp;mut self) {
+</span><span class="boring">        if let Some(s) = self.state.take() {
+</span><span class="boring">            self.state = Some(s.request_review())
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn approve(&amp;mut self) {
+</span><span class="boring">        if let Some(s) = self.state.take() {
+</span><span class="boring">            self.state = Some(s.approve())
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
 </span>trait State {
     // --snip--
-    fn content&lt;'a&gt;(&amp;self, post: &amp;'a Post) -&gt; &amp;'a str {
+<span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt;;
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt;;
+</span><span class="boring">
+</span>    fn content&lt;'a&gt;(&amp;self, post: &amp;'a Post) -&gt; &amp;'a str {
         &quot;&quot;
     }
 }
 
 // --snip--
-struct Published {}
+<span class="boring">
+</span><span class="boring">struct Draft {}
+</span><span class="boring">
+</span><span class="boring">impl State for Draft {
+</span><span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        Box::new(PendingReview {})
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">struct PendingReview {}
+</span><span class="boring">
+</span><span class="boring">impl State for PendingReview {
+</span><span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        Box::new(Published {})
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
+</span>struct Published {}
 
 impl State for Published {
     // --snip--
-    fn content&lt;'a&gt;(&amp;self, post: &amp;'a Post) -&gt; &amp;'a str {
+<span class="boring">    fn request_review(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    fn approve(self: Box&lt;Self&gt;) -&gt; Box&lt;dyn State&gt; {
+</span><span class="boring">        self
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    fn content&lt;'a&gt;(&amp;self, post: &amp;'a Post) -&gt; &amp;'a str {
         &amp;post.content
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-18: Adding the `content` method to the `State`
 trait</span>
@@ -35845,6 +35973,24 @@ rules lives in the state objects rather than being scattered throughout `Post`.
 <p>出来上がりました。要するに、リスト17-11はもう動くようになったのです！ブログ記事ワークフローの規則でステートパターンを実装しました。
 その規則に関連するロジックは、<code>Post</code>中に散乱するのではなく、ステートオブジェクトに息づいています。</p>
 <!--
+> #### Why Not An Enum?
+>
+> You may have been wondering why we didn’t use an `enum` with the different
+> possible post states as variants. That’s certainly a possible solution, try
+> it and compare the end results to see which you prefer! One disadvantage of
+> using an enum is every place that checks the value of the enum will need a
+> `match` expression or similar to handle every possible variant. This could
+> get more repetitive than this trait object solution.
+-->
+<blockquote>
+<h4 id="enumを使えばいいのでは"><a class="header" href="#enumを使えばいいのでは">enumを使えばいいのでは？</a></h4>
+<p>可能な記事の状態を列挙子とする<code>enum</code>を使わなかったのはなぜか、疑問に感じているかもしれません。
+それももちろんあり得る解決策です。試してみて、どちらが好みか、最終結果を比較してみてください！
+enumを使うことの不利な点のひとつは、enumの値をチェックするすべての場所で、
+<code>match</code>式か、それに類似する、すべての可能な列挙子を処理するための方法が必要になるだろうということです。
+これは、トレイトオブジェクトを使用する解決策と比較して、より煩わしくなることがあります。</p>
+</blockquote>
+<!--
 ### Trade-offs of the State Pattern
 -->
 <h3 id="ステートパターンの代償"><a class="header" href="#ステートパターンの代償">ステートパターンの代償</a></h3>
@@ -35864,7 +36010,7 @@ Rustにあることを示してきました。<code>Post</code>のメソッド�
 コードを体系化する仕方によれば、公開された記事が振る舞うことのある様々な方法を知るには、1箇所のみを調べればいいのです:
 <code>Published</code>構造体の<code>State</code>トレイトの実装です。</p>
 <!--
-FIX: 5行目末尾がよくわからない。The more ..., the more ...のような感じで訳し文脈には合ってそうだが、合ってる自信がない
+FIX: 5-6行目がよくわからない。The more ..., the more ...のような感じで訳し文脈には合ってそうだが、合ってる自信がない
 つまり、This would only increase, the more states we addedのように訳している
 -->
 <!--
@@ -35896,11 +36042,11 @@ pattern, try a few of these suggestions:
 ステートパターンを使用するコードの管理の単純さを確認するために、以下の提言を試してみてください:</p>
 <!--
 * Add a `reject` method that changes the post’s state from `PendingReview` back
-to `Draft`.
+  to `Draft`.
 * Require two calls to `approve` before the state can be changed to `Published`.
 * Allow users to add text content only when a post is in the `Draft` state.
-Hint: have the state object responsible for what might change about the
-content but not responsible for modifying the `Post`.
+  Hint: have the state object responsible for what might change about the
+  content but not responsible for modifying the `Post`.
 -->
 <ul>
 <li>記事の状態を<code>PendingReview</code>から<code>Draft</code>に戻す<code>reject</code>メソッドを追加する。</li>
@@ -35941,11 +36087,12 @@ and `approve` methods on `Post`. Both methods delegate to the implementation of
 the same method on the value in the `state` field of `Option` and set the new
 value of the `state` field to the result. If we had a lot of methods on `Post`
 that followed this pattern, we might consider defining a macro to eliminate the
-repetition (see Appendix D for more on Macros).
+repetition (see the [“Macros”][macros] section in Chapter 19).
 -->
 <p>他の重複には、<code>Post</code>の<code>request_review</code>と<code>approve</code>メソッドの実装が似ていることが含まれます。
 両メソッドは<code>Option</code>の<code>state</code>の値に対する同じメソッドの実装に委譲していて、<code>state</code>フィールドの新しい値を結果にセットします。
-このパターンに従う<code>Post</code>のメソッドが多くあれば、マクロを定義して繰り返しを排除することも考慮する可能性があります(マクロについては付録Dを参照)。</p>
+このパターンに従う<code>Post</code>のメソッドが多くあれば、マクロを定義して繰り返しを排除することも考慮する可能性があります
+(第19章の<a href="ch19-06-macros.html#%E3%83%9E%E3%82%AF%E3%83%AD">「マクロ」</a>節を参照)。</p>
 <!--
 By implementing the state pattern exactly as it’s defined for object-oriented
 languages, we’re not taking as full advantage of Rust’s strengths as we could.
@@ -35976,12 +36123,21 @@ Let’s consider the first part of `main` in Listing 17-11:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">fn main() {
+<pre><code class="language-rust ignore"><span class="boring">use blog::Post;
+</span><span class="boring">
+</span>fn main() {
     let mut post = Post::new();
 
+    //            &quot;今日はお昼にサラダを食べた&quot;
     post.add_text(&quot;I ate a salad for lunch today&quot;);
     assert_eq!(&quot;&quot;, post.content());
-}</code></pre>
+<span class="boring">
+</span><span class="boring">    post.request_review();
+</span><span class="boring">    assert_eq!(&quot;&quot;, post.content());
+</span><span class="boring">
+</span><span class="boring">    post.approve();
+</span><span class="boring">    assert_eq!(&quot;I ate a salad for lunch today&quot;, post.content());
+</span>}</code></pre>
 <!--
 We still enable the creation of new posts in the draft state using `Post::new`
 and the ability to add text to the post’s content. But instead of having a
@@ -36004,9 +36160,7 @@ as well as methods on each:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub struct Post {
+<pre><code class="language-rust noplayground">pub struct Post {
     content: String,
 }
 
@@ -36030,8 +36184,7 @@ impl DraftPost {
     pub fn add_text(&amp;mut self, text: &amp;str) {
         self.content.push_str(text);
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-19: A `Post` with a `content` method and a
 `DraftPost` without a `content` method</span>
@@ -36090,9 +36243,7 @@ shown in Listing 17-20:
 <span class="filename">Filename: src/lib.rs</span>
 -->
 <p><span class="filename">ファイル名: src/lib.rs</span></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">pub struct Post {
+<pre><code class="language-rust noplayground"><span class="boring">pub struct Post {
 </span><span class="boring">    content: String,
 </span><span class="boring">}
 </span><span class="boring">
@@ -36100,10 +36251,25 @@ shown in Listing 17-20:
 </span><span class="boring">    content: String,
 </span><span class="boring">}
 </span><span class="boring">
+</span><span class="boring">impl Post {
+</span><span class="boring">    pub fn new() -&gt; DraftPost {
+</span><span class="boring">        DraftPost {
+</span><span class="boring">            content: String::new(),
+</span><span class="boring">        }
+</span><span class="boring">    }
+</span><span class="boring">
+</span><span class="boring">    pub fn content(&amp;self) -&gt; &amp;str {
+</span><span class="boring">        &amp;self.content
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">
 </span>impl DraftPost {
     // --snip--
-
-    pub fn request_review(self) -&gt; PendingReviewPost {
+<span class="boring">    pub fn add_text(&amp;mut self, text: &amp;str) {
+</span><span class="boring">        self.content.push_str(text);
+</span><span class="boring">    }
+</span><span class="boring">
+</span>    pub fn request_review(self) -&gt; PendingReviewPost {
         PendingReviewPost {
             content: self.content,
         }
@@ -36120,8 +36286,7 @@ impl PendingReviewPost {
             content: self.content,
         }
     }
-}
-<span class="boring">}</span></code></pre></pre>
+}</code></pre>
 <!--
 <span class="caption">Listing 17-20: A `PendingReviewPost` that gets created by
 calling `request_review` on `DraftPost` and an `approve` method that turns a
@@ -36155,7 +36320,7 @@ But we also have to make some small changes to `main`. The `request_review` and
 `approve` methods return new instances rather than modifying the struct they’re
 called on, so we need to add more `let post =` shadowing assignments to save
 the returned instances. We also can’t have the assertions about the draft and
-pending review post’s contents be empty strings, nor do we need them: we can’t
+pending review posts’ contents be empty strings, nor do we need them: we can’t
 compile code that tries to use the content of posts in those states any longer.
 The updated code in `main` is shown in Listing 17-21:
 -->
@@ -36168,8 +36333,7 @@ The updated code in `main` is shown in Listing 17-21:
 <span class="filename">Filename: src/main.rs</span>
 -->
 <p><span class="filename">ファイル名: src/main.rs</span></p>
-<pre><code class="language-rust ignore">extern crate blog;
-use blog::Post;
+<pre><code class="language-rust ignore">use blog::Post;
 
 fn main() {
     let mut post = Post::new();
@@ -36206,12 +36370,12 @@ an unpublished post, will be discovered before they make it to production.
 as it is, afterで訳した
 -->
 <!--
-Try the tasks suggested for additional requirements that we mentioned at the
-start of this section on the `blog` crate as it is after Listing 17-20 to see
-what you think about the design of this version of the code. Note that some of
-the tasks might be completed already in this design.
+Try the tasks suggested at the start of this section on the `blog` crate as it
+is after Listing 17-21 to see what you think about the design of this version
+of the code. Note that some of the tasks might be completed already in this
+design.
 -->
-<p><code>blog</code>クレートに関してこの節の冒頭で触れた追加の要求に提言される作業をそのままリスト17-20の後に試してみて、
+<p><code>blog</code>クレートに関してこの節の冒頭で提言される作業をそのままリスト17-21の後に試してみて、
 このバージョンのコードについてどう思うか確かめてください。この設計では、
 既に作業の一部が達成されている可能性があることに注意してください。</p>
 <!--
@@ -36257,6 +36421,10 @@ haven’t seen their full capability yet. Let’s go!
 -->
 <p>次は、パターンを見ます。パターンも多くの柔軟性を可能にするRustの別の機能です。
 本全体を通して僅かに見かけましたが、まだその全能力は目の当たりにしていません。さあ、行きましょう！</p>
+<!--
+[more-info-than-rustc]: ch09-03-to-panic-or-not-to-panic.html#cases-in-which-you-have-more-information-than-the-compiler
+[macros]: ch19-06-macros.html#macros
+-->
 <div style="break-before: page; page-break-before: always;"></div><!--
 # Patterns and Matching
 -->
