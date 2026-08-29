@@ -1,86 +1,39 @@
-<!--
+/*
 ## Comments
--->
+*/
 
 ## コメント
 
 <!--
-All programmers strive to make their code easy to understand, but sometimes
-extra explanation is warranted. In these cases, programmers leave *comments* in
-their source code that the compiler will ignore but people reading the source
-code may find useful.
+Comments start with `//` and run to the end of the line.
 -->
 
-全プログラマは、自分のコードがわかりやすくなるよう努めますが、時として追加の説明が許されることもあります。
-このような場合、プログラマは*コメント*をソースコードに残し、コメントをコンパイラは無視しますが、
-ソースコードを読む人間には有益なものと思えるでしょう。
+コメントは`//`で始まり、行の末尾まで続きます。
 
-<!--
-Here’s a simple comment:
--->
-
-こちらが単純なコメントです:
-
-```rust
-// hello, world
+```lime
+// this is a comment
+println("hi")  // trailing comments work too
 ```
 
 <!--
-In Rust, the idiomatic comment style starts a comment with two slashes, and the
-comment continues until the end of the line. For comments that extend beyond a
-single line, you’ll need to include `//` on each line, like this:
+Lime also supports block comments delimited by `/*` and `*/`.
 -->
 
-Rustの慣用的なコメントスタイルでは、コメントは2連スラッシュで始め、行の終わりまで続きます。コメントが複数行にまたがる場合、
-各行に`//`を含める必要があります。こんな感じに:
+Limeは`/*`と`*/`で囲むブロックコメントもサポートしています。
 
-```rust
-// So we’re doing something complicated here, long enough that we need
-// multiple lines of comments to do it! Whew! Hopefully, this comment will
-// explain what’s going on.
-// ここで何か複雑なことをしていて、長すぎるから複数行のコメントが必要なんだ。
-// ふう！願わくば、このコメントで何が起きているか説明されていると嬉しい。
+```lime
+/* this is a
+   multi-line comment */
+println("hello")
 ```
 
 <!--
-Comments can also be placed at the end of lines containing code:
+The `#` character also starts a single-line comment, like `//`.
 -->
 
-コメントは、コードが書かれた行の末尾にも配置することができます:
+`#`でも単一行コメントを書けます（`//`と同じです）。
 
-<!--
-<span class="filename">Filename: src/main.rs</span>
--->
-
-<span class="filename">ファイル名: src/main.rs</span>
-
-```rust
-{{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-24-comments-end-of-line/src/main.rs}}
+```lime
+# this is also a comment
+println("hello")  # trailing # works too
 ```
-
-<!--
-But you’ll more often see them used in this format, with the comment on a
-separate line above the code it’s annotating:
--->
-
-しかし、こちらの形式のコメントの方が見かける機会は多いでしょう。注釈しようとしているコードの1行上に書く形式です:
-
-<!--
-<span class="filename">Filename: src/main.rs</span>
--->
-
-<span class="filename">ファイル名: src/main.rs</span>
-
-```rust
-{{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-25-comments-above-line/src/main.rs}}
-```
-
-<!--
-Rust also has another kind of comment, documentation comments, which we’ll
-discuss in the [“Publishing a Crate to Crates.io”][publishing]
-section of Chapter 14.
--->
-
-Rustには他の種類のコメント、ドキュメントコメントもあり、それについては第14章の[「Crates.ioにクレートを公開する」][publishing]節で議論します。
-
-[publishing]: ch14-02-publishing-to-crates-io.html

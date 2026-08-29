@@ -1,105 +1,35 @@
-<!--
+/*
 # Introduction
--->
+*/
 
 # はじめに
-
-<!--
-> Note: This edition of the book is the same as [The Rust Programming
-> Language][nsprust] available in print and ebook format from [No Starch
-> Press][nsp].
--->
-
-> 注釈: この本のこの版は、本として利用可能な[The Rust Programming Language][nsprust]と、
-> [No Starch Press][nsp]のebook形式と同じです。
-
-[nsprust]: https://nostarch.com/rust-programming-language-2nd-edition
-[nsp]: https://nostarch.com/
 
 <!--
 Welcome to *The Rust Programming Language*, an introductory book about Rust.
 -->
 
-*The Rust Programming Language*へようこそ。Rustに関する入門書です。
+*Limeプログラミング言語*へようこそ。Limeに関する入門書です。
 
 <!--
 The Rust programming language helps you write faster, more reliable software.
-High-level ergonomics and low-level control are often at odds in programming
-language design; Rust challenges that conflict. Through balancing powerful
-technical capacity and a great developer experience, Rust gives you the option
-to control low-level details (such as memory usage) without all the hassle
-traditionally associated with such control.
 -->
 
-Rustプログラミング言語は、高速で信頼できるソフトウェアを書く手助けをしてくれます。
-高レベルのエルゴノミクス(`訳注`: ergonomicsとは、人間工学的という意味。砕いて言えば、人間に優しいということ)と低レベルの制御は、
-しばしばプログラミング言語の設計においてトレードオフの関係になります;
-Rustは、その衝突に挑戦しています。バランスのとれた強力な技術の許容量と素晴らしい開発者経験を通して、
-Rustは伝統的にそれらの制御と紐付いていた困難全てなしに低レベルの詳細(メモリ使用など)を制御する選択肢を与えてくれます。
+Limeプログラミング言語は、高速で信頼できるソフトウェアを書く手助けをしてくれます。
+Limeは、簡潔な構文と高い読みやすさを重視しつつ、LLVMベースのネイティブコード生成による
+高性能な実行を実現するプログラミング言語です。
 
 <!--
-## Who Rust Is For
+## Who Lime Is For
 -->
 
-## Rustは誰のためのものなの
+## Limeは誰のためのものなの
 
 <!--
-Rust is ideal for many people for a variety of reasons. Let’s look at a few of
+Lime is ideal for many people for a variety of reasons. Let's look at a few of
 the most important groups.
 -->
 
-Rustは、様々な理由により多くの人にとって理想的です。いくつか最も重要なグループを見ていきましょう。
-
-<!--
-### Teams of Developers
--->
-
-### 開発者チーム
-
-<!--
-Rust is proving to be a productive tool for collaborating among large teams of
-developers with varying levels of systems programming knowledge. Low-level code
-is prone to various subtle bugs, which in most other languages can be caught
-only through extensive testing and careful code review by experienced
-developers. In Rust, the compiler plays a gatekeeper role by refusing to
-compile code with these elusive bugs, including concurrency bugs. By working
-alongside the compiler, the team can spend their time focusing on the program’s
-logic rather than chasing down bugs.
--->
-
-Rustは、いろんなレベルのシステムプログラミングの知識を持つ開発者の巨大なチームとコラボするのに生産的なツールであると証明してきています。
-低レベルコードは様々な種類の微細なバグを抱える傾向があり、そのようなバグは他の言語だと広範なテストと、
-経験豊富な開発者による注意深いコードレビューによってのみ捕捉されるものです。Rustにおいては、
-コンパイラが並行性のバグも含めたこのようなとらえどころのないバグのあるコードをコンパイルするのを拒むことで、
-門番の役割を担います。コンパイラとともに取り組むことで、チームはバグを追いかけるよりもプログラムのロジックに集中することに、
-時間を費やせるのです。
-
-<!--
-Rust also brings contemporary developer tools to the systems programming world:
--->
-
-Rustはまた、現代的な開発ツールをシステムプログラミング世界に導入します。
-
-<!--
-* Cargo, the included dependency manager and build tool, makes adding,
-  compiling, and managing dependencies painless and consistent across the Rust
-  ecosystem.
-* The Rustfmt formatting tool ensures a consistent coding style across
-  developers.
-* The Rust Language Server powers Integrated Development Environment (IDE)
-  integration for code completion and inline error messages.
--->
-
-* Cargoは、付属の依存関係管理ツール兼ビルドツールで、依存関係の追加、コンパイル、管理を容易にし、Rustのエコシステム全体で一貫性を持たせます。
-* Rustfmtフォーマットツールは開発者の間で一貫したコーディングスタイルを保証します。
-* Rust言語サーバーは、IDE(統合開発環境)との統合により、コード補完やインラインエラーメッセージに対応しています。
-
-<!--
-By using these and other tools in the Rust ecosystem, developers can be
-productive while writing systems-level code.
--->
-
-これらのツールやRustのエコシステムの他のツールを使用することで、開発者はシステムレベルのコードを書きながら生産性を高めることができます。
+Limeは、様々な理由により多くの人にとって理想的です。
 
 <!--
 ### Students
@@ -108,17 +38,13 @@ productive while writing systems-level code.
 ### 学生
 
 <!--
-Rust is for students and those who are interested in learning about systems
-concepts. Using Rust, many people have learned about topics like operating
+Lime is for students and those who are interested in learning about programming
+concepts. Using Lime, many people have learned about topics like operating
 systems development. The community is very welcoming and happy to answer
-student questions. Through efforts such as this book, the Rust teams want to
-make systems concepts more accessible to more people, especially those new to
-programming.
+student questions.
 -->
 
-Rustは、学生やシステムの概念を学ぶことに興味のある方向けです。Rustを使用して、
-多くの人がOS開発などの話題を学んできました。コミュニティはとても暖かく、喜んで学生の質問に答えてくれます。
-この本のような努力を通じて、Rustチームはシステムの概念を多くの人、特にプログラミング初心者にとってアクセス可能にしたいと考えています。
+Limeは、学生やプログラミングの概念を学ぶことに興味のある方向けです。
 
 <!--
 ### Companies
@@ -127,17 +53,12 @@ Rustは、学生やシステムの概念を学ぶことに興味のある方向�
 ### 企業
 
 <!--
-Hundreds of companies, large and small, use Rust in production for a variety of
-tasks, including command line tools, web services, DevOps tooling, embedded
-devices, audio and video analysis and transcoding, cryptocurrencies,
-bioinformatics, search engines, Internet of Things applications, machine
-learning, and even major parts of the Firefox web browser.
+Lime can be used for a variety of tasks, including command line tools,
+web services, and embedded applications.
 -->
 
-数百の企業が、大企業、中小企業を問わず、様々なタスクにプロダクションでRustを使用しています。
-そのタスクには、コマンドラインツール、Webサービス、DevOpsツール、組み込みデバイス、
-オーディオとビデオの解析および変換、暗号通貨、生物情報学、サーチエンジン、IoTアプリケーション、
-機械学習、Firefoxウェブブラウザの主要部分さえ含まれます。
+Limeは、コマンドラインツール、Webサービス、組み込みアプリケーションなど、
+様々なタスクに使用できます。
 
 <!--
 ### Open Source Developers
@@ -146,49 +67,11 @@ learning, and even major parts of the Firefox web browser.
 ### オープンソース開発者
 
 <!--
-Rust is for people who want to build the Rust programming language, community,
-developer tools, and libraries. We’d love to have you contribute to the Rust
-language.
+Lime is for people who want to build the Lime programming language, community,
+developer tools, and libraries.
 -->
 
-Rustは、Rustプログラミング言語やコミュニティ、開発者ツール、ライブラリを開発したい方向けです。
-あなたがRust言語に貢献されることを心よりお待ちしております。
-
-<!--
-### People Who Value Speed and Stability
--->
-
-### スピードと安定性に価値を見出す方
-
-<!--
-Rust is for people who crave speed and stability in a language. By speed, we
-mean both how quickly Rust code can run and the speed at which Rust lets you
-write programs. The Rust compiler’s checks ensure stability through feature
-additions and refactoring. This is in contrast to the brittle legacy code in
-languages without these checks, which developers are often afraid to modify. By
-striving for zero-cost abstractions, higher-level features that compile to
-lower-level code as fast as code written manually, Rust endeavors to make safe
-code be fast code as well.
--->
-
-Rustは、スピードと安定性を言語に渇望する方向けです。ここでいうスピードとは、
-Rustコードの実行速度とプログラムを書くスピードのことです。Rustコンパイラのチェックにより、
-機能の追加とリファクタリングを通して安定性を保証してくれます。これはこのようなチェックがない言語の脆いレガシーコードとは対照的で、
-その場合開発者はしばしば、変更するのを恐れてしまいます。ゼロコスト抽象化を志向し、
-手で書いたコードと同等の速度を誇る低レベルコードにコンパイルされる高レベル機能により、
-Rustは安全なコードを高速なコードにもしようと努力しています。
-
-<!--
-The Rust language hopes to support many other users as well; those mentioned
-here are merely some of the biggest stakeholders. Overall, Rust’s greatest
-ambition is to eliminate the trade-offs that programmers have accepted for
-decades by providing safety *and* productivity, speed *and* ergonomics. Give
-Rust a try and see if its choices work for you.
--->
-
-Rust言語は他の多くのユーザのサポートも望んでいます; ここで名前を出した方は、
-ただの最大の出資者の一部です。総合すると、Rustの最大の野望は、プログラマが数十年間受け入れてきた代償を、安全性*と*生産性、
-スピード*と*エルゴノミクスを提供することで排除することです。Rustを試してみて、その選択が自分に合っているか確かめてください。
+Limeは、Limeプログラミング言語やコミュニティ、開発者ツール、ライブラリを開発したい方向けです。
 
 <!--
 ## Who This Book Is For
@@ -197,18 +80,12 @@ Rust言語は他の多くのユーザのサポートも望んでいます; こ�
 ## この本は誰のためのものなの
 
 <!--
-This book assumes that you’ve written code in another programming language but
-doesn’t make any assumptions about which one. We’ve tried to make the material
-broadly accessible to those from a wide variety of programming backgrounds. We
-don’t spend a lot of time talking about what programming *is* or how to think
-about it. If you’re entirely new to programming, you would be better served by
-reading a book that specifically provides an introduction to programming.
+This book assumes that you've written code in another programming language but
+doesn't make any assumptions about which one.
 -->
 
 この本は、あなたが他のプログラミング言語でコードを書いたことがあることを想定していますが、
-具体的にどの言語かという想定はしません。私たちは、幅広い分野のプログラミング背景からの人にとってこの資料を広くアクセスできるようにしようとしてきました。
-プログラミングとはなん*なのか*やそれについて考える方法について多くを語るつもりはありません。
-もし、完全なプログラミング初心者であれば、プログラミング入門を特に行う本を読むことでよりよく役に立つでしょう。
+具体的的にどの言語かという想定はしません。
 
 <!--
 ## How to Use This Book
@@ -217,7 +94,7 @@ reading a book that specifically provides an introduction to programming.
 ## この本の使い方
 
 <!--
-In general, this book assumes that you’re reading it in sequence from front to
+In general, this book assumes that you're reading it in sequence from front to
 back. Later chapters build on concepts in earlier chapters, and earlier
 chapters might not delve into details on a particular topic but will revisit
 the topic in a later chapter.
@@ -227,195 +104,71 @@ the topic in a later chapter.
 前の章では、特定の話題にさほど深入りしない可能性がありますが、後ほどの章で同じ話題を再検討するでしょう。
 
 <!--
-You’ll find two kinds of chapters in this book: concept chapters and project
-chapters. In concept chapters, you’ll learn about an aspect of Rust. In project
-chapters, we’ll build small programs together, applying what you’ve learned so
-far. Chapters 2, 12, and 20 are project chapters; the rest are concept chapters.
+You'll find two kinds of chapters in this book: concept chapters and project
+chapters. In concept chapters, you'll learn about an aspect of Lime. In project
+chapters, we'll build small programs together, applying what you've learned so
+far.
 -->
 
 この本には2種類の章があるとわかるでしょう: 概念の章とプロジェクトの章です。概念の章では、
-Rustの一面を学ぶでしょう。プロジェクトの章では、それまでに学んだことを適用して一緒に小さなプログラムを構築します。
-2、12、20章がプロジェクトの章です。つまり、残りは概念の章です。
+Limeの一面を学ぶでしょう。プロジェクトの章では、それまでに学んだことを適用して一緒に小さなプログラムを構築します。
 
 <!--
-Chapter 1 explains how to install Rust, how to write a “Hello, world!” program,
-and how to use Cargo, Rust’s package manager and build tool. Chapter 2 is a
-hands-on introduction to writing a program in Rust, having you build up a
-number guessing game. Here we cover concepts at a high level, and later
-chapters will provide additional detail. If you want to get your hands dirty
-right away, Chapter 2 is the place for that. Chapter 3 covers Rust features
-that are similar to those of other programming languages, and in Chapter 4
-you’ll learn about Rust’s ownership system. If you’re a particularly meticulous
-learner who prefers to learn every detail before moving on to the next, you
-might want to skip Chapter 2 and go straight to Chapter 3, returning to Chapter
-2 when you’d like to work on a project applying the details you’ve learned.
+Chapter 1 explains how to install Lime, how to write a "Hello, world!" program.
+Chapter 2 covers Lime features that are similar to those of other programming
+languages.
 -->
 
-第1章はRustのインストール方法、“Hello, world!”プログラムの書き方、Rustのパッケージマネージャ兼、
-ビルドツールのCargoの使用方法を説明します。第2章は、数当てゲームを作りながら、実際にRustでのプログラミングをやってもらう導入です。
-ここでは概念をざっくりと講義し、後ほどの章で追加の詳細を提供します。
-今すぐRustの世界に飛び込みたいなら、第2章こそがそのためのものです。第3章は他のプログラミング言語の機能に似たRustの機能を講義し、
-第4章ではRustの所有権システムについて学びます。
-あなたが次に進む前に全ての詳細を学ぶことを好む特別に几帳面な学習者なら、
-第2章を飛ばして真っ先に第3章に行き、学んだ詳細を適用するプロジェクトに取り組みたくなった時に第2章に戻りたくなる可能性があります。
+第1章はLimeのインストール方法、"Hello, world!"プログラムの書き方を説明します。
+第2章は他のプログラミング言語の機能に似たLimeの機能を講義します。
 
 <!--
-Chapter 5 discusses structs and methods, and Chapter 6 covers enums, `match`
-expressions, and the `if let` control flow construct. You’ll use structs and
-enums to make custom types in Rust.
+Chapter 3 discusses tuples, lists, and strings. Chapter 4 covers structs and
+methods. Chapter 5 covers enums, `match` expressions, and pattern matching.
 -->
 
-第5章は、構造体とメソッドについて議論し、第6章はenum、`match`式、`if let`制御フロー構文を講義します。
-構造体とenumを使用してRustにおいて独自の型を作成します。
+第3章ではタプル、リスト、文字列について議論します。第4章は構造体とメソッドを講義し、
+第5章はenum、`match`式、パターンマッチングを講義します。
 
 <!--
-In Chapter 7, you’ll learn about Rust’s module system and about privacy rules
-for organizing your code and its public Application Programming Interface
-(API). Chapter 8 discusses some common collection data structures that the
-standard library provides, such as vectors, strings, and hash maps. Chapter 9
-explores Rust’s error-handling philosophy and techniques.
+Chapter 6 covers functions and closures. Chapter 7 discusses collections.
+Chapter 8 explores error handling. Chapter 9 covers generics and interfaces.
+Chapter 10 covers async and await.
 -->
 
-第7章では、Rustのモジュールシステムと自分のコードとその公開されたAPI(Application Programming Interface)を体系化するプライバシー規則について学びます。
-第8章では、ベクタ、文字列、ハッシュマップなどの標準ライブラリが提供する一般的なコレクションデータ構造の一部を議論します。
-第9章では、Rustのエラー処理哲学とテクニックを探究します。
+第6章は関数とクロージャを講義し、第7章はコレクションを議論します。
+第8章ではエラー処理を探究し、第9章はジェネリクスとインターフェースを講義します。
+第10章はasyncとawaitを講義します。
 
 <!--
-Chapter 10 digs into generics, traits, and lifetimes, which give you the power
-to define code that applies to multiple types. Chapter 11 is all about testing,
-which even with Rust’s safety guarantees is necessary to ensure your program’s
-logic is correct. In Chapter 12, we’ll build our own implementation of a subset
-of functionality from the `grep` command line tool that searches for text
-within files. For this, we’ll use many of the concepts we discussed in the
-previous chapters.
+Chapter 11 covers functional features and closures. Chapter 12 is about testing.
+Chapter 13 builds an I/O project. Chapter 14 covers the standard library.
+Chapter 15 covers citrus and modules.
 -->
 
-第10章ではジェネリクス、トレイト、ライフタイムについて深入りし、これらは複数の型に適用されるコードを定義する力をくれます。
-第11章は、完全にテストに関してで、Rustの安全性保証があってさえ、プログラムのロジックが正しいことを保証するために、
-必要になります。第12章では、ファイル内のテキストを検索する`grep`コマンドラインツールの一部の機能を自身で構築します。
-このために、以前の章で議論した多くの概念を使用します。
-
-<!--
-Chapter 13 explores closures and iterators: features of Rust that come from
-functional programming languages. In Chapter 14, we’ll examine Cargo in more
-depth and talk about best practices for sharing your libraries with others.
-Chapter 15 discusses smart pointers that the standard library provides and the
-traits that enable their functionality.
--->
-
-第13章はクロージャとイテレータを探究します。これらは、関数型プログラミング言語由来のRustの機能です。
-第14章では、Cargoをより詳しく調査し、他人と自分のライブラリを共有する最善の策について語ります。
-第15章では、標準ライブラリが提供するスマートポインタとその機能を可能にするトレイトを議論します。
-
-<!--
-In Chapter 16, we’ll walk through different models of concurrent programming
-and talk about how Rust helps you to program in multiple threads fearlessly.
-Chapter 17 looks at how Rust idioms compare to object-oriented programming
-principles you might be familiar with.
--->
-
-第16章では、並行プログラミングの異なるモデルを見ていき、Rustが恐れなしに複数のスレッドでプログラムする手助けをする方法を語ります。
-第17章では、馴染み深い可能性のあるオブジェクト指向プログラミングの原則とRustのイディオムがどう比較されるかに目を向けます。
-
-<!--
-Chapter 18 is a reference on patterns and pattern matching, which are powerful
-ways of expressing ideas throughout Rust programs. Chapter 19 contains a
-smorgasbord of advanced topics of interest, including unsafe Rust, macros, and
-more about lifetimes, traits, types, functions, and closures.
--->
-
-第18章は、パターンとパターンマッチングのリファレンスであり、これらはRustプログラムを通して、
-考えを表現する強力な方法になります。第19章は、unsafe Rustやマクロ、ライフタイム、トレイト、型、関数、クロージャの詳細を含む、
-興味のある高度な話題のスモーガスボード(`訳注`: 日本でいうバイキングのこと)を含みます。
-
-<!--
-In Chapter 20, we’ll complete a project in which we’ll implement a low-level
-multithreaded web server!
--->
-
-第20章では、低レベルなマルチスレッドのWebサーバを実装するプロジェクトを完成させます！
+第11章は関数型機能とクロージャを講義し、第12章はテストについてです。
+第13章は入出力プロジェクトを構築します。第14章は標準ライブラリを講義し、
+第15章はCitrusとモジュールを講義します。
 
 <!--
 Finally, some appendices contain useful information about the language in a
-more reference-like format. Appendix A covers Rust’s keywords, Appendix B
-covers Rust’s operators and symbols, Appendix C covers derivable traits
-provided by the standard library, Appendix D covers some useful development
-tools, and Appendix E explains Rust editions. In Appendix F, you can find
-translations of the book, and in Appendix G we’ll cover how Rust is made and
-what nightly Rust is.
+more reference-like format. Appendix A covers Lime's keywords, Appendix B
+covers operators and symbols, and Appendix C covers error codes.
 -->
 
 最後に、言語についての有用な情報をよりリファレンスのような形式で含む付録があります。
-付録AはRustのキーワードを講義し、付録Bは、Rustの演算子と記号、付録Cは、
-標準ライブラリが提供する導出可能なトレイト、付録Dはいくつか便利な開発ツールを講義し、
-付録EではRustのエディションについて説明します。付録Fではこの本の翻訳を見つけることができ、
-付録GではRustの作られ方、そしてnightly Rustとは何かについて講義します。
+付録AはLimeのキーワードを講義し、付録Bは演算子と記号、付録Cはエラーコードを講義します。
+
 <!--
 There is no wrong way to read this book: if you want to skip ahead, go for it!
-You might have to jump back to earlier chapters if you experience any
-confusion. But do whatever works for you.
 -->
 
 この本を読む間違った方法なんてありません: 飛ばしたければ、どうぞご自由に！
-混乱したら、前の章に戻らなければならない可能性もあります。ですが、自分に合った方法でどうぞ。
 
 <!--
-<span id="ferris"></span>
--->
-
-<span id="ferris"></span>
-
-<!--
-An important part of the process of learning Rust is learning how to read the
+An important part of the process of learning Lime is learning how to read the
 error messages the compiler displays: these will guide you toward working code.
-As such, we’ll provide many examples that don’t compile along with the error
-message the compiler will show you in each situation. Know that if you enter
-and run a random example, it may not compile! Make sure you read the
-surrounding text to see whether the example you’re trying to run is meant to
-error. Ferris will also help you distinguish code that isn’t meant to work:
 -->
 
-Rustを学ぶ過程で重要な部分は、コンパイラが表示するエラーメッセージを読む方法を学ぶことです:
-それは動くコードへと導いてくれます。そのため、各場面でコンパイラが表示するエラーメッセージとともに、
-コンパイルできない例を多く提供します。適当に例を選んで走らせたら、コンパイルできないかもしれないことを知ってください！
-周りのテキストを読んで実行しようとしている例がエラーになることを意図しているのか確認することを確かめてください。
-フェリスもコードが動作するとは意図されていないコードを見分けるのを手助けしてくれます:
-
-<!--
-| Ferris                                                                                                           | Meaning                                          |
-|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|
-| <img src="img/ferris/does_not_compile.svg" class="ferris-explain" alt="Ferris with a question mark"/>            | This code does not compile!                      |
-| <img src="img/ferris/panics.svg" class="ferris-explain" alt="Ferris throwing up their hands"/>                   | This code panics!                                |
-| <img src="img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="Ferris with one claw up, shrugging"/> | This code does not produce the desired behavior. |
--->
-
-| Ferris                                                                                                           | Meaning                                          |
-|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|
-| <img src="img/ferris/does_not_compile.svg" class="ferris-explain" alt="Ferris with a question mark"/>            | このコードはコンパイルできません！               |
-| <img src="img/ferris/panics.svg" class="ferris-explain" alt="Ferris throwing up their hands"/>                   | このコードはパニックします！                     |
-| <img src="img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="Ferris with one claw up, shrugging"/> | このコードは求められている振る舞いをしません。   |
-
-<!--
-In most situations, we’ll lead you to the correct version of any code that
-doesn’t compile.
--->
-
-ほとんどの場合、コンパイルできないあらゆるコードの正しいバージョンへと導きます。
-
-<!--
-## Source Code
--->
-
-## ソースコード
-
-<!--
-The source files from which this book is generated can be found on
-[GitHub][book].
--->
-
-この本が生成されるソースファイルは、[GitHub][book]で見つかります。
-
-> 訳注: 日本語版は[こちら][book-ja]です。
-
-[book]: https://github.com/rust-lang/book/tree/main/src
-[book-ja]: https://github.com/rust-lang-ja/book-ja
+Limeを学ぶ過程で重要な部分は、コンパイラが表示するエラーメッセージを読む方法を学ぶことです:
+それは動くコードへと導いてくれます。

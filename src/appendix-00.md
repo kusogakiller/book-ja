@@ -1,12 +1,7 @@
-<!--
-# Appendix
--->
-
 # 付録
 
 <!--
-The following sections contain reference material you may find useful in your
-Rust journey.
+The appendices contain reference material about the Lime language.
 -->
 
-以下の節は、Rustの旅で役に立つと思えるかもしれない参考資料を含んでいます。
+付録にはLime言語に関するリファレンス資料が含まれています。
