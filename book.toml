@@ -1,6 +1,6 @@
 [book]
 title = "The Lime Programming Language 日本語版"
-author = "Lime Contributors"
+authors = ["Lime Contributors"]
 language = "ja"
 
 [output.html]
