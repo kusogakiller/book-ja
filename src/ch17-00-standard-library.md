@@ -563,3 +563,69 @@ built-in functions that can be called without importing any package.
 | `remove_file(path)` | ファイルを削除 |
 | `process_args()` | コマンドライン引数のリスト |
 | `StringBuilder()` | 文字列ビルドアを作成 |
+
+---
+
+## Challengerランタイム組み込み関数
+
+<!--
+The following built-in functions are provided by the Challenger async runtime.
+They can be called without importing any package.
+-->
+
+以下の組み込み関数はChallenger asyncランタイムによって提供されます。
+パッケージのインポートなしで呼び出せます。
+
+### タスク管理
+
+| 関数 | 説明 |
+|------|------|
+| `spawn(future)` | タスクをスポーンし、タスクIDを返す |
+| `cancel(task_id)` | タスクをキャンセル |
+| `yield_now` | 協調的にyield |
+| `sleep(ms)` | 非同期スリープ（`Future`） |
+
+### チャネル
+
+| 関数 | 説明 |
+|------|------|
+| `channel_new(capacity)` | チャネルを作成（0=アンバウンド） |
+| `channel_send(ch, value)` | 非同期送信（`Future`） |
+| `channel_receive(ch)` | 非同期受信（`Future`） |
+| `channel_close(ch)` | チャネルを閉じる |
+
+### 同期プリミティブ
+
+| 関数 | 説明 |
+|------|------|
+| `mutex_new()` | ミューテックスを作成 |
+| `mutex_lock(m)` | 非同期ロック取得（`Future`） |
+| `mutex_unlock(m)` | ロック解放 |
+| `rwlock_new()` | RWLockを作成 |
+| `read_lock(rw)` | 非同期読み取りロック取得（`Future`） |
+| `read_unlock(rw)` | 読み取りロック解放 |
+| `write_lock(rw)` | 非同期書き込みロック取得（`Future`） |
+| `write_unlock(rw)` | 書き込みロック解放 |
+| `semaphore_new(max)` | セマフォを作成 |
+| `semaphore_acquire(sem)` | 非同期許可取得（`Future`） |
+| `semaphore_release(sem)` | 許可解放 |
+| `notify_new()` | Notifyを作成 |
+| `notify_wait(n)` | 非同期待機（`Future`） |
+| `notify_one(n)` | 待機者を1つwake |
+| `notify_all(n)` | すべての待機者をwake |
+
+### TCP
+
+| 関数 | 説明 |
+|------|------|
+| `tcp_socket()` | TCPソケットを作成 |
+| `tcp_set_nonblocking(fd)` | 非ブロッキングモードに設定 |
+| `tcp_bind(fd, host, port)` | アドレスにバインド |
+| `tcp_listen(fd, backlog)` | 接続待機開始 |
+| `tcp_accept_async(fd)` | 非同期accept（`Future`） |
+| `tcp_connect_async(fd, host, port)` | 非同期connect（`Future`） |
+| `tcp_read_async(fd, max_len)` | 非同期read（`Future`） |
+| `tcp_write_async(fd, buf, len)` | 非同期write（`Future`） |
+| `tcp_get_last_read_len()` | 最後のreadのバイト数を取得 |
+| `tcp_get_last_read_buf()` | 最後のreadのデータを取得 |
+| `tcp_close(fd)` | ソケットを閉じる |

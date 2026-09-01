@@ -44,6 +44,9 @@
     - [ジェネリックなデータ型](ch12-01-generics.md)
     - [インターフェース：共通の振る舞いを定義する](ch12-02-interfaces.md)
 - [asyncとawait](ch13-00-async-and-await.md)
+    - [Challengerランタイム](ch13-01-challenger-runtime.md)
+    - [チャネルと同期](ch13-02-channels-and-sync.md)
+    - [TCPとタイマー](ch13-03-tcp-and-timer.md)
 
 ## Limeで思考する
 
